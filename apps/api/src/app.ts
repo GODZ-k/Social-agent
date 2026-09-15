@@ -3,7 +3,12 @@ import cors from "cors";
 import helmet from "helmet";
 import healthRoute from "@/routes/health.route"
 import {errorMiddleware} from "@/middlewares/error.middleware";
+import { MastraServer } from '@mastra/express'
+import { mastra } from './ai'
+
 const app = express();
+const server = new MastraServer({ app, mastra })
+await server.init()
 
 app.use(helmet());
 
