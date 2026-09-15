@@ -28,19 +28,13 @@
     "typescript": "7.0.2"
   },
   "tsup": {
-    "entry": [
-      "src/server.ts"
-    ],
-    "format": [
-      "esm"
-    ],
+    "entry": ["src/server.ts"],
+    "format": ["esm"],
     "target": "node24",
     "platform": "node",
     "outDir": "dist",
     "clean": true,
     "sourcemap": true,
-    "noExternal": [
-      "@social-agent/shared"
-    ]
+    "noExternal": ["@social-agent/shared"]
   }
 }

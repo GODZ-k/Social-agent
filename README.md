@@ -13,8 +13,8 @@ This Turborepo includes the following packages/apps:
 - `docs`: a [Next.js](https://nextjs.org/) app on port 3001
 - `@social-agent/shared`: shared zod schemas / types / constants (`packages/shared`), built with `tsc` to `dist`. Consumed by `api`.
 - `@repo/ui`: a stub React component library shared by `web` and `docs`
-- `@repo/eslint-config`: shared `eslint` configurations
-- `@repo/typescript-config`: shared `tsconfig.json` bases
+- `@repo/eslint-config`: shared `eslint` configurations (`packages/config/eslint-config`)
+- `@repo/typescript-config`: shared `tsconfig.json` bases (`packages/config/typescript-config`)
 
 Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
 

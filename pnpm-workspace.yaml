@@ -1,6 +1,7 @@
 packages:
   - "apps/*"
   - "packages/*"
+  - "packages/config/*"
 
 # Dependencies whose postinstall build scripts pnpm is allowed to run.
 # esbuild is required by tsx / tsup.
