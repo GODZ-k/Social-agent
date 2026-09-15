@@ -1,20 +1,17 @@
 {
   "name": "api",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "watch": "tsx --watch",
-    "dev": "tsx watch src/server.ts",
-    "start": "node dist/server.js",
-    "build": "tsc"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "private": true,
   "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsup",
+    "start": "node dist/server.js",
+    "check-types": "tsc --noEmit",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
   "dependencies": {
+    "@social-agent/shared": "workspace:*",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
@@ -22,10 +19,28 @@
     "zod": "^4.6.1"
   },
   "devDependencies": {
+    "@repo/typescript-config": "workspace:*",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
-    "@types/node": "^22.20.2",
+    "@types/node": "26.4.1",
+    "tsup": "^8.5.1",
     "tsx": "^4.23.13",
-    "typescript": "^7.0.2"
+    "typescript": "7.0.2"
+  },
+  "tsup": {
+    "entry": [
+      "src/server.ts"
+    ],
+    "format": [
+      "esm"
+    ],
+    "target": "node24",
+    "platform": "node",
+    "outDir": "dist",
+    "clean": true,
+    "sourcemap": true,
+    "noExternal": [
+      "@social-agent/shared"
+    ]
   }
 }

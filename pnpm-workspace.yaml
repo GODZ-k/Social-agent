@@ -1,8 +1,18 @@
 packages:
   - "apps/*"
   - "packages/*"
+
+# Dependencies whose postinstall build scripts pnpm is allowed to run.
+# esbuild is required by tsx / tsup.
 allowBuilds:
-  esbuild: set this to true or false
+  esbuild: true
+
 minimumReleaseAgeExclude:
-  - '@types/node@22.20.2'
   - zod@4.6.1
+  - '@turbo/darwin-64@2.10.13'
+  - '@turbo/darwin-arm64@2.10.13'
+  - '@turbo/linux-64@2.10.13'
+  - '@turbo/linux-arm64@2.10.13'
+  - '@turbo/windows-64@2.10.13'
+  - '@turbo/windows-arm64@2.10.13'
+  - turbo@2.10.13

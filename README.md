@@ -1,14 +1,6 @@
-# Turborepo starter
+# social_agent
 
-This Turborepo starter is maintained by the Turborepo core team.
-
-## Using this example
-
-Run the following command:
-
-```sh
-npx create-turbo@latest
-```
+A [Turborepo](https://turborepo.dev/) + [pnpm](https://pnpm.io/) workspace.
 
 ## What's inside?
 
@@ -16,13 +8,30 @@ This Turborepo includes the following packages/apps:
 
 ### Apps and Packages
 
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `@next/eslint-plugin-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
+- `api`: an [Express 5](https://expressjs.com/) API (`apps/api`). Dev via `tsx watch`, production build bundled with `tsup` to `dist/server.js`.
+- `web`: a [Next.js](https://nextjs.org/) app on port 3000
+- `docs`: a [Next.js](https://nextjs.org/) app on port 3001
+- `@social-agent/shared`: shared zod schemas / types / constants (`packages/shared`), built with `tsc` to `dist`. Consumed by `api`.
+- `@repo/ui`: a stub React component library shared by `web` and `docs`
+- `@repo/eslint-config`: shared `eslint` configurations
+- `@repo/typescript-config`: shared `tsconfig.json` bases
 
 Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
+
+### Common commands
+
+```sh
+pnpm install                 # install everything (pnpm 11, Node >= 24)
+pnpm dev                     # run all dev servers (api :8080, web :3000, docs :3001)
+pnpm dev --filter=api        # just the API (builds @social-agent/shared first)
+pnpm build                   # build every package, topologically
+pnpm check-types             # tsc --noEmit everywhere
+pnpm lint
+```
+
+> **Windows note:** if `turbo` fails with "An Application Control policy has blocked this file",
+> Smart App Control is rejecting the unsigned `turbo.exe`. It is usually transient: retry after a
+> minute or bump `turbo` to a newer patch release. Disabling Smart App Control is a last resort.
 
 ### Utilities
 
@@ -39,14 +48,12 @@ To build all apps and packages, run the following command:
 With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
 
 ```sh
-cd my-turborepo
 turbo build
 ```
 
 Without global `turbo`, use your package manager:
 
 ```sh
-cd my-turborepo
 npx turbo build
 pnpm exec turbo build
 pnpm exec turbo build
@@ -75,14 +82,12 @@ To develop all apps and packages, run the following command:
 With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
 
 ```sh
-cd my-turborepo
 turbo dev
 ```
 
 Without global `turbo`, use your package manager:
 
 ```sh
-cd my-turborepo
 npx turbo dev
 pnpm exec turbo dev
 pnpm exec turbo dev
@@ -116,14 +121,12 @@ By default, Turborepo will cache locally. To enable Remote Caching you will need
 With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
 
 ```sh
-cd my-turborepo
 turbo login
 ```
 
 Without global `turbo`, use your package manager:
 
 ```sh
-cd my-turborepo
 npx turbo login
 pnpm exec turbo login
 pnpm exec turbo login
