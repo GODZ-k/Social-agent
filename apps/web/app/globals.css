@@ -72,7 +72,7 @@ html {
 /*
  * Theme is an explicit attribute, not a media query, so people can choose it.
  * An inline script in <head> sets data-theme before first paint (see
- * components/theme/theme.tsx), resolving "system" to light or dark.
+ * lib/theme.ts), resolving "system" to light or dark.
  */
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
