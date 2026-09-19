@@ -4,9 +4,14 @@ packages:
   - "packages/config/*"
 
 # Dependencies whose postinstall build scripts pnpm is allowed to run.
+# pnpm blocks install scripts by default and fails the install until each one
+# is answered here with true (run it) or false (skip it).
 # esbuild is required by tsx / tsup.
+# unrs-resolver is the native module resolver behind ESLint's import plugin; its
+# script only fetches the prebuilt binary for this platform.
 allowBuilds:
   esbuild: true
+  unrs-resolver: true
 
 # Tolerate a slow connection to the registry: long tarball timeout, more
 # retries, fewer parallel downloads.
