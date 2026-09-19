@@ -3,10 +3,10 @@
  * Imported by relative path because CSS tooling doesn't reliably resolve
  * workspace package exports. App-only styles, if ever needed, go below.
  */
-@import "../../../packages/ui/src/styles/globals.css";
+/* @import "@repo/ui/styles.css"; */
 
 /*
  * Tailwind only generates classes it can see. Declared here, in the app's entry
  * stylesheet, so the dev server watches the shared components for changes too.
  */
-@source "../../../packages/ui/src";
+/* @source "../../../packages/ui/src"; */

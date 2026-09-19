@@ -7,6 +7,7 @@ packages:
 # esbuild is required by tsx / tsup.
 allowBuilds:
   esbuild: true
+  unrs-resolver: set this to true or false
 
 # Tolerate a slow connection to the registry: long tarball timeout, more
 # retries, fewer parallel downloads.

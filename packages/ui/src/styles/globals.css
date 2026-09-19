@@ -85,6 +85,9 @@ html {
  */
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
+/* A screen too short for stacked layouts: a phone on its side, a very small window. */
+@custom-variant short (@media (max-height: 560px));
+
 :root {
   color-scheme: light;
 }
@@ -329,5 +332,235 @@ html {
   }
   .pressable:active {
     transform: none;
+  }
+}
+
+/*
+ * timepicker-ui, dressed in our tokens.
+ *
+ * The library is themed through --tp-* custom properties on its root element, so it
+ * follows the client's brand colour and light/dark with no JavaScript. Its stylesheet
+ * is unlayered, which outranks every Tailwind layer, so these rules are unlayered too
+ * and scoped under .tp-host to win on specificity. Where the library uses !important
+ * (its inline-mode layout), so must we.
+ */
+.tp-host .tp-ui-modal {
+  --tp-bg: transparent;
+  --tp-surface: var(--secondary);
+  --tp-surface-hover: var(--accent);
+  --tp-surface-container: var(--secondary);
+  --tp-input-bg: var(--secondary);
+  --tp-hover-bg: var(--accent);
+  --tp-text: var(--foreground);
+  --tp-on-surface: var(--foreground);
+  --tp-text-secondary: var(--muted-foreground);
+  --tp-on-surface-variant: var(--muted-foreground);
+  --tp-text-type-time: var(--muted-foreground);
+  --tp-text-icon: var(--muted-foreground);
+  --tp-primary: var(--primary);
+  --tp-on-primary: var(--primary-foreground);
+  --tp-primary-container: var(--tint-strong);
+  --tp-on-primary-container: var(--tint-foreground);
+  --tp-tertiary-container: var(--tint-strong);
+  --tp-on-tertiary-container: var(--tint-foreground);
+  --tp-am-pm-active: var(--tint-strong);
+  --tp-am-pm-text-selected: var(--tint-foreground);
+  --tp-am-pm-text-unselected: var(--muted-foreground);
+  --tp-border: var(--border);
+  --tp-outline-variant: var(--border);
+  --tp-outline: var(--primary);
+  --tp-error: var(--destructive);
+  --tp-shadow-focus: 0 0 0 3px var(--ring);
+  --tp-border-radius: 1rem;
+  --tp-radius-md: 0.75rem;
+  --tp-radius-sm: 0.5rem;
+  --tp-size-clock: 232px;
+  --tp-size-input: 72px;
+  --tp-size-input-height: 60px;
+  --tp-font-size-xl: 2.25rem;
+  --tp-font-size-number: 0.9375rem;
+  --tp-size-hand-circle: 40px;
+  --tp-easing-standard: var(--ease-out-soft);
+  font-family: inherit;
+}
+
+/* Inline mode ships as a 500px-tall shadowed card. Inside our popover it is just content. */
+.tp-host .tp-ui--inline .tp-ui-wrapper {
+  min-height: 0 !important;
+  max-width: none !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+
+.tp-host .tp-ui-hour,
+.tp-host .tp-ui-minutes {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+.tp-host .tp-ui-value-tips,
+.tp-host .tp-ui-type-mode {
+  font-family: inherit;
+  font-variant-numeric: tabular-nums;
+}
+
+/* The popover already has a title context; the library's own heading row is empty. */
+.tp-host .tp-ui-select-time:empty {
+  display: none;
+}
+
+/*
+ * Sizing. Out of the box the library is a fixed 420px column (80px inputs, a 256px
+ * dial, and a 52px footer that is empty because its buttons are hidden). Here it is
+ * compact, and the dial scales with the height of the screen so the picker always
+ * fits: full size on a normal screen, smaller on a short laptop window.
+ */
+.tp-host {
+  --tp-dial: clamp(11rem, calc(100dvh - 22rem), 14.5rem);
+}
+
+.tp-host .tp-ui-footer {
+  display: none !important;
+}
+
+.tp-host .tp-ui-header {
+  padding: 0 0 0.75rem !important;
+}
+
+.tp-host .tp-ui-input-wrapper,
+.tp-host .tp-ui-hour,
+.tp-host .tp-ui-minutes {
+  width: 5rem !important;
+  height: 3.5rem !important;
+}
+
+.tp-host .tp-ui-hour,
+.tp-host .tp-ui-minutes {
+  font-size: 2rem !important;
+}
+
+.tp-host .tp-ui-wrapper-type-time {
+  height: 3.5rem !important;
+}
+
+.tp-host .tp-ui-type-mode {
+  height: 1.75rem !important;
+  font-size: 0.8125rem;
+}
+
+.tp-host .tp-ui-mobile-clock-wrapper {
+  height: auto !important;
+}
+
+.tp-host .tp-ui-body {
+  width: var(--tp-dial) !important;
+  height: var(--tp-dial) !important;
+}
+
+/*
+ * Below 825px wide in landscape the library switches to its own "expanded" layout:
+ * it pins the face at 256px, stacks AM/PM under the inputs and pushes the dial down
+ * 48px. That fights the sizing above (the face overflows its body and the numbers
+ * land off the ring), so inside our popover the layout is the same at every width.
+ */
+.tp-host .tp-ui-body.expanded {
+  display: block !important;
+  margin: 0 auto !important;
+  padding: 0 !important;
+}
+
+.tp-host .tp-ui-clock-face {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.tp-host .tp-ui-mobile-clock-wrapper.expanded {
+  /* auto, not 100%: side by side on a short screen, 100% would squeeze the header out. */
+  width: auto !important;
+  height: auto !important;
+}
+
+.tp-host .tp-ui-header.expanded {
+  flex-direction: row !important;
+}
+
+.tp-host .tp-ui-wrapper-time.expanded {
+  margin-bottom: 0 !important;
+}
+
+.tp-host .tp-ui-wrapper-type-time.expanded:not(.mobile) {
+  flex-direction: column !important;
+  width: var(--tp-size-am-pm-width) !important;
+  margin-left: 0.75rem !important;
+}
+
+/*
+ * The library draws the hand as 31% of the dial plus a fixed 46px knob, but places the
+ * numbers by script about 25px inside the rim. Those only agree at its default 256px.
+ * Deriving the hand from the same variable keeps the knob centred on the numbers at
+ * any size: hand length + half the knob = radius - 25px.
+ */
+.tp-host .tp-ui-circle-hand {
+  width: 2.5rem !important;
+  height: 2.5rem !important;
+}
+
+.tp-host .tp-ui-clock-hand {
+  height: calc(var(--tp-dial) / 2 - 25px - 1.25rem) !important;
+}
+
+/*
+ * Too short for header-above-dial (a phone on its side, a very small window): put
+ * them side by side. The popover widens to match in time-picker.tsx.
+ */
+@media (max-height: 560px) {
+  /*
+   * Beside the field there can be well under 100px of room on a screen this short,
+   * which no dial fits into. So the picker stops being anchored and sits in the
+   * middle of the screen. Radix positions its wrapper with an inline transform,
+   * hence !important. Clicks outside still dismiss it.
+   */
+  [data-radix-popper-content-wrapper]:has(.tp-host) {
+    position: fixed !important;
+    inset: 0 !important;
+    transform: none !important;
+    display: grid !important;
+    place-items: center;
+    min-width: 0 !important;
+    pointer-events: none;
+  }
+
+  [data-radix-popper-content-wrapper]:has(.tp-host) > * {
+    pointer-events: auto;
+  }
+
+  .tp-host {
+    /* Centred on the screen here, so the dial can use most of the height. */
+    --tp-dial: clamp(9rem, calc(100dvh - 8.5rem), 13rem);
+  }
+
+  .tp-host .tp-ui--inline .tp-ui-wrapper {
+    display: flex !important;
+    /* The library's wrapper is a column; say so explicitly or the row never happens. */
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 1rem;
+  }
+
+  .tp-host .tp-ui-header {
+    width: auto !important;
+    flex: none !important;
+    padding: 0 !important;
+  }
+
+  .tp-host .tp-ui-mobile-clock-wrapper {
+    width: auto !important;
+    flex: none;
   }
 }

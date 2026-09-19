@@ -1,162 +1,114 @@
 # social_agent
 
-A [Turborepo](https://turborepo.dev/) + [pnpm](https://pnpm.io/) workspace.
+An AI agent that runs a business's social media.
 
-## What's inside?
+The user pastes their website URL. The agent reads the site, builds a brand kit, plans a strategy, drafts posts,
+waits for a human to approve them, publishes, measures the results, and rewrites the strategy from what it learned.
+Nothing goes out without approval.
 
-This Turborepo includes the following packages/apps:
+> The product name and logo are undecided. The code uses the `APP_NAME` placeholder (`apps/web/lib/utils.ts`);
+> `social_agent` is only the repo name.
 
-### Apps and Packages
+## Who it is for
 
-- `api`: an [Express 5](https://expressjs.com/) API (`apps/api`). Dev via `tsx watch`, production build bundled with `tsup` to `dist/server.js`.
-- `web`: a [Next.js](https://nextjs.org/) app on port 3000
-- `docs`: a [Next.js](https://nextjs.org/) app on port 3001
-- `@social-agent/shared`: shared zod schemas / types / constants (`packages/shared`), built with `tsc` to `dist`. Consumed by `api`.
-- `@repo/ui`: a stub React component library shared by `web` and `docs`
-- `@repo/eslint-config`: shared `eslint` configurations (`packages/config/eslint-config`)
-- `@repo/typescript-config`: shared `tsconfig.json` bases (`packages/config/typescript-config`)
+Built for a social media agency and its clients.
 
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
+- **Clients** (business owners) sign in, onboard themselves, and see only their own brand. Often not technical,
+  often on a phone.
+- **Admins** (the agency) can onboard clients and see every client's workspace.
 
-### Common commands
+## The agent loop
+
+Every client sits at one stage of this loop (`LoopStage` in `apps/web/lib/types.ts`):
+
+1. **Onboarding**: scan the website, extract the brand kit (colours, voice, logo), connect social accounts.
+2. **Strategy**: content pillars, posting cadence and best times per network.
+3. **Content**: the agent drafts posts (image, carousel, reel, story) for Instagram, Facebook, LinkedIn and TikTok.
+4. **Approval**: a human approves, edits or rejects each post.
+5. **Publishing**: approved posts are scheduled and published.
+6. **Learning**: analytics feed back into the strategy.
+
+Posts move through `draft → in_review → approved → scheduled → published` (or `rejected`).
+
+## Current status
+
+| Part | State |
+|---|---|
+| `apps/web` | The product UI is built: onboarding, workspace overview, strategy, content, calendar, approvals, analytics, settings, and an "Ask the agent" chat panel. Auth works (Clerk). **All data comes from an in-browser mock** (`lib/api/client.ts`, `lib/api/mock-db.ts`). |
+| `apps/api` | Express 5 + [Mastra](https://mastra.ai) skeleton. Only `/health` and the Mastra starter weather agent exist. `auth.middleware.ts` is empty. **No real agents, routes or database yet.** |
+| `apps/landing` | Fresh `create-next-app` scaffold. The marketing page is not started. |
+| `packages/ui` | The design system, in use by `web`. |
+| `packages/shared` | Set up for shared zod schemas and types, nearly empty. |
+| `packages/db` | Empty placeholder. |
+
+What is left, roughly in order:
+
+1. Build the real agents in `apps/api` (brand scan, strategy, post generation, chat) and the REST routes the web
+   client already expects. The function signatures in `apps/web/lib/api/client.ts` are the contract.
+2. Verify the Clerk token and enforce roles in the API. The role check in the UI is cosmetic.
+3. Add the database (`packages/db`) and move the shared types out of `apps/web/lib/types.ts` into `packages/shared`.
+4. Real social account connections, publishing and analytics.
+5. Build the landing page on `packages/ui`, following `apps/web/DESIGN.md`.
+
+## What's inside
+
+```
+apps/
+  web/        Next.js 16 app, the product (port 3000)
+  api/        Express 5 + Mastra API (port 8080)
+  landing/    Next.js marketing site (scaffold)
+packages/
+  ui/         @repo/ui, shared design system (Tailwind 4 tokens, components, motion)
+  shared/     @social-agent/shared, zod schemas / types / constants, built with tsc
+  db/         placeholder
+  config/     @repo/eslint-config, @repo/typescript-config
+```
+
+Stack: pnpm 11 + Turborepo 2, Node 24, TypeScript 7, Next.js 16, Tailwind 4, TanStack (Query, Table, Charts, AI),
+Clerk, Express 5, Mastra, zod.
+
+### Auth and roles
+
+Auth is Clerk for now; the plan is to replace it with our own later, so Clerk usage is kept to a few files.
+
+- `admin`: Clerk public metadata `{ "role": "admin" }`, or an email in `NEXT_PUBLIC_ADMIN_EMAILS` (dev shortcut only).
+- Everyone else is a `client` and sees only the clients where `ownerId` is their user id.
+- Ownership lives in our own data, not Clerk Organizations, so it survives moving off Clerk.
+
+## Getting started
+
+Requires Node >= 24 and pnpm 11. The repo is pnpm-only.
 
 ```sh
-pnpm install                 # install everything (pnpm 11, Node >= 24)
-pnpm dev                     # run all dev servers (api :8080, web :3000, docs :3001)
+pnpm install
+cp apps/web/.env.example apps/web/.env.local   # Clerk keys, admin emails, API URL
+cp apps/api/.env.example apps/api/.env         # ANTHROPIC_API_KEY etc.
+pnpm dev
+```
+
+```sh
+pnpm dev                     # all dev servers
+pnpm dev --filter=web        # just the web app (works on its own, data is mocked)
 pnpm dev --filter=api        # just the API (builds @social-agent/shared first)
-pnpm build                   # build every package, topologically
+pnpm build                   # build everything, topologically
 pnpm check-types             # tsc --noEmit everywhere
 pnpm lint
+pnpm format
 ```
 
-> **Windows note:** if `turbo` fails with "An Application Control policy has blocked this file",
-> Smart App Control is rejecting the unsigned `turbo.exe`. It is usually transient: retry after a
-> minute or bump `turbo` to a newer patch release. Disabling Smart App Control is a last resort.
+Notes:
 
-### Utilities
+- If Clerk fails with "Missing publishableKey", run
+  `npx clerk init --accountless --framework next --pm pnpm -y` in `apps/web` to get dev keys.
+- The API listens on **8080**, but `apps/web/.env.example` points `NEXT_PUBLIC_API_URL` at `:4000`. Set it to
+  `http://localhost:8080` when wiring the real API.
+- `landing` and `web` both default to port 3000; run `landing` with `--port 3001` if both are up.
+- **Windows:** if `turbo` fails with "An Application Control policy has blocked this file", Smart App Control is
+  rejecting the unsigned `turbo.exe`. It is usually transient: retry after a minute or bump `turbo` to a newer
+  patch. `pnpm -r run <script>` works as a turbo-free fallback.
 
-This Turborepo has some additional tools already setup for you:
+## Where to read more
 
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-
-### Build
-
-To build all apps and packages, run the following command:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-turbo build
-```
-
-Without global `turbo`, use your package manager:
-
-```sh
-npx turbo build
-pnpm exec turbo build
-pnpm exec turbo build
-```
-
-You can build a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo build --filter=docs
-```
-
-Without global `turbo`:
-
-```sh
-npx turbo build --filter=docs
-pnpm exec turbo build --filter=docs
-pnpm exec turbo build --filter=docs
-```
-
-### Develop
-
-To develop all apps and packages, run the following command:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-turbo dev
-```
-
-Without global `turbo`, use your package manager:
-
-```sh
-npx turbo dev
-pnpm exec turbo dev
-pnpm exec turbo dev
-```
-
-You can develop a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo dev --filter=web
-```
-
-Without global `turbo`:
-
-```sh
-npx turbo dev --filter=web
-pnpm exec turbo dev --filter=web
-pnpm exec turbo dev --filter=web
-```
-
-### Remote Caching
-
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
-
-Turborepo can use a technique known as [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-turbo login
-```
-
-Without global `turbo`, use your package manager:
-
-```sh
-npx turbo login
-pnpm exec turbo login
-pnpm exec turbo login
-```
-
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
-
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo link
-```
-
-Without global `turbo`:
-
-```sh
-npx turbo link
-pnpm exec turbo link
-pnpm exec turbo link
-```
-
-## Useful Links
-
-Learn more about the power of Turborepo:
-
-- [Tasks](https://turborepo.dev/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.dev/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.dev/docs/reference/configuration)
-- [CLI Usage](https://turborepo.dev/docs/reference/command-line-reference)
+- `apps/web/DESIGN.md`: the design system and product intent. Read before any UI work, including the landing page.
+- `apps/web/AGENTS.md`: rules for working in the web app.
+- `apps/api/AGENTS.md`: rules for Mastra work in the API.
