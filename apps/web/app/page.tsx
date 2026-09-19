@@ -1,102 +1,119 @@
-import Image, { type ImageProps } from "next/image";
-import { Button } from "@repo/ui/button";
-import styles from "./page.module.css";
+"use client";
 
-type Props = Omit<ImageProps, "src"> & {
-  srcLight: string;
-  srcDark: string;
-};
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
+import { ChevronRight, TrendingDown, TrendingUp } from "lucide-react";
+import { clientsQuery } from "@/lib/api/queries";
+import type { Client } from "@/lib/types";
+import { brandStyle, cn, formatCompact, formatDelta, prettyUrl } from "@/lib/utils";
+import { TopBar } from "@/components/shell/top-bar";
+import { ClientAvatar } from "@/components/shell/client-avatar";
+import { LoopTicks, stageInfo } from "@/components/shell/loop-track";
+import { ErrorState, SkeletonRows } from "@/components/shell/states";
+import { PlatformIcon } from "@/components/post/platform";
+import { UrlForm } from "@/components/onboarding/url-form";
+import { Badge } from "@/components/ui/badge";
 
-const ThemeImage = (props: Props) => {
-  const { srcLight, srcDark, ...rest } = props;
+export default function ClientsPage() {
+  const router = useRouter();
+  const { data: clients, isPending, error, refetch } = useQuery(clientsQuery());
 
   return (
-    <>
-      <Image {...rest} src={srcLight} className="imgLight" />
-      <Image {...rest} src={srcDark} className="imgDark" />
-    </>
-  );
-};
+    <div className="min-h-dvh">
+      <TopBar />
+      <main className="mx-auto max-w-5xl px-4 pt-14 pb-24 md:px-6 md:pt-24">
+        <section className="max-w-3xl">
+          <h1 className="type-display">Start with a website.</h1>
+          <p className="mt-5 max-w-[52ch] text-[1.0625rem] text-muted-foreground">
+            Paste a client&apos;s URL. The agent reads the site, works out the brand, plans the month
+            and drafts the posts. Nothing goes out until you approve it.
+          </p>
+          <div className="mt-8 max-w-xl">
+            <UrlForm onSubmit={(url) => router.push(`/onboarding?url=${encodeURIComponent(url)}`)} />
+          </div>
+        </section>
 
-export default function Home() {
-  return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <ThemeImage
-          className={styles.logo}
-          srcLight="turborepo-dark.svg"
-          srcDark="turborepo-light.svg"
-          alt="Turborepo logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol>
-          <li>
-            Get started by editing <code>apps/web/app/page.tsx</code>
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+        <section className="mt-16 md:mt-24" aria-labelledby="clients-heading">
+          <div className="mb-4 flex items-baseline justify-between">
+            <h2 id="clients-heading" className="type-heading">
+              Your clients
+            </h2>
+            {clients && <span className="type-label tabular-nums">{clients.length} in total</span>}
+          </div>
 
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new/clone?demo-description=Learn+to+implement+a+monorepo+with+a+two+Next.js+sites+that+has+installed+three+local+packages.&demo-image=%2F%2Fimages.ctfassets.net%2Fe5382hct74si%2F4K8ZISWAzJ8X1504ca0zmC%2F0b21a1c6246add355e55816278ef54bc%2FBasic.png&demo-title=Monorepo+with+Turborepo&demo-url=https%3A%2F%2Fexamples-basic-web.vercel.sh%2F&from=templates&project-name=Monorepo+with+Turborepo&repository-name=monorepo-turborepo&repository-url=https%3A%2F%2Fgithub.com%2Fvercel%2Fturborepo%2Ftree%2Fmain%2Fexamples%2Fbasic&root-directory=apps%2Fdocs&skippable-integrations=1&teamSlug=vercel&utm_source=create-turbo"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            href="https://turborepo.dev/docs?utm_source"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.secondary}
-          >
-            Read our docs
-          </a>
-        </div>
-        <Button appName="web" className={styles.secondary}>
-          Open alert
-        </Button>
+          {isPending && <SkeletonRows rows={4} className="[&>*]:h-[5.5rem]" />}
+          {error && <ErrorState error={error} onRetry={() => refetch()} />}
+          {clients && (
+            <ul className="grid gap-3">
+              {clients.map((client) => (
+                <li key={client.id}>
+                  <ClientRow client={client} />
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
       </main>
-      <footer className={styles.footer}>
-        <a
-          href="https://vercel.com/templates?search=turborepo&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          href="https://turborepo.dev?utm_source=create-turbo"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to turborepo.dev →
-        </a>
-      </footer>
+    </div>
+  );
+}
+
+function ClientRow({ client }: { client: Client }) {
+  const { stats } = client;
+  return (
+    <Link
+      href={`/c/${client.id}`}
+      // Each row carries its own brand, so the ticks and badges are in the client's colour.
+      style={brandStyle(client.accent)}
+      className="brand-scope pressable group grid grid-cols-[auto_1fr_auto] items-center gap-x-4 gap-y-3 rounded-xl bg-card p-4 shadow-raised hover:shadow-floating md:grid-cols-[auto_minmax(0,1.4fr)_minmax(0,1fr)_auto_auto] md:gap-x-6 md:p-5"
+    >
+      <ClientAvatar client={client} className="size-11 text-lg" />
+
+      <div className="min-w-0">
+        <p className="truncate font-display text-[1.0625rem] font-semibold tracking-tight">{client.name}</p>
+        <p className="type-label flex items-center gap-2 truncate">
+          <span className="truncate">{prettyUrl(client.url)}</span>
+          <span className="flex shrink-0 gap-1">
+            {client.platforms.map((p) => (
+              <PlatformIcon key={p} platform={p} className="size-3.5" />
+            ))}
+          </span>
+        </p>
+      </div>
+
+      <div className="col-span-3 min-w-0 md:col-span-1">
+        <LoopTicks stage={client.stage} />
+        <p className="type-label mt-1.5 truncate">{stageInfo(client.stage).doing}</p>
+      </div>
+
+      <dl className="col-span-2 flex gap-6 md:col-span-1">
+        <Stat label="Followers" value={formatCompact(stats.followers)} delta={stats.followersDelta} />
+        <Stat label="Engagement" value={`${stats.engagementRate}%`} delta={stats.engagementDelta} />
+      </dl>
+
+      <div className="flex items-center justify-end gap-2">
+        {stats.pendingApprovals > 0 && <Badge variant="tint">{stats.pendingApprovals} to approve</Badge>}
+        <ChevronRight className="size-4.5 text-muted-foreground transition-transform duration-200 ease-out-soft group-hover:translate-x-0.5" />
+      </div>
+    </Link>
+  );
+}
+
+function Stat({ label, value, delta }: { label: string; value: string; delta: number }) {
+  const Icon = delta < 0 ? TrendingDown : TrendingUp;
+  return (
+    <div>
+      <dt className="type-label">{label}</dt>
+      <dd className="flex items-baseline gap-1.5">
+        <span className="type-number text-[1.0625rem]">{value}</span>
+        {delta !== 0 && (
+          <span className={cn("flex items-center gap-0.5 text-xs tabular-nums", delta < 0 ? "text-destructive" : "text-success")}>
+            <Icon className="size-3" />
+            {formatDelta(delta)}
+          </span>
+        )}
+      </dd>
     </div>
   );
 }

@@ -1,50 +1,295 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+/*
+ * Tokens
+ * ------
+ * The chrome is deliberately quiet: cool paper, ink, hairlines. Colour comes
+ * from the client being worked on — a workspace sets --brand (and
+ * --brand-foreground) and every primary surface follows it.
+ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --brand: #4b3fe4;
+  --brand-foreground: #ffffff;
+
+  --background: #f5f6f8;
+  --foreground: #1a1d26;
+  --card: #ffffff;
+  --card-foreground: #1a1d26;
+  --popover: #ffffff;
+  --popover-foreground: #1a1d26;
+  --secondary: #eceef2;
+  --secondary-foreground: #1a1d26;
+  --muted: #eceef2;
+  --muted-foreground: #5f6879;
+  --accent: #eceef2;
+  --accent-foreground: #1a1d26;
+  --destructive: #cf3f57;
+  --success: #178a5e;
+  --warning: #b7740a;
+  --border: #e1e4ea;
+  --input: #d5d9e1;
+
+  /* Translucent chrome (nav, sheets). Content scrolls underneath. */
+  --material: rgb(255 255 255 / 0.72);
+  --material-edge: rgb(255 255 255 / 0.7);
+  --scrim: rgb(20 24 34 / 0.38);
+
+  --elevation-raised: 0 1px 2px rgb(20 24 34 / 0.05), 0 6px 18px -8px rgb(20 24 34 / 0.12);
+  --elevation-floating: 0 2px 6px rgb(20 24 34 / 0.06), 0 24px 60px -18px rgb(20 24 34 / 0.28);
+}
+
+/*
+ * Everything derived from --brand. Custom properties resolve where they are
+ * declared, so these are repeated on .brand-scope: any subtree that sets its
+ * own --brand (a client card in a list, say) gets its own derived tints.
+ */
+:root,
+.brand-scope {
+  --primary: var(--brand);
+  --primary-foreground: var(--brand-foreground);
+  --ring: color-mix(in srgb, var(--brand) 55%, transparent);
+  --tint: color-mix(in srgb, var(--brand) 10%, var(--card));
+  --tint-strong: color-mix(in srgb, var(--brand) 18%, var(--card));
+  --tint-foreground: color-mix(in srgb, var(--brand) 72%, var(--foreground));
+}
+
+/* Typed as a colour so it can be transitioned: switching client eases the tint. */
+@property --brand {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #4b3fe4;
+}
+
+html {
+  transition: --brand 500ms ease;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    color-scheme: dark;
+    --background: #0f1116;
+    --foreground: #eceef2;
+    --card: #171a21;
+    --card-foreground: #eceef2;
+    --popover: #1b1f28;
+    --popover-foreground: #eceef2;
+    --secondary: #1f232c;
+    --secondary-foreground: #eceef2;
+    --muted: #1f232c;
+    --muted-foreground: #9aa3b2;
+    --accent: #232833;
+    --accent-foreground: #eceef2;
+    --destructive: #ec6b80;
+    --success: #4cc596;
+    --warning: #e5a53d;
+    --border: #272c37;
+    --input: #343a47;
+
+    --material: rgb(23 26 33 / 0.72);
+    --material-edge: rgb(255 255 255 / 0.08);
+    --scrim: rgb(0 0 0 / 0.55);
+
+    --elevation-raised: 0 1px 2px rgb(0 0 0 / 0.3), 0 6px 18px -8px rgb(0 0 0 / 0.5);
+    --elevation-floating: 0 2px 6px rgb(0 0 0 / 0.35), 0 24px 60px -18px rgb(0 0 0 / 0.7);
   }
-}
-
-html,
-body {
-  max-width: 100vw;
-  overflow-x: hidden;
-}
-
-body {
-  color: var(--foreground);
-  background: var(--background);
-}
-
-* {
-  box-sizing: border-box;
-  padding: 0;
-  margin: 0;
-}
-
-a {
-  color: inherit;
-  text-decoration: none;
-}
-
-.imgDark {
-  display: none;
 }
 
 @media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
+  :root,
+  .brand-scope {
+    --tint: color-mix(in srgb, var(--brand) 16%, var(--card));
+    --tint-strong: color-mix(in srgb, var(--brand) 28%, var(--card));
+    --tint-foreground: color-mix(in srgb, var(--brand) 45%, var(--foreground));
+  }
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-material: var(--material);
+  --color-material-edge: var(--material-edge);
+  --color-scrim: var(--scrim);
+  --color-tint: var(--tint);
+  --color-tint-strong: var(--tint-strong);
+  --color-tint-foreground: var(--tint-foreground);
+
+  --font-sans: var(--font-body), system-ui, sans-serif;
+  --font-display: var(--font-display-face), var(--font-body), system-ui, sans-serif;
+
+  /* Radius follows hierarchy: controls < cards < sheets. */
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.375rem;
+  --radius-2xl: 1.75rem;
+
+  --shadow-raised: var(--elevation-raised);
+  --shadow-floating: var(--elevation-floating);
+
+  /* Mirrored pair for reversible CSS transitions. */
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-soft: cubic-bezier(0.64, 0, 0.78, 0);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/60;
   }
 
-  .imgLight {
-    display: none;
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
   }
-  .imgDark {
-    display: unset;
+
+  body {
+    overflow-x: clip;
+    @apply bg-background font-sans text-foreground antialiased;
+    font-size: 0.9375rem;
+    line-height: 1.55;
+    font-optical-sizing: auto;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  h1,
+  h2,
+  h3 {
+    @apply font-display;
+    text-wrap: balance;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  button,
+  [role="button"],
+  a {
+    touch-action: manipulation;
+  }
+}
+
+@layer components {
+  /* Size-specific tracking and leading: tighter as type grows. */
+  .type-display {
+    @apply font-display font-semibold;
+    font-size: clamp(2.25rem, 1.4rem + 3.6vw, 4.25rem);
+    line-height: 1.02;
+    letter-spacing: -0.035em;
+  }
+  .type-title {
+    @apply font-display font-semibold;
+    font-size: clamp(1.625rem, 1.3rem + 1.2vw, 2.25rem);
+    line-height: 1.1;
+    letter-spacing: -0.025em;
+  }
+  .type-heading {
+    @apply font-display font-semibold;
+    font-size: 1.1875rem;
+    line-height: 1.25;
+    letter-spacing: -0.015em;
+  }
+  .type-label {
+    @apply text-muted-foreground;
+    font-size: 0.8125rem;
+    line-height: 1.35;
+    letter-spacing: 0.005em;
+  }
+  .type-number {
+    @apply font-display font-semibold tabular-nums;
+    letter-spacing: -0.03em;
+  }
+
+  /* Floating translucent layer with a bright top edge, as if catching light. */
+  .material {
+    background: var(--material);
+    backdrop-filter: blur(22px) saturate(180%);
+    -webkit-backdrop-filter: blur(22px) saturate(180%);
+    box-shadow:
+      inset 0 1px 0 var(--material-edge),
+      var(--elevation-floating);
+  }
+
+  /*
+   * Press feedback lands on pointer-down, not on release. Colour is deliberately
+   * not transitioned here: it would chase the animated --brand and lag behind it.
+   */
+  .pressable {
+    transition:
+      transform 160ms var(--ease-out-soft),
+      box-shadow 160ms ease;
+  }
+  .pressable:active {
+    transform: scale(0.97);
+    transition-duration: 80ms;
+  }
+
+  /* Soft fade where scrolling content meets floating chrome, instead of a rule. */
+  .scroll-edge-top {
+    mask-image: linear-gradient(to bottom, transparent 0, black 28px);
+  }
+
+  .skeleton {
+    @apply rounded-md bg-muted;
+    animation: skeleton-pulse 1.6s ease-in-out infinite;
+  }
+}
+
+@keyframes skeleton-pulse {
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .material {
+    background: var(--card);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
+
+@media (prefers-contrast: more) {
+  :root {
+    --border: #8a93a3;
+    --muted-foreground: #3c4352;
+  }
+  .material {
+    background: var(--card);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    outline: 1px solid var(--foreground);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
+  .pressable:active {
+    transform: none;
   }
 }

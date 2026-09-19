@@ -8,6 +8,12 @@ packages:
 allowBuilds:
   esbuild: true
 
+# Tolerate a slow connection to the registry: long tarball timeout, more
+# retries, fewer parallel downloads.
+fetchTimeout: 600000
+fetchRetries: 6
+networkConcurrency: 4
+
 minimumReleaseAgeExclude:
   - zod@4.6.1
   - '@turbo/darwin-64@2.10.13'

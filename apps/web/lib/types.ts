@@ -1,0 +1,136 @@
+export type Platform = "instagram" | "facebook" | "linkedin" | "tiktok";
+export type PostFormat = "image" | "carousel" | "reel" | "story";
+export type PostStatus =
+  | "draft"
+  | "in_review"
+  | "approved"
+  | "scheduled"
+  | "published"
+  | "rejected";
+
+/** Where a client currently sits in the agent loop. */
+export type LoopStage =
+  | "onboarding"
+  | "strategy"
+  | "content"
+  | "approval"
+  | "publishing"
+  | "learning";
+
+export interface BrandColor {
+  name: string;
+  hex: string;
+}
+
+export interface BrandKit {
+  tagline: string;
+  summary: string;
+  audience: string;
+  voice: string[];
+  colors: BrandColor[];
+  fonts: { heading: string; body: string };
+}
+
+export interface Client {
+  id: string;
+  name: string;
+  url: string;
+  industry: string;
+  /** Primary brand colour. The workspace chrome tints to this. */
+  accent: string;
+  stage: LoopStage;
+  brand: BrandKit;
+  platforms: Platform[];
+  createdAt: string;
+  stats: {
+    followers: number;
+    followersDelta: number;
+    engagementRate: number;
+    engagementDelta: number;
+    scheduled: number;
+    pendingApprovals: number;
+  };
+}
+
+export interface ContentPillar {
+  id: string;
+  name: string;
+  description: string;
+  /** Share of the content mix, 0-100. */
+  share: number;
+}
+
+export interface Learning {
+  id: string;
+  insight: string;
+  evidence: string;
+  impact: "up" | "down" | "neutral";
+}
+
+export interface Strategy {
+  clientId: string;
+  version: number;
+  generatedAt: string;
+  goal: string;
+  pillars: ContentPillar[];
+  cadence: { platform: Platform; perWeek: number; bestTimes: string[] }[];
+  audience: { segment: string; note: string }[];
+  learnings: Learning[];
+}
+
+export interface PostMetrics {
+  reach: number;
+  likes: number;
+  comments: number;
+  saves: number;
+  shares: number;
+}
+
+export interface Post {
+  id: string;
+  clientId: string;
+  platform: Platform;
+  format: PostFormat;
+  pillarId: string;
+  /** Short on-image headline. */
+  hook: string;
+  caption: string;
+  hashtags: string[];
+  status: PostStatus;
+  scheduledFor: string | null;
+  publishedAt: string | null;
+  /** Procedural artwork seed: layout variant + index into brand colours. */
+  art: { variant: number; colorIndex: number };
+  durationSec?: number;
+  /** Why the agent made this post. Shown to the approver. */
+  aiNote: string;
+  metrics?: PostMetrics;
+}
+
+export interface AnalyticsPoint {
+  date: string;
+  reach: number;
+  engagement: number;
+  followers: number;
+}
+
+export interface Analytics {
+  clientId: string;
+  series: AnalyticsPoint[];
+  byFormat: { format: PostFormat; engagementRate: number; posts: number }[];
+  byPillar: { pillarId: string; name: string; reach: number }[];
+}
+
+export interface BrandScanStep {
+  id: string;
+  label: string;
+  detail: string;
+}
+
+export interface NewClientInput {
+  name: string;
+  url: string;
+  industry: string;
+  brand: BrandKit;
+  platforms: Platform[];
+}
