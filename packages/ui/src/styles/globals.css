@@ -85,6 +85,9 @@ html {
  */
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
+/* A screen too short for stacked layouts: a phone on its side, a very small window. */
+@custom-variant short (@media (max-height: 560px));
+
 :root {
   color-scheme: light;
 }
@@ -494,7 +497,7 @@ html {
 
 .tp-host .tp-ui-wrapper-type-time.expanded:not(.mobile) {
   flex-direction: column !important;
-  width: 3.375rem !important;
+  width: var(--tp-size-am-pm-width) !important;
   margin-left: 0.75rem !important;
 }
 

@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { Dialog } from "radix-ui";
-import { AnimatePresence, motion, useReducedMotion, type PanInfo } from "motion/react";
+import { AnimatePresence, motion, useDragControls, useReducedMotion, type PanInfo } from "motion/react";
 import { X } from "lucide-react";
 import { useIsDesktop } from "../hooks/use-media-query";
 import { project, spring } from "../lib/motion";
@@ -28,6 +28,12 @@ export function Sheet({ open, onOpenChange, title, description, children, footer
   const isDesktop = useIsDesktop();
   const reduceMotion = useReducedMotion();
   const panelRef = React.useRef<HTMLDivElement>(null);
+  // The sheet is dragged by its handle and header only. Its content keeps every
+  // pointer event, so sliders, dials and anything else draggable work inside it.
+  const dragControls = useDragControls();
+  const startDrag = (e: React.PointerEvent) => {
+    if (!reduceMotion && !(e.target as HTMLElement).closest("button, a, input")) dragControls.start(e);
+  };
 
   const axis = isDesktop ? "x" : "y";
   const offscreen = reduceMotion ? { opacity: 0 } : isDesktop ? { x: "100%" } : { y: "100%" };
@@ -68,14 +74,19 @@ export function Sheet({ open, onOpenChange, title, description, children, footer
                 exit={offscreen}
                 transition={spring.sheet}
                 drag={reduceMotion ? false : axis}
+                dragControls={dragControls}
+                dragListener={false}
                 dragConstraints={{ top: 0, bottom: 0, left: 0, right: 0 }}
                 // Free in the dismiss direction, rubber-banded against it.
                 dragElastic={isDesktop ? { left: 0.06, right: 1 } : { top: 0.06, bottom: 1 }}
                 dragSnapToOrigin={false}
                 onDragEnd={handleDragEnd}
               >
-                <div className="mx-auto mt-2.5 h-1 w-9 shrink-0 rounded-full bg-input md:hidden" aria-hidden />
-                <header className="flex items-start gap-4 px-5 pt-4 pb-3 md:px-6 md:pt-6">
+                {/* A tall, invisible grab area around a small visible handle: easy to catch with a thumb. */}
+                <div onPointerDown={startDrag} className="-mb-2 flex shrink-0 cursor-grab touch-none justify-center pt-2.5 pb-2 active:cursor-grabbing md:hidden" aria-hidden>
+                  <span className="h-1 w-9 rounded-full bg-input" />
+                </div>
+                <header onPointerDown={startDrag} className="flex touch-none items-start gap-4 px-5 pt-4 pb-3 md:px-6 md:pt-6">
                   <div className="min-w-0 flex-1">
                     <Dialog.Title className="type-heading">{title}</Dialog.Title>
                     {description && (
@@ -89,10 +100,8 @@ export function Sheet({ open, onOpenChange, title, description, children, footer
                     <X className="size-4" />
                   </Dialog.Close>
                 </header>
-                {/* Stop drags that start in scrollable content from moving the sheet. */}
                 <div
                   className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pb-5 md:px-6"
-                  onPointerDownCapture={(e) => e.stopPropagation()}
                 >
                   {children}
                 </div>

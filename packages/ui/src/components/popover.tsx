@@ -19,6 +19,9 @@ function PopoverContent({ className, align = "start", sideOffset = 8, ...props }
         className={cn(
           // Solid, not the translucent material: a picker opens over dense form text and has to stay legible.
           "z-[70] origin-(--radix-popover-content-transform-origin) rounded-lg bg-popover p-3 text-popover-foreground shadow-floating ring-1 ring-border outline-none",
+          // Never taller than the room beside the trigger: if content can't fit, it scrolls inside
+          // the popover instead of running off the screen.
+          "max-h-(--radix-popover-content-available-height) overflow-y-auto overscroll-contain",
           "data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95",
           "data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95",
           "duration-150 ease-out-soft",

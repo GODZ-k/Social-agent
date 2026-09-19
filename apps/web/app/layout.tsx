@@ -4,6 +4,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { Providers } from "./providers";
 import { APP_NAME } from "@/lib/utils";
 import { THEME_SCRIPT } from "@repo/ui/lib/theme";
+import "@repo/ui/styles.css"
 import "./globals.css";
 
 // Display face with a real optical-size axis: letterforms tighten as they grow.

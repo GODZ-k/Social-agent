@@ -7,7 +7,9 @@ import { z } from "zod";
 import { format } from "date-fns";
 import { ImageUp, Maximize2, RotateCcw, Sparkles } from "lucide-react";
 import { toast } from "sonner";
-import { useUpdatePost } from "@/lib/api/queries";
+import { useQuery } from "@tanstack/react-query";
+import { strategyQuery, useUpdatePost } from "@/lib/api/queries";
+import { bestTimesFor } from "@/lib/best-times";
 import { normalizeHashtag, readImage } from "@/lib/image";
 import type { BrandKit, Post } from "@/lib/types";
 import { formatCompact } from "@/lib/utils";
@@ -64,6 +66,7 @@ export function PostSheet({
   if (current && current !== post) setPost(current);
 
   const update = useUpdatePost(clientId);
+  const { data: strategy } = useQuery(strategyQuery(clientId));
   const [viewing, setViewing] = useState(false);
   const fileInput = useRef<HTMLInputElement>(null);
   const form = useForm<Values>({
@@ -244,7 +247,14 @@ export function PostSheet({
                       <FormField control={form.control} name="time" render={({ field }) => (
                         <FormItem>
                           <FormLabel>Publish time</FormLabel>
-                          <FormControl><TimePicker value={field.value} onChange={field.onChange} /></FormControl>
+                          <FormControl>
+                            <TimePicker
+                              value={field.value}
+                              onChange={field.onChange}
+                              suggestions={bestTimesFor(strategy, post.platform)}
+                              suggestionsLabel={`Best times for ${PLATFORM_LABEL[post.platform]}`}
+                            />
+                          </FormControl>
                           <FormMessage />
                         </FormItem>
                       )} />
