@@ -245,6 +245,11 @@ The landing page is the same product seen from outside. It uses **the same token
 - One primary button style, one secondary. The primary call to action is always the URL field or "Get started".
 - Social proof, pricing and FAQ, when they exist, use `Panel`, `type-heading` and body text. A pricing table is a plain comparison, not three glowing cards with a "Most popular" ribbon.
 - Copy follows section 10. Say what the agent does in plain words. No "supercharge", "unleash", "revolutionise", "10x".
+- **Scroll motion is allowed on marketing pages only, and only in these forms** (added 2026-09-20 at the owner's request; section 8's "no scroll-triggered fade-ins" still holds inside the app). All of it lives in `apps/landing/src/components`:
+  - `Reveal` / `RevealGroup`: a block settles in once as it enters view (22px, `spring.smooth`, no bounce, never replays). Use these; don't write a second reveal style.
+  - Scroll-linked, reversible effects where the motion says something: the re-tint cards fan out of a stack (`retint-demo`), the loop tracker follows the step being read (`loop-follower`), the hairline reading progress (`scroll-progress`).
+  - Still banned: parallax backgrounds, looping decoration, hover lift, bounce, anything that hijacks or slows the scroll itself.
+  - Every effect must do nothing harmful with reduced motion on: reveals become fades, scroll-linked transforms are skipped.
 - Check it at 390px, in both themes, with reduced motion on.
 
 ## 13. Never do these

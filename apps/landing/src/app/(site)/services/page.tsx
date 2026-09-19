@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Button } from "@repo/ui/components/button";
+import { Reveal } from "@/components/reveal";
 import { PageIntro, Section } from "@/components/section";
 import { SERVICES } from "@/lib/content/services";
 import { signUpUrl } from "@/lib/site";
@@ -20,8 +21,8 @@ export default function ServicesPage() {
 
       <div className="mt-14 grid gap-14 md:mt-20 md:gap-16">
         {SERVICES.map((service) => (
+          <Reveal key={service.id}>
           <section
-            key={service.id}
             id={service.id}
             className="grid scroll-mt-24 gap-x-16 gap-y-5 border-t border-border pt-8 md:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]"
           >
@@ -38,6 +39,7 @@ export default function ServicesPage() {
               ))}
             </ul>
           </section>
+          </Reveal>
         ))}
       </div>
 

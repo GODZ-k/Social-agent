@@ -1,11 +1,14 @@
 import { cn } from "@repo/ui/lib/utils";
+import { Reveal } from "./reveal";
 
 /** The top of every page except home: where am I, in one line, then what this page covers. */
 export function PageIntro({ title, lead }: { title: string; lead?: string }) {
   return (
     <header className="pt-10 md:pt-16">
-      <h1 className="type-title">{title}</h1>
-      {lead && <p className="mt-3 max-w-[58ch] text-[1.0625rem] text-muted-foreground">{lead}</p>}
+      <Reveal>
+        <h1 className="type-title">{title}</h1>
+        {lead && <p className="mt-3 max-w-[58ch] text-[1.0625rem] text-muted-foreground">{lead}</p>}
+      </Reveal>
     </header>
   );
 }
@@ -26,9 +29,16 @@ export function Section({
 }) {
   return (
     <section id={id} className={cn("mt-24 scroll-mt-24 md:mt-32", className)}>
-      <h2 className="type-title">{title}</h2>
-      {lead && <p className="mt-3 max-w-[58ch] text-muted-foreground">{lead}</p>}
-      {children && <div className="mt-8">{children}</div>}
+      <Reveal>
+        <h2 className="type-title">{title}</h2>
+        {lead && <p className="mt-3 max-w-[58ch] text-muted-foreground">{lead}</p>}
+      </Reveal>
+      {/* The heading lands first, then what it introduces. */}
+      {children && (
+        <Reveal className="mt-8" delay={0.08}>
+          {children}
+        </Reveal>
+      )}
     </section>
   );
 }

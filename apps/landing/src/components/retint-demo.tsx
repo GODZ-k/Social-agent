@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { AnimatePresence, motion, useMotionValue, useReducedMotion, useScroll, useSpring, useTransform, type MotionValue } from "motion/react";
 import { Check } from "lucide-react";
 import { Badge } from "@repo/ui/components/badge";
 import { Button } from "@repo/ui/components/button";
@@ -24,6 +24,25 @@ export function RetintDemo() {
   const [auto, setAuto] = useState(true);
   const reduceMotion = useReducedMotion();
   const chips = useRef<(HTMLButtonElement | null)[]>([]);
+
+  // The cards start as one overlapped stack and spread into a row as the section
+  // scrolls into view. Tied to the scroll position, so it reverses if you scroll back.
+  const grid = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({ target: grid, offset: ["start 96%", "start 48%"] });
+  const spread = useSpring(scrollYProgress, { stiffness: 180, damping: 32, restDelta: 0.001 });
+
+  // What the cards follow. It starts at 0 on the server and in the first client
+  // render alike (so hydration matches), then either tracks the scroll or, for
+  // people who asked for less motion, goes straight to the finished row.
+  const fan = useMotionValue(0);
+  useEffect(() => {
+    if (reduceMotion) {
+      fan.set(1);
+      return;
+    }
+    fan.set(spread.get());
+    return spread.on("change", (v) => fan.set(v));
+  }, [reduceMotion, spread, fan]);
 
   useEffect(() => {
     // Nothing moves on its own for people who asked for less motion.
@@ -80,9 +99,9 @@ export function RetintDemo() {
       </div>
 
       <div className="brand-scope mt-6" style={brandStyle(brand.accent)}>
-        <div className="grid grid-cols-3 items-start gap-2.5 md:gap-5">
+        <div ref={grid} className="grid grid-cols-3 items-start gap-2.5 md:gap-5">
           {posts.map((post, i) => (
-            <div key={i} className="relative min-w-0">
+            <FanCard key={i} index={i} spread={fan}>
               <AnimatePresence mode="popLayout" initial={false}>
                 <motion.div
                   key={brand.id}
@@ -94,7 +113,7 @@ export function RetintDemo() {
                   <PostArt post={post} brand={brand.kit} fixedAspect="aspect-[4/5]" className="rounded-xl shadow-raised" />
                 </motion.div>
               </AnimatePresence>
-            </div>
+            </FanCard>
           ))}
         </div>
 
@@ -113,5 +132,33 @@ export function RetintDemo() {
         </div>
       </div>
     </div>
+  );
+}
+
+/** One card of the fan: the outer two slide out from behind the middle one and straighten as `spread` goes 0 to 1. */
+function FanCard({
+  index,
+  spread,
+  children,
+}: {
+  index: number;
+  spread: MotionValue<number>;
+  children: React.ReactNode;
+}) {
+  const side = index - 1; // -1 left, 0 middle, 1 right
+  const x = useTransform(spread, [0, 1], [`${-side * 62}%`, "0%"]);
+  const y = useTransform(spread, [0, 1], [48 + Math.abs(side) * 10, 0]);
+  const rotate = useTransform(spread, [0, 1], [side * 9, 0]);
+  const scale = useTransform(spread, [0, 1], [0.86, 1]);
+  const opacity = useTransform(spread, [0, 0.35], [0, 1]);
+
+  return (
+    <motion.div
+      className="relative min-w-0"
+      // The middle card sits on top while they overlap.
+      style={{ x, y, rotate, scale, opacity, zIndex: side === 0 ? 1 : 0 }}
+    >
+      {children}
+    </motion.div>
   );
 }

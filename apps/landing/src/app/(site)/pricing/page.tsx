@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Faq } from "@/components/faq";
 import { PricingTable } from "@/components/pricing-table";
+import { Reveal } from "@/components/reveal";
 import { PageIntro, Section } from "@/components/section";
 import { PRICING_FAQ } from "@/lib/content/pricing";
 
@@ -16,9 +17,9 @@ export default function PricingPage() {
         title="Pricing"
         lead="Three plans, billed monthly, with no contract. On every plan, nothing is published until you approve it."
       />
-      <div className="mt-10 md:mt-14">
+      <Reveal className="mt-10 md:mt-14" delay={0.08}>
         <PricingTable />
-      </div>
+      </Reveal>
       <Section title="Pricing questions">
         <Faq items={PRICING_FAQ} />
       </Section>

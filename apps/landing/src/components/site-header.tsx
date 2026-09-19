@@ -9,6 +9,7 @@ import { Sheet } from "@repo/ui/components/sheet";
 import { ThemeMenu } from "@repo/ui/components/theme-menu";
 import { cn } from "@repo/ui/lib/utils";
 import { Logo } from "./logo";
+import { ScrollProgress } from "./scroll-progress";
 import { NAV, signInUrl, signUpUrl } from "@/lib/site";
 
 // The header has room for four links; the rest are reachable from the footer and the phone menu.
@@ -21,6 +22,7 @@ export function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-40 px-3 pt-3 md:px-5">
+      <ScrollProgress />
       <div className="material mx-auto flex h-14 max-w-5xl items-center gap-2 rounded-full pr-2 pl-4 md:gap-3">
         <Logo />
         <nav aria-label="Main" className="ml-3 flex items-center gap-0.5 max-md:hidden">

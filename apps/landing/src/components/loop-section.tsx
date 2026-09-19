@@ -6,6 +6,7 @@ import type { LoopStage } from "@/lib/types";
 import { Panel } from "@repo/ui/components/states";
 import { cn } from "@repo/ui/lib/utils";
 import { LOOP_STEPS } from "@/lib/content/loop";
+import { RevealGroup, RevealItem } from "./reveal";
 
 /** The six steps, with the product's own progress track following whichever step is being read. */
 export function LoopSection() {
@@ -16,11 +17,11 @@ export function LoopSection() {
       <Panel aria-label="Where the agent is in its loop">
         <LoopTrack stage={stage} />
       </Panel>
-      <ol className="mt-8 grid gap-x-10 gap-y-2 md:grid-cols-2">
+      <RevealGroup as="ol" className="mt-8 grid gap-x-10 gap-y-2 md:grid-cols-2">
         {LOOP_STEPS.map((step, i) => {
           const current = step.stage === stage;
           return (
-            <li key={step.stage} className="min-w-0">
+            <RevealItem as="li" key={step.stage} className="min-w-0">
               <button
                 type="button"
                 aria-pressed={current}
@@ -45,10 +46,10 @@ export function LoopSection() {
                   <span className="mt-1.5 block text-muted-foreground">{step.body}</span>
                 </span>
               </button>
-            </li>
+            </RevealItem>
           );
         })}
-      </ol>
+      </RevealGroup>
     </div>
   );
 }

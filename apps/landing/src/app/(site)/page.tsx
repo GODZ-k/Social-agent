@@ -4,21 +4,29 @@ import { ApprovalDemo } from "@/components/approval-demo";
 import { LoopSection } from "@/components/loop-section";
 import { ResultsStrip } from "@/components/results-strip";
 import { RetintDemo } from "@/components/retint-demo";
+import { Reveal, RevealGroup, RevealItem } from "@/components/reveal";
 import { Section } from "@/components/section";
 import { UrlForm } from "@/components/url-form";
 
 export default function HomePage() {
   return (
     <>
-      <section className="pt-12 md:pt-24">
-        <h1 className="type-display max-w-[14ch]">Start with your website.</h1>
-        <p className="mt-5 max-w-[52ch] text-[1.0625rem] text-muted-foreground md:text-lg">
-          An agent reads it, learns your brand, plans your social media and drafts a month of posts. You approve the
-          ones you like, and it publishes them.
-        </p>
-        <UrlForm className="mt-8 max-w-xl" />
-        <p className="type-label mt-4 pl-5">Nothing is published until you approve it.</p>
-      </section>
+      {/* The hero arrives in reading order: headline, sentence, then the field you act on. */}
+      <RevealGroup className="pt-12 md:pt-24" stagger={0.09}>
+        <RevealItem>
+          <h1 className="type-display max-w-[14ch]">Start with your website.</h1>
+        </RevealItem>
+        <RevealItem>
+          <p className="mt-5 max-w-[52ch] text-[1.0625rem] text-muted-foreground md:text-lg">
+            An agent reads it, learns your brand, plans your social media and drafts a month of posts. You approve the
+            ones you like, and it publishes them.
+          </p>
+        </RevealItem>
+        <RevealItem>
+          <UrlForm className="mt-8 max-w-xl" />
+          <p className="type-label mt-4 pl-5">Nothing is published until you approve it.</p>
+        </RevealItem>
+      </RevealGroup>
 
       <Section
         title="It becomes your brand"
@@ -38,7 +46,7 @@ export default function HomePage() {
       </Section>
 
       <section className="mt-24 grid items-center gap-x-16 gap-y-10 md:mt-32 md:grid-cols-[minmax(0,1fr)_minmax(0,24rem)]">
-        <div className="min-w-0">
+        <Reveal className="min-w-0">
           <h2 className="type-title">Nothing goes out without you</h2>
           <div className="mt-5 grid max-w-[52ch] gap-4 text-muted-foreground">
             <p>
@@ -51,8 +59,10 @@ export default function HomePage() {
             </p>
             <p>Most people clear a week of posts in a few minutes, usually from their phone.</p>
           </div>
-        </div>
-        <ApprovalDemo />
+        </Reveal>
+        <Reveal delay={0.1}>
+          <ApprovalDemo />
+        </Reveal>
       </section>
 
       <Section
