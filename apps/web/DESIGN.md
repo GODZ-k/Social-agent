@@ -126,8 +126,8 @@ Reuse these before writing anything new. They live in the shared package and are
 | Status | `Badge` (`neutral` `tint` `success` `warning` `danger` `outline`), `StatusBadge` for post status |
 | Secondary task, editor, confirmation, chat | `Sheet`: bottom sheet on phones, right-hand panel from `md`. Drag to dismiss |
 | Menu | `DropdownMenu` (grows from its trigger) |
-| Date, time | `DatePicker`, `TimePicker`. **Never a native `<input type="date">` or `type="time"`**: the browser draws those pickers in its own style |
-| Anything that pops out of a field | `Popover` (solid surface, because it opens over form text) |
+| Date, time | `DatePicker` (our month grid) and `TimePicker` (an analog dial from the `timepicker-ui` library, rendered inline inside our `Popover`, themed and sized through `.tp-host` in `styles/globals.css`; 5-minute detents, best-time `suggestions` chips, a haptic tick per detent where the device supports it, no sound). The dial scales with screen height, and on short screens (the `short:` variant, max-height 560px) the picker centres on the screen with header and dial side by side. Never a native date or time input, and never a second time-picker library |
+| Anything that pops out of a field | `Popover` (solid surface, because it opens over form text; never taller than the room beside its trigger, it scrolls inside instead of leaving the screen) |
 | A list of short values | `TagInput` |
 | Something at full size | `Lightbox` |
 | Page frame | `PageHeader`, `Panel` from `@repo/ui/components/states` |
