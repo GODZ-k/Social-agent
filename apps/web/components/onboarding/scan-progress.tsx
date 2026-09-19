@@ -3,7 +3,7 @@
 import { motion } from "motion/react";
 import { Check } from "lucide-react";
 import { BRAND_SCAN_STEPS } from "@/lib/api/client";
-import { spring } from "@/lib/motion";
+import { spring } from "@repo/ui/lib/motion";
 import { cn, prettyUrl } from "@/lib/utils";
 
 /**

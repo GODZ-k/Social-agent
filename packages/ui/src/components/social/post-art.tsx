@@ -1,6 +1,6 @@
 import { Images, Play } from "lucide-react";
-import type { BrandKit, Post } from "@/lib/types";
-import { cn, readableOn } from "@/lib/utils";
+import type { BrandKit, Post } from "./types";
+import { cn, readableOn } from "../../lib/utils";
 
 const ASPECT: Record<Post["format"], string> = {
   image: "aspect-square",
@@ -19,12 +19,14 @@ export function PostArt({
   brand,
   className,
   fixedAspect,
+  style,
 }: {
-  post: Pick<Post, "hook" | "format" | "art" | "durationSec">;
+  post: Pick<Post, "hook" | "format" | "art" | "durationSec" | "mediaUrl">;
   brand: BrandKit;
   className?: string;
   /** Override the format's natural aspect ratio (e.g. square thumbnails). */
   fixedAspect?: string;
+  style?: React.CSSProperties;
 }) {
   const colors = brand.colors.length ? brand.colors : [{ name: "Primary", hex: "#4b3fe4" }];
   const bg = colors[post.art.colorIndex % colors.length]!.hex;
@@ -34,8 +36,13 @@ export function PostArt({
   return (
     <div
       className={cn("@container relative isolate overflow-hidden rounded-lg", fixedAspect ?? ASPECT[post.format], className)}
-      style={{ background: bg, color: ink }}
+      style={{ ...style, background: bg, color: ink }}
     >
+      {post.mediaUrl ? (
+        // A real image is the creative: no generated shapes or headline on top of it.
+        <img src={post.mediaUrl} alt={post.hook} draggable={false} className="absolute inset-0 size-full object-cover" />
+      ) : (
+        <>
       <Shapes variant={post.art.variant} color={shape} />
       <p
         className="absolute inset-x-[8cqw] bottom-[8cqw] font-display font-semibold"
@@ -43,6 +50,8 @@ export function PostArt({
       >
         {post.hook}
       </p>
+        </>
+      )}
       {(post.format === "reel" || post.format === "carousel") && (
         <span
           className="absolute top-[6cqw] right-[6cqw] grid place-items-center rounded-full bg-black/25 text-white backdrop-blur-sm"

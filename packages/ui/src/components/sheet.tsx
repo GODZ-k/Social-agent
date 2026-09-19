@@ -4,9 +4,9 @@ import * as React from "react";
 import { Dialog } from "radix-ui";
 import { AnimatePresence, motion, useReducedMotion, type PanInfo } from "motion/react";
 import { X } from "lucide-react";
-import { useIsDesktop } from "@/hooks/use-media-query";
-import { project, spring } from "@/lib/motion";
-import { cn } from "@/lib/utils";
+import { useIsDesktop } from "../hooks/use-media-query";
+import { project, spring } from "../lib/motion";
+import { cn } from "../lib/utils";
 
 interface SheetProps {
   open: boolean;

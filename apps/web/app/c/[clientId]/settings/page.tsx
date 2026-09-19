@@ -5,12 +5,12 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
 import { useUpdateClient } from "@/lib/api/queries";
 import { useWorkspace } from "@/hooks/use-workspace";
-import { spring } from "@/lib/motion";
-import { PageHeader, SkeletonRows } from "@/components/shell/states";
+import { spring } from "@repo/ui/lib/motion";
+import { PageHeader, SkeletonRows } from "@repo/ui/components/states";
 import { BrandKitForm } from "@/components/onboarding/brand-kit-form";
 import { SocialAccounts } from "@/components/settings/social-accounts";
 import { Preferences } from "@/components/settings/preferences";
-import { Segmented } from "@/components/ui/segmented";
+import { Segmented } from "@repo/ui/components/segmented";
 
 const TABS = [
   { value: "brand", label: "Brand kit" },

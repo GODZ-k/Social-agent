@@ -8,11 +8,11 @@ import { postsQuery } from "@/lib/api/queries";
 import { useWorkspace } from "@/hooks/use-workspace";
 import type { Client } from "@/lib/types";
 import { cn, formatCompact, formatDelta, prettyUrl } from "@/lib/utils";
-import { EmptyState, Panel } from "@/components/shell/states";
-import { LoopTrack } from "@/components/shell/loop-track";
-import { PLATFORM_LABEL, PlatformIcon } from "@/components/post/platform";
-import { PostArt } from "@/components/post/post-art";
-import { Button } from "@/components/ui/button";
+import { EmptyState, Panel } from "@repo/ui/components/states";
+import { LoopTrack } from "@repo/ui/components/social/loop-track";
+import { PLATFORM_LABEL, PlatformIcon } from "@repo/ui/components/social/platform";
+import { PostArt } from "@repo/ui/components/social/post-art";
+import { Button } from "@repo/ui/components/button";
 
 const listFormat = new Intl.ListFormat("en", { type: "conjunction" });
 

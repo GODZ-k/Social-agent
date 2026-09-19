@@ -2,9 +2,9 @@
 
 import { motion } from "motion/react";
 import { RefreshCw } from "lucide-react";
-import type { LoopStage } from "@/lib/types";
-import { spring } from "@/lib/motion";
-import { cn } from "@/lib/utils";
+import type { LoopStage } from "./types";
+import { spring } from "../../lib/motion";
+import { cn } from "../../lib/utils";
 
 export const LOOP: { stage: LoopStage; label: string; doing: string }[] = [
   { stage: "onboarding", label: "Onboard", doing: "Reading the website" },

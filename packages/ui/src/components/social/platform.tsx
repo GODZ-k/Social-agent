@@ -1,6 +1,6 @@
-import type { Platform, PostFormat, PostStatus } from "@/lib/types";
-import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
+import type { Platform, PostFormat, PostStatus } from "./types";
+import { Badge } from "../badge";
+import { cn } from "../../lib/utils";
 
 export const PLATFORM_LABEL: Record<Platform, string> = {
   instagram: "Instagram",

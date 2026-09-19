@@ -4,11 +4,11 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { clientQuery } from "@/lib/api/queries";
-import { BrandTheme } from "@/components/shell/brand-theme";
+import { BrandTheme } from "@repo/ui/components/brand-theme";
 import { TopBar } from "@/components/shell/top-bar";
 import { WorkspaceNav } from "@/components/shell/workspace-nav";
-import { ErrorState } from "@/components/shell/states";
-import { Button } from "@/components/ui/button";
+import { ErrorState } from "@repo/ui/components/states";
+import { Button } from "@repo/ui/components/button";
 
 export default function WorkspaceLayout({ children }: { children: React.ReactNode }) {
   const { clientId } = useParams<{ clientId: string }>();

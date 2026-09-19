@@ -10,12 +10,12 @@ import type { Client } from "@/lib/types";
 import { brandStyle, cn, formatCompact, formatDelta, prettyUrl } from "@/lib/utils";
 import { useViewer } from "@/hooks/use-viewer";
 import { TopBar } from "@/components/shell/top-bar";
-import { ClientAvatar } from "@/components/shell/client-avatar";
-import { LoopTicks, stageInfo } from "@/components/shell/loop-track";
-import { ErrorState, SkeletonRows } from "@/components/shell/states";
-import { PlatformIcon } from "@/components/post/platform";
+import { ClientAvatar } from "@repo/ui/components/social/client-avatar";
+import { LoopTicks, stageInfo } from "@repo/ui/components/social/loop-track";
+import { ErrorState, SkeletonRows } from "@repo/ui/components/states";
+import { PlatformIcon } from "@repo/ui/components/social/platform";
 import { UrlForm } from "@/components/onboarding/url-form";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@repo/ui/components/badge";
 
 export default function ClientsPage() {
   const router = useRouter();

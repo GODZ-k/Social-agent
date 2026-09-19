@@ -2,14 +2,14 @@
 
 import { useSyncExternalStore } from "react";
 import { Check, Monitor, Moon, Sun } from "lucide-react";
-import { THEME_STORAGE_KEY, type ThemePreference } from "@/lib/theme";
+import { THEME_STORAGE_KEY, type ThemePreference } from "../lib/theme";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "./dropdown-menu";
 
 const listeners = new Set<() => void>();
 const systemDark = () => window.matchMedia("(prefers-color-scheme: dark)");

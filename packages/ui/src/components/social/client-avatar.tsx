@@ -1,5 +1,5 @@
-import type { Client } from "@/lib/types";
-import { cn, readableOn } from "@/lib/utils";
+import type { Client } from "./types";
+import { cn, readableOn } from "../../lib/utils";
 
 /** A client's initial on their own brand colour. Stands in for a logo. */
 export function ClientAvatar({

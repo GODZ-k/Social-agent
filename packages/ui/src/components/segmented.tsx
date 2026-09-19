@@ -2,8 +2,8 @@
 
 import * as React from "react";
 import { motion } from "motion/react";
-import { spring } from "@/lib/motion";
-import { cn } from "@/lib/utils";
+import { spring } from "../lib/motion";
+import { cn } from "../lib/utils";
 
 interface SegmentedProps<T extends string> {
   value: T;

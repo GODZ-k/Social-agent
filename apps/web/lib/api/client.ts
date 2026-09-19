@@ -293,6 +293,9 @@ export interface PostPatch {
   status?: PostStatus;
   caption?: string;
   hook?: string;
+  hashtags?: string[];
+  /** A data URL in the mock. The real API takes an upload and returns a hosted URL. */
+  mediaUrl?: string | null;
   scheduledFor?: string | null;
 }
 

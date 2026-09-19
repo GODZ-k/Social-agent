@@ -25,12 +25,12 @@ import { postsQuery, strategyQuery, useGeneratePosts } from "@/lib/api/queries";
 import { useWorkspace } from "@/hooks/use-workspace";
 import type { BrandKit, Post, PostStatus } from "@/lib/types";
 import { cn, formatCompact } from "@/lib/utils";
-import { EmptyState, ErrorState, PageHeader, SkeletonRows } from "@/components/shell/states";
-import { FORMAT_LABEL, PLATFORM_LABEL, PlatformIcon, StatusBadge } from "@/components/post/platform";
-import { PostArt } from "@/components/post/post-art";
+import { EmptyState, ErrorState, PageHeader, SkeletonRows } from "@repo/ui/components/states";
+import { FORMAT_LABEL, PLATFORM_LABEL, PlatformIcon, StatusBadge } from "@repo/ui/components/social/platform";
+import { PostArt } from "@repo/ui/components/social/post-art";
 import { PostSheet } from "@/components/post/post-sheet";
-import { Button } from "@/components/ui/button";
-import { Segmented } from "@/components/ui/segmented";
+import { Button } from "@repo/ui/components/button";
+import { Segmented } from "@repo/ui/components/segmented";
 
 /** A post plus the fields the table sorts and searches on. */
 interface Row extends Post {

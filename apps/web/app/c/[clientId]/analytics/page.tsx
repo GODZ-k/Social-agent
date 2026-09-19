@@ -9,13 +9,13 @@ import { analyticsQuery, postsQuery, strategyQuery, useRegenerateStrategy } from
 import { ApiError } from "@/lib/api/client";
 import { useWorkspace } from "@/hooks/use-workspace";
 import { formatCompact } from "@/lib/utils";
-import { EmptyState, ErrorState, PageHeader, Panel, SkeletonRows } from "@/components/shell/states";
-import { RankedBars, TrendChart } from "@/components/analytics/charts";
+import { EmptyState, ErrorState, PageHeader, Panel, SkeletonRows } from "@repo/ui/components/states";
+import { RankedBars, TrendChart } from "@repo/ui/components/social/charts";
 import { LearningItem } from "@/components/strategy/learning-item";
-import { FORMAT_LABEL, PlatformIcon } from "@/components/post/platform";
-import { PostArt } from "@/components/post/post-art";
-import { Button } from "@/components/ui/button";
-import { Segmented } from "@/components/ui/segmented";
+import { FORMAT_LABEL, PlatformIcon } from "@repo/ui/components/social/platform";
+import { PostArt } from "@repo/ui/components/social/post-art";
+import { Button } from "@repo/ui/components/button";
+import { Segmented } from "@repo/ui/components/segmented";
 
 type Metric = "reach" | "engagement" | "followers";
 const METRICS: { value: Metric; label: string }[] = [

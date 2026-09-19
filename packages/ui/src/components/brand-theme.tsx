@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { BRAND_PROPERTIES, brandProperties } from "@/lib/utils";
+import { BRAND_PROPERTIES, brandProperties } from "../lib/utils";
 
 /**
  * Tints the whole document to a client's brand colour while their workspace

@@ -1,8 +1,8 @@
 # Design system
 
-The rules behind every screen in `apps/web`. Read this before building or changing any UI, including marketing pages, so the work matches what exists without anyone having to ask.
+The rules behind every screen in `apps/web`, and any other app built on `packages/ui`. Read this before building or changing any UI, including marketing pages, so the work matches what exists without anyone having to ask.
 
-**If something isn't covered here:** find the closest existing screen, copy its pattern, and prefer the quieter option. Don't introduce a new colour, typeface, radius, shadow or animation style. If a rule here conflicts with the code, the code in `app/globals.css` and `lib/motion.ts` is the source of truth; fix this file.
+**If something isn't covered here:** find the closest existing screen, copy its pattern, and prefer the quieter option. Don't introduce a new colour, typeface, radius, shadow or animation style. If a rule here conflicts with the code, the code in `packages/ui/src/styles/globals.css` and `packages/ui/src/lib/motion.ts` is the source of truth; fix this file.
 
 The product name and logo are undecided. Use the `APP_NAME` constant from `lib/utils.ts` and the `Logo` component from `components/shell/top-bar.tsx`. Never hardcode the name.
 
@@ -54,7 +54,7 @@ Never write a hex value or a Tailwind palette colour (`bg-blue-500`, `text-gray-
 
 Rules:
 
-- **Brand colour as a fill:** `bg-primary text-primary-foreground`. **Brand colour as text or an icon:** `text-tint-foreground` or `text-brand-ink`, never `text-primary`. A client's brand can be pale yellow; the ink tokens are contrast-checked (`legibleOn` in `lib/utils.ts`), raw `primary` is not.
+- **Brand colour as a fill:** `bg-primary text-primary-foreground`. **Brand colour as text or an icon:** `text-tint-foreground` or `text-brand-ink`, never `text-primary`. A client's brand can be pale yellow; the ink tokens are contrast-checked (`legibleOn` in `packages/ui/src/lib/utils.ts`), raw `primary` is not.
 - **Status colours never change with the client.** Approve is always green, reject always red, waiting always amber. Don't use the brand colour to mean a status.
 - One accent per view. Colour means something (brand, status) or it isn't there. No decorative gradients, no gradient text, no coloured section backgrounds.
 - To tint a subtree to a specific client (a row in a list of clients), add `className="brand-scope"` and `style={brandStyle(client.accent)}`. Setting `--brand` alone won't re-derive the tints.
@@ -115,7 +115,7 @@ Rules:
 
 ## 7. Components
 
-Reuse these before writing anything new. `components/ui` are shadcn-style primitives written for these tokens (`components.json` exists, so `shadcn add` works, but restyle anything added to match).
+Reuse these before writing anything new. They live in the shared package and are imported as `@repo/ui/components/<name>` (primitives) or `@repo/ui/components/social/<name>` (product pieces). They are shadcn-style primitives written for these tokens; restyle anything new to match.
 
 | Need | Use |
 |---|---|
@@ -126,20 +126,24 @@ Reuse these before writing anything new. `components/ui` are shadcn-style primit
 | Status | `Badge` (`neutral` `tint` `success` `warning` `danger` `outline`), `StatusBadge` for post status |
 | Secondary task, editor, confirmation, chat | `Sheet`: bottom sheet on phones, right-hand panel from `md`. Drag to dismiss |
 | Menu | `DropdownMenu` (grows from its trigger) |
-| Page frame | `PageHeader`, `Panel` from `components/shell/states.tsx` |
+| Date, time | `DatePicker`, `TimePicker`. **Never a native `<input type="date">` or `type="time"`**: the browser draws those pickers in its own style |
+| Anything that pops out of a field | `Popover` (solid surface, because it opens over form text) |
+| A list of short values | `TagInput` |
+| Something at full size | `Lightbox` |
+| Page frame | `PageHeader`, `Panel` from `@repo/ui/components/states` |
 | Loading / nothing / failed | `SkeletonRows` or `.skeleton`, `EmptyState`, `ErrorState` |
 | A post's picture | `PostArt` (generated from the brand colours until real media exists) |
-| A network | `PlatformIcon`, `PLATFORM_LABEL`. Lucide has no brand icons; ours are in `components/post/platform.tsx` |
+| A network | `PlatformIcon`, `PLATFORM_LABEL`. Lucide has no brand icons; ours are in `@repo/ui/components/social/platform` |
 | A client's mark | `ClientAvatar` |
 | Where the agent is | `LoopTrack` (full), `LoopTicks` (compact) |
-| Charts | `TrendChart`, `RankedBars` in `components/analytics/charts.tsx` (TanStack Charts) |
+| Charts | `TrendChart`, `RankedBars` in `@repo/ui/components/social/charts` (TanStack Charts) |
 | Icons | `lucide-react`, stroke 1.8–2.2, `size-4` in buttons, `size-5` in nav |
 
 Forms are always `react-hook-form` + `zod`, validated inline with a message that says how to fix it. Tables are TanStack Table v9 and become a card list below `md`.
 
 ## 8. Motion
 
-Motion is `motion/react` with the presets in `lib/motion.ts`. **Springs, not durations**, because a spring starts from wherever the element is and carries velocity, so anything can be interrupted or reversed mid-flight.
+Motion is `motion/react` with the presets in `@repo/ui/lib/motion`. **Springs, not durations**, because a spring starts from wherever the element is and carries velocity, so anything can be interrupted or reversed mid-flight.
 
 | Preset | Bounce / duration | Use |
 |---|---|---|
@@ -154,7 +158,7 @@ Rules:
 - **Feedback lands on pointer-down**, not release: add `pressable` (scales to 0.97 on `:active`). `Button` already has it.
 - **Things leave the way they came.** A sheet that rose from the bottom dismisses downward; the next month enters from the right and the previous one returns from the left.
 - **Menus and popovers grow from their trigger** (`transform-origin` at the trigger).
-- **Drags track 1:1**, decide from where the flick is *heading* (`project()` in `lib/motion.ts`), hand the release velocity to the spring, and rubber-band at limits. The reference implementation is `components/approvals/swipe-card.tsx`.
+- **Drags track 1:1**, decide from where the flick is *heading* (`project()` in `@repo/ui/lib/motion`), hand the release velocity to the spring, and rubber-band at limits. The reference implementation is `packages/ui/src/components/social/swipe-card.tsx`.
 - Animate only `transform` and `opacity` (and `filter` for a materialise). To animate a bar's length, slide it inside an `overflow-hidden` track rather than animating `width`.
 - Use `layoutId` for a selection indicator that moves between options.
 - CSS transitions are fine for hover, colour and simple opacity. Anything a user can grab uses a spring.
@@ -187,7 +191,7 @@ Rules:
 
 ## 11. Themes
 
-- Theme is `data-theme="light|dark"` on `<html>`, chosen from Light / Dark / Match device (`components/theme/theme-menu.tsx`), stored in `localStorage.theme`, and applied before first paint by `THEME_SCRIPT` (`lib/theme.ts`).
+- Theme is `data-theme="light|dark"` on `<html>`, chosen from Light / Dark / Match device (`@repo/ui/components/theme-menu`), stored in `localStorage.theme`, and applied before first paint by `THEME_SCRIPT` (`@repo/ui/lib/theme`).
 - **Never use `prefers-color-scheme` media queries.** Dark values go in `:root[data-theme="dark"]`; in markup use the `dark:` variant.
 - Every new surface must be checked in both themes and with at least two different client colours, one light (a yellow) and one dark (a navy).
 
@@ -258,9 +262,34 @@ They are the defaults that make a page look generated, and they fight the quiet-
 - A seventh item in the phone tab bar.
 - Horizontal scrolling at phone width.
 
-## 14. Code conventions and the definition of done
+## 14. Where things live
 
-- Next.js 16 App Router, React 19, Tailwind v4 (tokens in `app/globals.css`, no `tailwind.config`), TypeScript strict.
+The design system is a workspace package, `packages/ui` (`@repo/ui`), so a landing page or a second app gets the same look by depending on it.
+
+| In `packages/ui/src` | What |
+|---|---|
+| `styles/globals.css` | Every token, the type classes, `material`, `pressable`, `skeleton`, theme and accessibility rules |
+| `components/*` | Primitives: button, input, badge, form, switch, segmented, sheet, dropdown-menu, states, theme-menu, brand-theme, logo-mark |
+| `components/social/*` | Product pieces with no data fetching: post-art, platform, swipe-card, loop-track, client-avatar, charts, and the minimal `types` they accept |
+| `lib/*`, `hooks/*` | `cn`, number formatters, brand colour maths, motion presets, theme script, `useMediaQuery` |
+
+What stays in an app: anything that knows about routing, auth, or the API (top bar, workspace nav, forms that save, the chat panel).
+
+**Rules for the package**
+
+- No `@/` imports, no `next/*`, no Clerk, no data fetching. Relative imports only. Components take data and callbacks as props.
+- The social components accept structural minimum types (`components/social/types.ts`); an app passes its own richer objects.
+- A dependency used by the package is declared in `packages/ui/package.json` **at the same version as the app**, so pnpm links one copy. Two copies of `react-hook-form` or `motion` would break forms and animation through split React contexts.
+
+**Using it from a new app**
+
+1. Add `"@repo/ui": "workspace:*"` and the Tailwind v4 PostCSS setup.
+2. In the app's entry CSS: `@import "../../../packages/ui/src/styles/globals.css";` then `@source "../../../packages/ui/src";` (without `@source`, Tailwind never sees the package's classes and components render unstyled).
+3. Load the two fonts and expose them as `--font-display-face` and `--font-body`; put `THEME_SCRIPT` in `<head>` with `suppressHydrationWarning` on `<html>`; wrap the tree in `<MotionConfig reducedMotion="user">`. `apps/web/app/layout.tsx` and `providers.tsx` are the reference.
+
+## 15. Code conventions and the definition of done
+
+- Next.js 16 App Router, React 19, Tailwind v4 (tokens in `packages/ui/src/styles/globals.css`, no `tailwind.config`), TypeScript strict.
 - Pages live in `app/`, and **a page file exports only its default component** (Next rejects other exports). Shared pieces go in `components/<area>/`.
 - All data goes through `lib/api/client.ts` and the hooks in `lib/api/queries.ts` (TanStack Query). Components never call `fetch`.
 - `cn()` for class names. Comments explain *why*, in the same density as the surrounding file.
@@ -268,7 +297,7 @@ They are the defaults that make a page look generated, and they fight the quiet-
 
 Before calling UI work finished:
 
-1. `pnpm check-types`, `pnpm lint` and `pnpm build` pass in `apps/web`.
+1. `pnpm check-types`, `pnpm lint` and `pnpm build` pass in `apps/web`, and `pnpm check-types` and `pnpm lint` pass in `packages/ui`.
 2. Looked at in a real browser at 1440px and 390px, in light and dark.
 3. Loading, empty and error states exist.
 4. Works with the keyboard; focus is visible; reduced motion still makes sense.

@@ -18,13 +18,13 @@ import { CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
 import { postsQuery } from "@/lib/api/queries";
 import { useWorkspace } from "@/hooks/use-workspace";
 import type { Post, PostStatus } from "@/lib/types";
-import { spring } from "@/lib/motion";
+import { spring } from "@repo/ui/lib/motion";
 import { cn } from "@/lib/utils";
-import { EmptyState, ErrorState, PageHeader } from "@/components/shell/states";
-import { PlatformIcon, STATUS_LABEL, StatusBadge } from "@/components/post/platform";
-import { PostArt } from "@/components/post/post-art";
+import { EmptyState, ErrorState, PageHeader } from "@repo/ui/components/states";
+import { PlatformIcon, STATUS_LABEL, StatusBadge } from "@repo/ui/components/social/platform";
+import { PostArt } from "@repo/ui/components/social/post-art";
 import { PostSheet } from "@/components/post/post-sheet";
-import { Button } from "@/components/ui/button";
+import { Button } from "@repo/ui/components/button";
 
 const WEEK = { weekStartsOn: 1 } as const;
 const dayKey = (d: Date) => format(d, "yyyy-MM-dd");

@@ -11,11 +11,11 @@ import {
   type PanInfo,
 } from "motion/react";
 import { format } from "date-fns";
-import { Check, Sparkles, X } from "lucide-react";
-import type { BrandKit, Post } from "@/lib/types";
-import { project, spring } from "@/lib/motion";
-import { FORMAT_LABEL, PLATFORM_LABEL, PlatformIcon } from "@/components/post/platform";
-import { PostArt } from "@/components/post/post-art";
+import { Check, X } from "lucide-react";
+import type { BrandKit, Post } from "./types";
+import { project, spring } from "../../lib/motion";
+import { FORMAT_LABEL, PLATFORM_LABEL, PlatformIcon } from "./platform";
+import { PostArt } from "./post-art";
 
 export type Decision = "approved" | "rejected";
 export interface SwipeCardHandle {
@@ -40,15 +40,19 @@ interface Props {
   /** The top card's horizontal position, shared so the cards beneath can respond to it. */
   lead: MotionValue<number>;
   onDecide: (decision: Decision) => void;
+  /** A tap that wasn't a drag. Use it to show the full post. */
+  onOpen?: () => void;
 }
 
 export const SwipeCard = forwardRef<SwipeCardHandle, Props>(function SwipeCard(
-  { post, brand, index, lead, onDecide },
+  { post, brand, index, lead, onDecide, onOpen },
   ref,
 ) {
   const isTop = index === 0;
   const x = useMotionValue(0);
   const leaving = useRef(false);
+  // Set as soon as a drag starts, so the tap that ends a drag doesn't also open the post.
+  const dragged = useRef(false);
 
   // Read during transforms, so a card that moves up the stack recomputes from its new depth.
   const depth = useRef(index);
@@ -124,7 +128,10 @@ export const SwipeCard = forwardRef<SwipeCardHandle, Props>(function SwipeCard(
       drag={isTop ? "x" : false}
       dragMomentum={false}
       whileDrag={{ cursor: "grabbing" }}
+      onPointerDown={() => (dragged.current = false)}
+      onDragStart={() => (dragged.current = true)}
       onDragEnd={handleDragEnd}
+      onTap={() => isTop && !dragged.current && !leaving.current && onOpen?.()}
     >
       <div className="relative min-h-0 flex-1 bg-secondary">
         <PostArt post={post} brand={brand} fixedAspect="h-full" className="rounded-none" />
@@ -132,17 +139,15 @@ export const SwipeCard = forwardRef<SwipeCardHandle, Props>(function SwipeCard(
         <Stamp opacity={reject} side="right" tone="reject"><X strokeWidth={3} /> Reject</Stamp>
       </div>
 
-      <div className="grid shrink-0 gap-2.5 p-5">
+      {/* Just enough to identify the post. The full caption, hashtags and reasoning are one tap away. */}
+      {/* Hidden on the cards underneath, so the stack shows clean edges rather than slivers of text. */}
+      <div className={`grid shrink-0 gap-1.5 px-5 py-4 transition-opacity duration-200 ${isTop ? "" : "opacity-0"}`}>
         <p className="type-label flex flex-wrap items-center gap-x-2 gap-y-1">
           <PlatformIcon platform={post.platform} className="size-3.5" />
           <span>{PLATFORM_LABEL[post.platform]} {FORMAT_LABEL[post.format].toLowerCase()}</span>
           {post.scheduledFor && <span className="ml-auto tabular-nums">{format(new Date(post.scheduledFor), "EEE d MMM, h:mm a")}</span>}
         </p>
-        <p className="line-clamp-3 text-[0.9375rem] leading-snug">{post.caption}</p>
-        <p className="flex gap-2 rounded-md bg-tint px-3 py-2.5 text-[0.8125rem] leading-snug text-tint-foreground">
-          <Sparkles className="mt-0.5 size-3.5 shrink-0" />
-          <span className="line-clamp-2">{post.aiNote}</span>
-        </p>
+        <p className="line-clamp-2 text-[0.9375rem] leading-snug">{post.caption}</p>
       </div>
     </motion.article>
   );

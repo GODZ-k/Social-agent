@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { DropdownMenu as Primitive } from "radix-ui";
-import { cn } from "@/lib/utils";
+import { cn } from "../lib/utils";
 
 const DropdownMenu = Primitive.Root;
 const DropdownMenuTrigger = Primitive.Trigger;

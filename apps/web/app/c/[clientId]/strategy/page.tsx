@@ -7,13 +7,13 @@ import { motion } from "motion/react";
 import { LoaderCircle, RefreshCw } from "lucide-react";
 import { strategyQuery, useRegenerateStrategy } from "@/lib/api/queries";
 import { useWorkspace } from "@/hooks/use-workspace";
-import { spring } from "@/lib/motion";
+import { spring } from "@repo/ui/lib/motion";
 import { cn } from "@/lib/utils";
-import { ErrorState, PageHeader, Panel, SkeletonRows } from "@/components/shell/states";
-import { PLATFORM_LABEL, PlatformIcon } from "@/components/post/platform";
+import { ErrorState, PageHeader, Panel, SkeletonRows } from "@repo/ui/components/states";
+import { PLATFORM_LABEL, PlatformIcon } from "@repo/ui/components/social/platform";
 import { LearningItem } from "@/components/strategy/learning-item";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Badge } from "@repo/ui/components/badge";
+import { Button } from "@repo/ui/components/button";
 
 export default function StrategyPage() {
   const { clientId } = useWorkspace();

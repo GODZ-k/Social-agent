@@ -11,9 +11,10 @@ import { clientsQuery } from "@/lib/api/queries";
 import type { Client } from "@/lib/types";
 import { APP_NAME } from "@/lib/utils";
 import { useViewer } from "@/hooks/use-viewer";
-import { Badge } from "@/components/ui/badge";
-import { ThemeMenu } from "@/components/theme/theme-menu";
-import { Button } from "@/components/ui/button";
+import { Badge } from "@repo/ui/components/badge";
+import { ThemeMenu } from "@repo/ui/components/theme-menu";
+import { Button } from "@repo/ui/components/button";
+import { LogoMark } from "@repo/ui/components/logo-mark";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,8 +22,8 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { ClientAvatar } from "./client-avatar";
+} from "@repo/ui/components/dropdown-menu";
+import { ClientAvatar } from "@repo/ui/components/social/client-avatar";
 
 // The chat panel pulls in the AI client; load it only when someone opens it.
 const AgentChat = dynamic(() => import("@/components/agent/agent-chat").then((m) => m.AgentChat), {
@@ -32,12 +33,7 @@ const AgentChat = dynamic(() => import("@/components/agent/agent-chat").then((m)
 export function Logo() {
   return (
     <Link href="/" className="flex items-center gap-2 rounded-full pr-1 font-display text-[1.0625rem] font-semibold tracking-tight">
-      {/* Three bars at a posting rhythm: short, long, medium. */}
-      <svg viewBox="0 0 24 24" className="size-6 text-brand-ink" aria-hidden>
-        <rect x="3" y="9" width="4.5" height="10" rx="2.25" fill="currentColor" opacity=".55" />
-        <rect x="9.75" y="4" width="4.5" height="15" rx="2.25" fill="currentColor" />
-        <rect x="16.5" y="7" width="4.5" height="12" rx="2.25" fill="currentColor" opacity=".8" />
-      </svg>
+      <LogoMark />
       {APP_NAME}
     </Link>
   );

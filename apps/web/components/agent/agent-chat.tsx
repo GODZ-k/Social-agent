@@ -6,9 +6,9 @@ import { motion } from "motion/react";
 import { ArrowUp, Square } from "lucide-react";
 import { mockAgentConnection, setAgentContext } from "@/lib/api/agent-connection";
 import type { Client } from "@/lib/types";
-import { spring } from "@/lib/motion";
+import { spring } from "@repo/ui/lib/motion";
 import { cn } from "@/lib/utils";
-import { Sheet } from "@/components/ui/sheet";
+import { Sheet } from "@repo/ui/components/sheet";
 
 const SUGGESTIONS = ["What's working best?", "What needs my approval?", "When are we posting?", "Give me a post idea"];
 

@@ -6,9 +6,9 @@ import { toast } from "sonner";
 import { useConnectAccount, useDisconnectAccount } from "@/lib/api/queries";
 import type { Client, Platform } from "@/lib/types";
 import { cn } from "@/lib/utils";
-import { PLATFORM_LABEL, PlatformIcon } from "@/components/post/platform";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { PLATFORM_LABEL, PlatformIcon } from "@repo/ui/components/social/platform";
+import { Badge } from "@repo/ui/components/badge";
+import { Button } from "@repo/ui/components/button";
 
 const ALL_PLATFORMS: Platform[] = ["instagram", "facebook", "tiktok", "linkedin"];
 

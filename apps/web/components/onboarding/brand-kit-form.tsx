@@ -7,11 +7,11 @@ import { z } from "zod";
 import { LoaderCircle, Plus, X } from "lucide-react";
 import type { BrandKit, NewClientInput, Platform } from "@/lib/types";
 import { brandStyle, cn, isValidHex } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { Input, Textarea } from "@/components/ui/input";
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { PLATFORM_LABEL, PlatformIcon } from "@/components/post/platform";
-import { PostArt } from "@/components/post/post-art";
+import { Button } from "@repo/ui/components/button";
+import { Input, Textarea } from "@repo/ui/components/input";
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@repo/ui/components/form";
+import { PLATFORM_LABEL, PlatformIcon } from "@repo/ui/components/social/platform";
+import { PostArt } from "@repo/ui/components/social/post-art";
 
 const PLATFORMS = ["instagram", "facebook", "tiktok", "linkedin"] as const satisfies readonly Platform[];
 const VOICE_SUGGESTIONS = ["Friendly", "Straightforward", "Confident", "Playful", "Expert", "Warm", "Witty", "Calm", "Bold"];

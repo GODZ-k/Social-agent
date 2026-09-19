@@ -10,11 +10,11 @@ import { toast } from "sonner";
 import { useDeleteClient, useUpdateClient } from "@/lib/api/queries";
 import type { Client } from "@/lib/types";
 import { useViewer } from "@/hooks/use-viewer";
-import { Panel } from "@/components/shell/states";
-import { Button } from "@/components/ui/button";
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Sheet } from "@/components/ui/sheet";
-import { Switch } from "@/components/ui/switch";
+import { Panel } from "@repo/ui/components/states";
+import { Button } from "@repo/ui/components/button";
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@repo/ui/components/form";
+import { Sheet } from "@repo/ui/components/sheet";
+import { Switch } from "@repo/ui/components/switch";
 
 const schema = z.object({
   timezone: z.string().min(1, "Choose a timezone."),

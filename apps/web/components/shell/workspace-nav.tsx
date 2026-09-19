@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "motion/react";
 import { CalendarDays, ChartNoAxesCombined, CircleCheckBig, Compass, LayoutGrid, House, Settings } from "lucide-react";
-import { spring } from "@/lib/motion";
+import { spring } from "@repo/ui/lib/motion";
 import { cn } from "@/lib/utils";
 
 // Ordered the way work moves through the agent: plan, make, approve, publish, learn.
