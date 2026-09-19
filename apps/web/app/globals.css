@@ -1,3 +1,5 @@
+/* Clerk's component styles sit in their own layer, below ours, so utilities can override them. */
+@layer theme, base, clerk, components, utilities;
 @import "tailwindcss";
 @import "tw-animate-css";
 
@@ -51,7 +53,9 @@
   --ring: color-mix(in srgb, var(--brand) 55%, transparent);
   --tint: color-mix(in srgb, var(--brand) 10%, var(--card));
   --tint-strong: color-mix(in srgb, var(--brand) 18%, var(--card));
-  --tint-foreground: color-mix(in srgb, var(--brand) 72%, var(--foreground));
+  /* Brand colour as text: a contrast-checked version computed in lib/utils.ts. */
+  --brand-ink: var(--brand-ink-light, var(--brand));
+  --tint-foreground: color-mix(in srgb, var(--brand-ink) 80%, var(--foreground));
 }
 
 /* Typed as a colour so it can be transitioned: switching client eases the tint. */
@@ -65,43 +69,63 @@ html {
   transition: --brand 500ms ease;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    color-scheme: dark;
-    --background: #0f1116;
-    --foreground: #eceef2;
-    --card: #171a21;
-    --card-foreground: #eceef2;
-    --popover: #1b1f28;
-    --popover-foreground: #eceef2;
-    --secondary: #1f232c;
-    --secondary-foreground: #eceef2;
-    --muted: #1f232c;
-    --muted-foreground: #9aa3b2;
-    --accent: #232833;
-    --accent-foreground: #eceef2;
-    --destructive: #ec6b80;
-    --success: #4cc596;
-    --warning: #e5a53d;
-    --border: #272c37;
-    --input: #343a47;
+/*
+ * Theme is an explicit attribute, not a media query, so people can choose it.
+ * An inline script in <head> sets data-theme before first paint (see
+ * components/theme/theme.tsx), resolving "system" to light or dark.
+ */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
-    --material: rgb(23 26 33 / 0.72);
-    --material-edge: rgb(255 255 255 / 0.08);
-    --scrim: rgb(0 0 0 / 0.55);
-
-    --elevation-raised: 0 1px 2px rgb(0 0 0 / 0.3), 0 6px 18px -8px rgb(0 0 0 / 0.5);
-    --elevation-floating: 0 2px 6px rgb(0 0 0 / 0.35), 0 24px 60px -18px rgb(0 0 0 / 0.7);
-  }
+:root {
+  color-scheme: light;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root,
-  .brand-scope {
-    --tint: color-mix(in srgb, var(--brand) 16%, var(--card));
-    --tint-strong: color-mix(in srgb, var(--brand) 28%, var(--card));
-    --tint-foreground: color-mix(in srgb, var(--brand) 45%, var(--foreground));
-  }
+/* Ease between themes instead of flashing: a sudden jump in brightness is unpleasant. */
+:root[data-theme-switching] *,
+:root[data-theme-switching] *::before,
+:root[data-theme-switching] *::after {
+  transition:
+    background-color 280ms ease,
+    border-color 280ms ease,
+    color 280ms ease,
+    fill 280ms ease,
+    stroke 280ms ease !important;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --background: #0f1116;
+  --foreground: #eceef2;
+  --card: #171a21;
+  --card-foreground: #eceef2;
+  --popover: #1b1f28;
+  --popover-foreground: #eceef2;
+  --secondary: #1f232c;
+  --secondary-foreground: #eceef2;
+  --muted: #1f232c;
+  --muted-foreground: #9aa3b2;
+  --accent: #232833;
+  --accent-foreground: #eceef2;
+  --destructive: #ec6b80;
+  --success: #4cc596;
+  --warning: #e5a53d;
+  --border: #272c37;
+  --input: #343a47;
+
+  --material: rgb(23 26 33 / 0.72);
+  --material-edge: rgb(255 255 255 / 0.08);
+  --scrim: rgb(0 0 0 / 0.55);
+
+  --elevation-raised: 0 1px 2px rgb(0 0 0 / 0.3), 0 6px 18px -8px rgb(0 0 0 / 0.5);
+  --elevation-floating: 0 2px 6px rgb(0 0 0 / 0.35), 0 24px 60px -18px rgb(0 0 0 / 0.7);
+}
+
+:root[data-theme="dark"],
+[data-theme="dark"] .brand-scope {
+  --tint: color-mix(in srgb, var(--brand) 16%, var(--card));
+  --tint-strong: color-mix(in srgb, var(--brand) 28%, var(--card));
+  --brand-ink: var(--brand-ink-dark, #a9a3ff);
+  --tint-foreground: color-mix(in srgb, var(--brand-ink) 70%, var(--foreground));
 }
 
 @theme inline {
@@ -131,6 +155,7 @@ html {
   --color-tint: var(--tint);
   --color-tint-strong: var(--tint-strong);
   --color-tint-foreground: var(--tint-foreground);
+  --color-brand-ink: var(--brand-ink);
 
   --font-sans: var(--font-body), system-ui, sans-serif;
   --font-display: var(--font-display-face), var(--font-body), system-ui, sans-serif;
@@ -272,6 +297,10 @@ html {
   :root {
     --border: #8a93a3;
     --muted-foreground: #3c4352;
+  }
+  :root[data-theme="dark"] {
+    --border: #7d8798;
+    --muted-foreground: #c9d0dc;
   }
   .material {
     background: var(--card);

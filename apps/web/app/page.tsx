@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
@@ -7,6 +8,7 @@ import { ChevronRight, TrendingDown, TrendingUp } from "lucide-react";
 import { clientsQuery } from "@/lib/api/queries";
 import type { Client } from "@/lib/types";
 import { brandStyle, cn, formatCompact, formatDelta, prettyUrl } from "@/lib/utils";
+import { useViewer } from "@/hooks/use-viewer";
 import { TopBar } from "@/components/shell/top-bar";
 import { ClientAvatar } from "@/components/shell/client-avatar";
 import { LoopTicks, stageInfo } from "@/components/shell/loop-track";
@@ -18,26 +20,47 @@ import { Badge } from "@/components/ui/badge";
 export default function ClientsPage() {
   const router = useRouter();
   const { data: clients, isPending, error, refetch } = useQuery(clientsQuery());
+  const { isAdmin } = useViewer();
+
+  // Someone with a single brand has nothing to choose between: take them straight to it.
+  const onlyBrand = !isAdmin && clients?.length === 1 ? clients[0] : undefined;
+  useEffect(() => {
+    if (onlyBrand) router.replace(`/c/${onlyBrand.id}`);
+  }, [onlyBrand, router]);
+
+  if (onlyBrand || (!isAdmin && isPending)) {
+    return (
+      <div className="min-h-dvh">
+        <TopBar />
+        <main className="mx-auto max-w-5xl px-4 pt-14 md:px-6 md:pt-24">
+          <SkeletonRows rows={3} className="[&>*]:h-24" />
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-dvh">
       <TopBar />
       <main className="mx-auto max-w-5xl px-4 pt-14 pb-24 md:px-6 md:pt-24">
         <section className="max-w-3xl">
-          <h1 className="type-display">Start with a website.</h1>
+          <h1 className="type-display">{isAdmin ? "Start with a website." : "Start with your website."}</h1>
           <p className="mt-5 max-w-[52ch] text-[1.0625rem] text-muted-foreground">
-            Paste a client&apos;s URL. The agent reads the site, works out the brand, plans the month
-            and drafts the posts. Nothing goes out until you approve it.
+            {isAdmin
+              ? "Paste a client's URL. The agent reads the site, works out the brand, plans the month and drafts the posts. Nothing goes out until you approve it."
+              : "Paste your URL. The agent reads your site, works out your brand, plans the month and drafts the posts. Nothing goes out until you approve it."}
           </p>
           <div className="mt-8 max-w-xl">
             <UrlForm onSubmit={(url) => router.push(`/onboarding?url=${encodeURIComponent(url)}`)} />
           </div>
         </section>
 
+        {/* A new account has no brands yet, so there is no empty list to show: the URL field is the page. */}
+        {(isAdmin || (clients?.length ?? 0) > 0 || error) && (
         <section className="mt-16 md:mt-24" aria-labelledby="clients-heading">
           <div className="mb-4 flex items-baseline justify-between">
             <h2 id="clients-heading" className="type-heading">
-              Your clients
+              {isAdmin ? "All clients" : "Your brands"}
             </h2>
             {clients && <span className="type-label tabular-nums">{clients.length} in total</span>}
           </div>
@@ -54,6 +77,7 @@ export default function ClientsPage() {
             </ul>
           )}
         </section>
+        )}
       </main>
     </div>
   );

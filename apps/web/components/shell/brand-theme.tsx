@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { readableOn } from "@/lib/utils";
+import { BRAND_PROPERTIES, brandProperties } from "@/lib/utils";
 
 /**
  * Tints the whole document to a client's brand colour while their workspace
@@ -13,11 +13,9 @@ export function BrandTheme({ color }: { color: string | undefined }) {
   useEffect(() => {
     if (!color) return;
     const root = document.documentElement;
-    root.style.setProperty("--brand", color);
-    root.style.setProperty("--brand-foreground", readableOn(color));
+    for (const [name, value] of Object.entries(brandProperties(color))) root.style.setProperty(name, value);
     return () => {
-      root.style.removeProperty("--brand");
-      root.style.removeProperty("--brand-foreground");
+      for (const name of BRAND_PROPERTIES) root.style.removeProperty(name);
     };
   }, [color]);
 

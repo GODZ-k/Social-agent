@@ -31,8 +31,26 @@ export interface BrandKit {
   fonts: { heading: string; body: string };
 }
 
+/** A social profile the agent is allowed to publish to. */
+export interface SocialAccount {
+  platform: Platform;
+  handle: string;
+  /** "expired" means the network revoked access and the owner has to reconnect. */
+  status: "connected" | "expired";
+  connectedAt: string;
+}
+
+export interface ClientPreferences {
+  /** IANA name, e.g. "Asia/Kolkata". Publish times are shown and scheduled in it. */
+  timezone: string;
+  /** Email the owner when posts are waiting for approval. */
+  approvalEmails: boolean;
+}
+
 export interface Client {
   id: string;
+  /** The user who owns this client. Admins can see every client regardless. */
+  ownerId: string;
   name: string;
   url: string;
   industry: string;
@@ -40,7 +58,11 @@ export interface Client {
   accent: string;
   stage: LoopStage;
   brand: BrandKit;
+  /** Where the strategy plans to post. */
   platforms: Platform[];
+  /** Which of those are actually connected. A platform without an account can't publish. */
+  accounts: SocialAccount[];
+  preferences: ClientPreferences;
   createdAt: string;
   stats: {
     followers: number;
@@ -133,4 +155,13 @@ export interface NewClientInput {
   industry: string;
   brand: BrandKit;
   platforms: Platform[];
+}
+
+/** The parts of a client its owner can change in Settings. */
+export interface ClientPatch {
+  name?: string;
+  industry?: string;
+  brand?: BrandKit;
+  platforms?: Platform[];
+  preferences?: ClientPreferences;
 }

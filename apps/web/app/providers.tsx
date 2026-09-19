@@ -6,6 +6,7 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { MotionConfig } from "motion/react";
 import { Toaster } from "sonner";
 import { ApiError } from "@/lib/api/client";
+import { SessionGate } from "@/components/auth/session-gate";
 
 function makeQueryClient() {
   return new QueryClient({
@@ -27,7 +28,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <QueryClientProvider client={queryClient}>
       {/* Springs become cross-fades for people who ask for reduced motion. */}
-      <MotionConfig reducedMotion="user">{children}</MotionConfig>
+      <MotionConfig reducedMotion="user">
+        <SessionGate>{children}</SessionGate>
+      </MotionConfig>
       <Toaster
         position="bottom-center"
         toastOptions={{

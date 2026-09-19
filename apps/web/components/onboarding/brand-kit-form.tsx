@@ -17,7 +17,7 @@ const PLATFORMS = ["instagram", "facebook", "tiktok", "linkedin"] as const satis
 const VOICE_SUGGESTIONS = ["Friendly", "Straightforward", "Confident", "Playful", "Expert", "Warm", "Witty", "Calm", "Bold"];
 
 const schema = z.object({
-  name: z.string().trim().min(1, "Give this client a name."),
+  name: z.string().trim().min(1, "Give the business a name."),
   industry: z.string().trim().min(1, "Say what kind of business this is."),
   tagline: z.string().trim().max(120, "Keep the tagline under 120 characters."),
   summary: z.string().trim().min(20, "Add a sentence or two so the agent knows what they sell."),
@@ -38,17 +38,26 @@ const schema = z.object({
 
 type Values = z.infer<typeof schema>;
 
+/**
+ * The brand kit editor. Onboarding uses it to review what the agent found;
+ * Settings uses the same form to change it later.
+ */
 export function BrandKitForm({
   url,
   scan,
+  initialPlatforms = ["instagram"],
+  variant = "onboarding",
   isSaving,
   onSubmit,
 }: {
   url: string;
   scan: { name: string; industry: string; brand: BrandKit };
+  initialPlatforms?: Platform[];
+  variant?: "onboarding" | "settings";
   isSaving: boolean;
   onSubmit: (input: NewClientInput) => void;
 }) {
+  const editing = variant === "settings";
   const form = useForm<Values>({
     resolver: zodResolver(schema),
     defaultValues: {
@@ -61,7 +70,7 @@ export function BrandKitForm({
       colors: scan.brand.colors,
       headingFont: scan.brand.fonts.heading,
       bodyFont: scan.brand.fonts.body,
-      platforms: ["instagram"],
+      platforms: initialPlatforms.filter((p): p is (typeof PLATFORMS)[number] => (PLATFORMS as readonly string[]).includes(p)),
     },
     mode: "onTouched",
   });
@@ -91,20 +100,22 @@ export function BrandKitForm({
 
   return (
     <div className="brand-scope" style={brandStyle(previewBrand.colors[0]!.hex)}>
-      <div className="max-w-[60ch]">
-        <h1 className="type-title">Here&apos;s what the agent found</h1>
-        <p className="mt-2 text-muted-foreground">
-          Every post it writes starts from this. Correct anything that&apos;s off before it plans the strategy.
-        </p>
-      </div>
+      {!editing && (
+        <div className="mb-8 max-w-[60ch]">
+          <h1 className="type-title">Here&apos;s what the agent found</h1>
+          <p className="mt-2 text-muted-foreground">
+            Every post it writes starts from this. Correct anything that&apos;s off before it plans the strategy.
+          </p>
+        </div>
+      )}
 
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(submit)} noValidate className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,1fr)_20rem] lg:gap-12">
+        <form onSubmit={form.handleSubmit(submit)} noValidate className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_20rem] lg:gap-12">
           <div className="grid gap-9">
             <Group title="The business">
               <div className="grid gap-5 sm:grid-cols-2">
                 <FormField control={form.control} name="name" render={({ field }) => (
-                  <FormItem><FormLabel>Client name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                  <FormItem><FormLabel>Business name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                 )} />
                 <FormField control={form.control} name="industry" render={({ field }) => (
                   <FormItem><FormLabel>Type of business</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
@@ -196,7 +207,11 @@ export function BrandKitForm({
                       );
                     })}
                   </div>
-                  <FormDescription>You&apos;ll connect the accounts after the strategy is ready.</FormDescription>
+                  <FormDescription>
+                    {editing
+                      ? "The strategy plans posts for these. Connect each one under Social accounts so it can publish."
+                      : "You'll connect the accounts after the strategy is ready."}
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )} />
@@ -210,10 +225,12 @@ export function BrandKitForm({
               post={{ hook: live.tagline || "Your headline here", format: "carousel", art: { variant: 0, colorIndex: 0 } }}
               className="max-w-64 shadow-floating lg:max-w-none"
             />
-            <Button type="submit" size="lg" className="mt-6 w-full" disabled={isSaving}>
+            {/* When editing, the button wakes up only once something has changed. */}
+            <Button type="submit" size="lg" className="mt-6 w-full" disabled={isSaving || (editing && !form.formState.isDirty)}>
               {isSaving && <LoaderCircle className="animate-spin" />}
-              {isSaving ? "Saving the brand kit" : "Save and plan the strategy"}
+              {editing ? (isSaving ? "Saving changes" : "Save changes") : isSaving ? "Saving the brand kit" : "Save and plan the strategy"}
             </Button>
+            {editing && <p className="type-label mt-2.5 text-center">New posts use the updated kit. Posts already drafted keep their wording.</p>}
           </aside>
         </form>
       </Form>

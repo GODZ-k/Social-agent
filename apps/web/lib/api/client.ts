@@ -5,13 +5,16 @@
  * mock for the real API means replacing a function body with
  * `return http<Client[]>("/clients")` — no component or hook changes.
  */
-import { db } from "./mock-db";
+import { db, handleFor, persist, removeClient } from "./mock-db";
+import { getAuthToken, getViewer } from "./session";
 import type {
   Analytics,
   BrandKit,
   BrandScanStep,
   Client,
+  ClientPatch,
   NewClientInput,
+  Platform,
   Post,
   PostStatus,
   Strategy,
@@ -31,10 +34,15 @@ export class ApiError extends Error {
 
 /** Ready for the real backend. Unused while the mock is in place. */
 export async function http<T>(path: string, init?: RequestInit): Promise<T> {
+  // The API verifies this Clerk session token and works out the user and role itself.
+  const token = await getAuthToken();
   const res = await fetch(`${API_URL}${path}`, {
     ...init,
-    credentials: "include",
-    headers: { "Content-Type": "application/json", ...init?.headers },
+    headers: {
+      "Content-Type": "application/json",
+      ...(token && { Authorization: `Bearer ${token}` }),
+      ...init?.headers,
+    },
   });
   if (!res.ok) {
     const body = (await res.json().catch(() => null)) as { message?: string } | null;
@@ -46,16 +54,36 @@ export async function http<T>(path: string, init?: RequestInit): Promise<T> {
 const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
 const clone = <T,>(v: T): T => structuredClone(v);
 
+/*
+ * Access rules, mirrored from what the API must enforce:
+ * admins reach every client, everyone else only the clients they own.
+ */
+function requireViewer() {
+  const viewer = getViewer();
+  if (!viewer) throw new ApiError("Sign in to continue.", 401);
+  return viewer;
+}
+
+function canAccess(client: Client) {
+  const viewer = requireViewer();
+  return viewer.role === "admin" || client.ownerId === viewer.id;
+}
+
+/** Same answer for "missing" and "not yours", so ids can't be probed. */
+function requireClient(id: string) {
+  const client = db.clients.find((c) => c.id === id);
+  if (!client || !canAccess(client)) throw new ApiError("This client doesn't exist, or you don't have access to it.", 404);
+  return client;
+}
+
 export async function listClients(): Promise<Client[]> {
   await wait(350);
-  return clone(db.clients);
+  return clone(db.clients.filter(canAccess));
 }
 
 export async function getClient(id: string): Promise<Client> {
   await wait(250);
-  const client = db.clients.find((c) => c.id === id);
-  if (!client) throw new ApiError("This client doesn't exist or was removed.", 404);
-  return clone(client);
+  return clone(requireClient(id));
 }
 
 export const BRAND_SCAN_STEPS: BrandScanStep[] = [
@@ -104,11 +132,13 @@ export async function scanWebsite(
 
 export async function createClient(input: NewClientInput): Promise<Client> {
   await wait(700);
+  const viewer = requireViewer();
   const id =
     input.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") ||
     `client-${db.clients.length + 1}`;
   const client: Client = {
     id: db.clients.some((c) => c.id === id) ? `${id}-${Date.now().toString(36)}` : id,
+    ownerId: viewer.id,
     name: input.name,
     url: input.url,
     industry: input.industry,
@@ -116,6 +146,8 @@ export async function createClient(input: NewClientInput): Promise<Client> {
     stage: "strategy",
     brand: input.brand,
     platforms: input.platforms,
+    accounts: [],
+    preferences: { timezone: Intl.DateTimeFormat().resolvedOptions().timeZone, approvalEmails: true },
     createdAt: new Date().toISOString(),
     stats: { followers: 0, followersDelta: 0, engagementRate: 0, engagementDelta: 0, scheduled: 0, pendingApprovals: 0 },
   };
@@ -135,11 +167,58 @@ export async function createClient(input: NewClientInput): Promise<Client> {
     })),
   });
   db.analytics.push({ clientId: client.id, series: [], byFormat: [], byPillar: [] });
+  persist();
   return clone(client);
+}
+
+/** Settings: brand kit, planned platforms and preferences. */
+export async function updateClient(id: string, patch: ClientPatch): Promise<Client> {
+  await wait(600);
+  const client = requireClient(id);
+  Object.assign(client, patch);
+  // The workspace accent always follows the first brand colour.
+  if (patch.brand) client.accent = patch.brand.colors[0]?.hex ?? client.accent;
+  persist();
+  return clone(client);
+}
+
+/**
+ * Connect a social profile.
+ *
+ * Against the real API this is a redirect, not a request: the API returns the
+ * network's OAuth consent URL, the browser goes there, and the network sends the
+ * person back to Settings with the account connected. The mock skips the trip
+ * and connects a handle derived from the client's name.
+ */
+export async function connectAccount(clientId: string, platform: Platform): Promise<Client> {
+  await wait(1400);
+  const client = requireClient(clientId);
+  client.accounts = [
+    ...client.accounts.filter((a) => a.platform !== platform),
+    { platform, handle: handleFor(client.name), status: "connected", connectedAt: new Date().toISOString() },
+  ];
+  persist();
+  return clone(client);
+}
+
+export async function disconnectAccount(clientId: string, platform: Platform): Promise<Client> {
+  await wait(500);
+  const client = requireClient(clientId);
+  client.accounts = client.accounts.filter((a) => a.platform !== platform);
+  persist();
+  return clone(client);
+}
+
+export async function deleteClient(id: string): Promise<void> {
+  await wait(700);
+  requireClient(id);
+  removeClient(id);
+  persist();
 }
 
 export async function getStrategy(clientId: string): Promise<Strategy> {
   await wait(400);
+  requireClient(clientId);
   const strategy = db.strategies.find((s) => s.clientId === clientId);
   if (!strategy) throw new ApiError("No strategy has been generated for this client yet.", 404);
   return clone(strategy);
@@ -148,6 +227,7 @@ export async function getStrategy(clientId: string): Promise<Strategy> {
 /** The "AI learns → new strategy" step of the loop. */
 export async function regenerateStrategy(clientId: string): Promise<Strategy> {
   await wait(2400);
+  requireClient(clientId);
   const strategy = db.strategies.find((s) => s.clientId === clientId);
   if (!strategy) throw new ApiError("No strategy has been generated for this client yet.", 404);
   strategy.version += 1;
@@ -162,16 +242,19 @@ export async function regenerateStrategy(clientId: string): Promise<Strategy> {
       last.share -= shift;
     }
   }
+  persist();
   return clone(strategy);
 }
 
 export async function listPosts(clientId: string): Promise<Post[]> {
   await wait(450);
+  requireClient(clientId);
   return clone(db.posts.filter((p) => p.clientId === clientId));
 }
 
 export async function generatePosts(clientId: string, count: number): Promise<Post[]> {
   await wait(2200);
+  requireClient(clientId);
   const existing = db.posts.filter((p) => p.clientId === clientId);
   const strategy = db.strategies.find((s) => s.clientId === clientId);
   const client = db.clients.find((c) => c.id === clientId);
@@ -202,6 +285,7 @@ export async function generatePosts(clientId: string, count: number): Promise<Po
   });
   db.posts.push(...created);
   client.stats.pendingApprovals += created.length;
+  persist();
   return clone(created);
 }
 
@@ -216,6 +300,7 @@ export async function updatePost(postId: string, patch: PostPatch): Promise<Post
   await wait(300);
   const post = db.posts.find((p) => p.id === postId);
   if (!post) throw new ApiError("This post no longer exists.", 404);
+  requireClient(post.clientId);
   const wasPending = post.status === "in_review";
   Object.assign(post, patch);
   // An approved post with a slot goes straight onto the schedule.
@@ -228,11 +313,13 @@ export async function updatePost(postId: string, patch: PostPatch): Promise<Post
     // A decision was undone: the post is back in the queue.
     client.stats.pendingApprovals += 1;
   }
+  persist();
   return clone(post);
 }
 
 export async function getAnalytics(clientId: string): Promise<Analytics> {
   await wait(500);
+  requireClient(clientId);
   const analytics = db.analytics.find((a) => a.clientId === clientId);
   if (!analytics) throw new ApiError("No analytics yet. They appear after the first post is published.", 404);
   return clone(analytics);

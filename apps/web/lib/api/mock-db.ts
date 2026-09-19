@@ -26,9 +26,13 @@ function mulberry32(seed: number) {
 
 const today = startOfDay(new Date());
 
-const clients: Client[] = [
+/** Seeded demo clients belong to the agency, so only admins see them. */
+export const SEED_OWNER = "agency";
+
+const seedClients: Omit<Client, "accounts" | "preferences">[] = [
   {
     id: "kiln-and-clay",
+    ownerId: SEED_OWNER,
     name: "Kiln & Clay",
     url: "https://kilnandclay.studio",
     industry: "Handmade ceramics",
@@ -62,6 +66,7 @@ const clients: Client[] = [
   },
   {
     id: "northbound-coffee",
+    ownerId: SEED_OWNER,
     name: "Northbound Coffee",
     url: "https://northbound.coffee",
     industry: "Specialty coffee roaster",
@@ -94,6 +99,7 @@ const clients: Client[] = [
   },
   {
     id: "form-pilates",
+    ownerId: SEED_OWNER,
     name: "Form Pilates",
     url: "https://formpilates.co",
     industry: "Boutique fitness studio",
@@ -126,6 +132,7 @@ const clients: Client[] = [
   },
   {
     id: "harbour-dental",
+    ownerId: SEED_OWNER,
     name: "Harbour Dental",
     url: "https://harbourdental.clinic",
     industry: "Family dental clinic",
@@ -157,6 +164,24 @@ const clients: Client[] = [
     },
   },
 ];
+
+export const handleFor = (name: string) => "@" + name.toLowerCase().replace(/[^a-z0-9]+/g, "");
+
+const clients: Client[] = seedClients.map((client) => ({
+  ...client,
+  // Established clients are connected; the newest one hasn't got that far, and one
+  // token has lapsed so the "reconnect" state is visible.
+  accounts:
+    client.stage === "strategy"
+      ? []
+      : client.platforms.map((platform) => ({
+          platform,
+          handle: handleFor(client.name),
+          status: client.id === "northbound-coffee" && platform === "tiktok" ? ("expired" as const) : ("connected" as const),
+          connectedAt: client.createdAt,
+        })),
+  preferences: { timezone: "Asia/Kolkata", approvalEmails: true },
+}));
 
 const pillarSets: Record<string, Strategy["pillars"]> = {
   "kiln-and-clay": [
@@ -342,12 +367,6 @@ function buildAnalytics(): Analytics[] {
 
 const posts = buildPosts();
 
-// Headline counts are derived from the posts so lists and badges always agree.
-for (const client of clients) {
-  const own = posts.filter((p) => p.clientId === client.id);
-  client.stats.pendingApprovals = own.filter((p) => p.status === "in_review").length;
-  client.stats.scheduled = own.filter((p) => p.status === "scheduled").length;
-}
 
 export const db = {
   clients,
@@ -355,3 +374,72 @@ export const db = {
   posts,
   analytics: buildAnalytics(),
 };
+
+// Headline counts are derived from the posts so lists and badges always agree.
+recount();
+
+/*
+ * Persistence. Seed posts and analytics are rebuilt on every load so their dates
+ * stay relative to today; what people change is kept in localStorage so it
+ * survives the full-page reloads that signing in and out cause:
+ * every client record (so Settings edits stick), ids of deleted clients, and the
+ * strategy, posts and analytics of clients created through onboarding.
+ */
+const STORAGE_KEY = "social-agent.mock.v2";
+interface Saved extends Pick<typeof db, "clients" | "strategies" | "posts" | "analytics"> {
+  deleted: string[];
+}
+const deleted = new Set<string>();
+const isSeed = (id: string) => seedClients.some((c) => c.id === id);
+
+function recount() {
+  for (const client of db.clients) {
+    const own = db.posts.filter((p) => p.clientId === client.id);
+    client.stats.pendingApprovals = own.filter((p) => p.status === "in_review").length;
+    client.stats.scheduled = own.filter((p) => p.status === "scheduled").length;
+  }
+}
+
+export function removeClient(id: string) {
+  deleted.add(id);
+  db.clients = db.clients.filter((c) => c.id !== id);
+  db.strategies = db.strategies.filter((s) => s.clientId !== id);
+  db.posts = db.posts.filter((p) => p.clientId !== id);
+  db.analytics = db.analytics.filter((a) => a.clientId !== id);
+}
+
+export function persist() {
+  if (typeof window === "undefined") return;
+  const saved: Saved = {
+    clients: db.clients,
+    deleted: [...deleted],
+    strategies: db.strategies.filter((s) => !isSeed(s.clientId)),
+    posts: db.posts.filter((p) => !isSeed(p.clientId)),
+    analytics: db.analytics.filter((a) => !isSeed(a.clientId)),
+  };
+  try {
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
+  } catch {
+    // Storage full or blocked: the mock still works for this page load.
+  }
+}
+
+if (typeof window !== "undefined") {
+  try {
+    const saved = JSON.parse(window.localStorage.getItem(STORAGE_KEY) ?? "null") as Saved | null;
+    if (saved) {
+      saved.deleted.forEach(removeClient);
+      for (const client of saved.clients) {
+        const seeded = db.clients.find((c) => c.id === client.id);
+        if (seeded) Object.assign(seeded, client);
+        else db.clients.unshift(client);
+      }
+      db.strategies.push(...saved.strategies);
+      db.posts.push(...saved.posts);
+      db.analytics.push(...saved.analytics);
+      recount();
+    }
+  } catch {
+    window.localStorage.removeItem(STORAGE_KEY);
+  }
+}

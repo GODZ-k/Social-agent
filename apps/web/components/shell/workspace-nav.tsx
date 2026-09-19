@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "motion/react";
-import { CalendarDays, ChartNoAxesCombined, CircleCheckBig, Compass, LayoutGrid, House } from "lucide-react";
+import { CalendarDays, ChartNoAxesCombined, CircleCheckBig, Compass, LayoutGrid, House, Settings } from "lucide-react";
 import { spring } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
@@ -15,6 +15,8 @@ const items = [
   { segment: "approvals", label: "Approvals", icon: CircleCheckBig },
   { segment: "calendar", label: "Calendar", icon: CalendarDays },
   { segment: "analytics", label: "Analytics", icon: ChartNoAxesCombined },
+  // Not a step in the loop, so it sits apart. On phones it moves to the top bar.
+  { segment: "settings", label: "Settings", icon: Settings },
 ] as const;
 
 /**
@@ -48,6 +50,7 @@ export function WorkspaceNav({ clientId, pendingApprovals }: { clientId: string;
               "pressable relative flex min-w-0 flex-1 flex-col items-center gap-0.5 rounded-[1.375rem] px-1 py-1.5 text-[0.65rem] font-medium",
               "lg:flex-none lg:flex-row lg:gap-3 lg:rounded-md lg:px-3 lg:py-2.5 lg:text-sm",
               isActive ? "text-tint-foreground" : "text-muted-foreground hover:text-foreground",
+              segment === "settings" && "max-lg:hidden lg:mt-2 lg:before:absolute lg:before:inset-x-2 lg:before:-top-1 lg:before:h-px lg:before:bg-border",
             )}
           >
             {isActive && (

@@ -7,7 +7,7 @@ import {
 } from "@tanstack/react-query";
 import { toast } from "sonner";
 import * as api from "./client";
-import type { Client, NewClientInput, Post } from "@/lib/types";
+import type { Client, ClientPatch, NewClientInput, Platform, Post } from "@/lib/types";
 
 /** One place for every cache key, so invalidation can't drift from fetching. */
 export const keys = {
@@ -41,6 +41,57 @@ export function useCreateClient() {
       qc.setQueryData(keys.client(client.id), client);
       qc.setQueryData<Client[]>(keys.clients, (old) => (old ? [client, ...old] : old));
     },
+  });
+}
+
+/** Writes a changed client into both caches it lives in: its own entry and the list. */
+function useClientCacheWriter() {
+  const qc = useQueryClient();
+  return (client: Client) => {
+    qc.setQueryData(keys.client(client.id), client);
+    qc.setQueryData<Client[]>(keys.clients, (old) => old?.map((c) => (c.id === client.id ? client : c)));
+  };
+}
+
+export function useUpdateClient(clientId: string) {
+  const write = useClientCacheWriter();
+  return useMutation({
+    mutationFn: (patch: ClientPatch) => api.updateClient(clientId, patch),
+    onSuccess: (client) => {
+      write(client);
+      toast.success("Changes saved");
+    },
+    onError: (error) => toast.error(`Couldn't save those changes. ${error.message}`),
+  });
+}
+
+export function useConnectAccount(clientId: string) {
+  const write = useClientCacheWriter();
+  return useMutation({
+    mutationFn: (platform: Platform) => api.connectAccount(clientId, platform),
+    onSuccess: write,
+    onError: (error) => toast.error(`Couldn't connect that account. ${error.message}`),
+  });
+}
+
+export function useDisconnectAccount(clientId: string) {
+  const write = useClientCacheWriter();
+  return useMutation({
+    mutationFn: (platform: Platform) => api.disconnectAccount(clientId, platform),
+    onSuccess: write,
+    onError: (error) => toast.error(`Couldn't disconnect that account. ${error.message}`),
+  });
+}
+
+export function useDeleteClient(clientId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () => api.deleteClient(clientId),
+    onSuccess: () => {
+      qc.setQueryData<Client[]>(keys.clients, (old) => old?.filter((c) => c.id !== clientId));
+      qc.removeQueries({ queryKey: keys.client(clientId) });
+    },
+    onError: (error) => toast.error(`Couldn't delete this. ${error.message}`),
   });
 }
 

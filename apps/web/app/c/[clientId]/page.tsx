@@ -10,9 +10,11 @@ import type { Client } from "@/lib/types";
 import { cn, formatCompact, formatDelta, prettyUrl } from "@/lib/utils";
 import { EmptyState, Panel } from "@/components/shell/states";
 import { LoopTrack } from "@/components/shell/loop-track";
-import { PlatformIcon } from "@/components/post/platform";
+import { PLATFORM_LABEL, PlatformIcon } from "@/components/post/platform";
 import { PostArt } from "@/components/post/post-art";
 import { Button } from "@/components/ui/button";
+
+const listFormat = new Intl.ListFormat("en", { type: "conjunction" });
 
 export default function OverviewPage() {
   const { clientId, client } = useWorkspace();
@@ -122,8 +124,13 @@ export default function OverviewPage() {
 function NextStep({ client }: { client: Client }) {
   const base = `/c/${client.id}`;
   const pending = client.stats.pendingApprovals;
+  // Planned networks that can't publish yet: never connected, or access has lapsed.
+  const unconnected = client.platforms.filter((p) => client.accounts.find((a) => a.platform === p)?.status !== "connected");
   const step =
-    pending > 0
+    // Nothing can be published without this, so it outranks everything else.
+    unconnected.length > 0
+      ? { title: `Connect ${listFormat.format(unconnected.map((p) => PLATFORM_LABEL[p]))} so posts can go out`, body: "The agent can plan and draft without it, but approved posts have nowhere to publish until the account is connected.", href: `${base}/settings?tab=accounts`, cta: "Connect accounts" }
+      : pending > 0
       ? { title: `${pending} ${pending === 1 ? "post is" : "posts are"} waiting for your approval`, body: "Swipe through them. Nothing is published until you say so.", href: `${base}/approvals`, cta: "Review posts" }
       : client.stage === "strategy"
         ? { title: "The strategy is ready to read", body: "Check the pillars and posting rhythm, then let the agent start drafting.", href: `${base}/strategy`, cta: "Read the strategy" }
