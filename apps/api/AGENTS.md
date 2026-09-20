@@ -6,7 +6,9 @@ Load the `mastra` skill BEFORE any Mastra work. Never rely on cached knowledge â
 
 ## Rules
 
+- Read `src/mastra/README.md` before building any agent, workflow, skill, tool or scorer. It describes the team of nine specialists, the six workflows, who owns what, and the rules for building them. Each agent and workflow folder has a README that is its brief.
 - Register all agents, tools, workflows, and scorers in `src/mastra/index.ts`
+- Model ids live only in `src/mastra/config/models.ts`.
 - Use the `dev` and `build` scripts from `package.json` instead of running `mastra dev` / `mastra build` directly
 
 ## Structure, database and auth
