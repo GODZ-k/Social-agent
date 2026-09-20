@@ -2,13 +2,8 @@ import { AppError } from "@/utils/AppError"
 import type { NextFunction, Request, Response } from "express"
 import type { ZodType } from "zod"
 
-type ValidationData = {
-    body: Request["body"]
-    query: Request["query"]
-    params: Request["params"]
-}
 
-export const validateMiddleware = (schema: ZodType<ValidationData>) => {
+export const validateMiddleware = (schema: ZodType) => {
     return (req: Request, res: Response, next: NextFunction) => {
         const result = schema.safeParse({
             body: req.body,
@@ -17,21 +12,16 @@ export const validateMiddleware = (schema: ZodType<ValidationData>) => {
         })
 
         if (!result.success) {
-            const message = result.error.issues
-                .map((issue) => {
-                    const path = issue.path.join(".")
-                    return `${path} : ${issue.message}`
-                })
-                .join(", ")
+            const details = result.error.issues.map((issue) => ({
+                path: (issue.path[0] === "body" ? issue.path.slice(1) : issue.path).join("."),
+                message: issue.message,
+            }))
 
-            return next(new AppError(message, 400, "VALIDATION_ERROR"))
+            return next(new AppError("Some fields are invalid.", 400, "VALIDATION_ERROR", details))
         }
 
-        const data = result.data as ValidationData
-
-        req.body = data.body
-        req.query = data.query
-        req.params = data.params
+        const data = result.data as { body?: unknown }
+        if (data.body !== undefined) req.body = data.body
 
         next()
     }

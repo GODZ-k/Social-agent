@@ -2,17 +2,30 @@ import { AppError } from "@/utils/AppError";
 import type { ErrorRequestHandler } from "express";
 
 export const errorMiddleware: ErrorRequestHandler = (err, req, res, next) => {
-    console.log(err)
     if (err instanceof AppError) {
         return res.status(err.statusCode).json({
             success: false,
             error: {
                 code: err.code,
-                message: err.message
+                message: err.message,
+                ...(err.details && { details: err.details }),
             }
         })
     }
 
+    // express.json() rejects a body it cannot parse with this type.
+    if (err?.type === "entity.parse.failed") {
+        return res.status(400).json({
+            success: false,
+            error: {
+                code: "INVALID_JSON",
+                message: "The request body is not valid JSON.",
+            },
+        })
+    }
+
+    // Unexpected: the details stay in the server log, never in the response.
+    console.error(err)
     return res.status(500).json({
         success: false,
         error: {
