@@ -10,7 +10,8 @@ Guidance for any coding agent working in this monorepo. Each app has its own `AG
 | `apps/landing` | The public marketing site. Follows the same design system (`apps/web/DESIGN.md`, section 12) |
 | `apps/api` | Express + Mastra API. Start with `apps/api/AGENTS.md` |
 | `packages/ui` | The shared design system (`@repo/ui`): tokens, components, motion, theme |
-| `packages/shared`, `packages/db`, `packages/config/*` | Shared schemas, database, and lint/TypeScript configs |
+| `packages/db` | Drizzle schema, migrations and the Postgres connection (`@social-agent/db`). Postgres is hosted on Neon; see `apps/api/AGENTS.md` |
+| `packages/shared`, `packages/config/*` | Shared zod schemas, and lint/TypeScript configs |
 
 ## Agent skills
 

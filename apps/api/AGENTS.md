@@ -29,7 +29,7 @@ All three class layers use static methods, like `HealthController`: `ClientsCont
 - Errors: throw `new AppError(message, status, code)`; `errorMiddleware` turns it into `{ success: false, error: { code, message, details? } }`.
 - Postgres is hosted on Neon. `DATABASE_URL` in `apps/api/.env` is the development database. The first connection after Neon has been idle can fail once with "Connection terminated unexpectedly"; rerun the script that hit it.
 - The schema and migrations live in `packages/db` (`@social-agent/db`). After changing `packages/db/src/schema.ts`: `pnpm --filter @social-agent/db run db:generate`, review the SQL, `pnpm --filter @social-agent/db run build`, then `pnpm --filter @social-agent/db run db:migrate`.
-- `db:migrate` runs from a full repo checkout (it uses `tsx` and reads `apps/api/.env`); the tsup bundle does not run migrations, so a deploy step has to be designed before the API is hosted anywhere.
+- `packages/db` code only reads `process.env.DATABASE_URL`; it never loads a file. The `db:*` scripts in its `package.json` load `apps/api/.env` for local use. In CI or production, set `DATABASE_URL` and run `pnpm --filter @social-agent/db exec tsx src/cli-migrate.ts`. The tsup bundle does not run migrations, so a deploy step has to call that before the API starts.
 - The API reads `packages/shared` and `packages/db` from their `dist` folders. Rebuild a package after changing it.
 - There is no automated test suite yet.
 
