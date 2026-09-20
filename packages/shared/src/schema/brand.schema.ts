@@ -4,7 +4,7 @@ export const DEFAULT_ACCENT = "#4B3FE4";
 
 export const platformSchema = z.enum(["instagram", "facebook", "linkedin", "tiktok"]);
 
-/** Where a client currently sits in the agent loop. */
+/** Where a brand currently sits in the agent loop. */
 export const loopStageSchema = z.enum([
   "onboarding",
   "strategy",
@@ -32,10 +32,13 @@ export const brandKitSchema = z.object({
   keywords: z.array(z.string()).optional(),
 });
 
-const timeSchema = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Use 24 hour HH:mm");
+/** A local clock time, read in the brand's timezone. */
+export const timeSchema = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Use 24 hour HH:mm");
+
+export const weekdaySchema = z.enum(["mon", "tue", "wed", "thu", "fri", "sat", "sun"]);
 
 export const businessHoursEntrySchema = z.object({
-  day: z.enum(["mon", "tue", "wed", "thu", "fri", "sat", "sun"]),
+  day: weekdaySchema,
   open: timeSchema,
   close: timeSchema,
 });
@@ -55,13 +58,13 @@ export const businessInfoSchema = z.object({
   hours: z.array(businessHoursEntrySchema).optional(),
 });
 
-export const clientPreferencesSchema = z.object({
+export const brandPreferencesSchema = z.object({
   /** IANA name, e.g. "Asia/Kolkata". */
   timezone: z.string().min(1),
   approvalEmails: z.boolean(),
 });
 
-export const DEFAULT_PREFERENCES: z.infer<typeof clientPreferencesSchema> = {
+export const DEFAULT_PREFERENCES: z.infer<typeof brandPreferencesSchema> = {
   timezone: "UTC",
   approvalEmails: true,
 };
@@ -73,7 +76,7 @@ export const socialAccountSchema = z.object({
   connectedAt: z.string(),
 });
 
-export const clientStatsSchema = z.object({
+export const brandStatsSchema = z.object({
   followers: z.number(),
   followersDelta: z.number(),
   engagementRate: z.number(),
@@ -109,7 +112,7 @@ const websiteUrlSchema = z
     }
   }, "Enter a website address such as acme.com");
 
-export const newClientSchema = z.object({
+export const newBrandSchema = z.object({
   name: z.string().trim().min(1),
   url: websiteUrlSchema,
   industry: z.string().trim(),
@@ -118,19 +121,21 @@ export const newClientSchema = z.object({
   business: businessInfoSchema.optional(),
 });
 
-/** The parts of a client its owner can change in Settings. Unknown keys are dropped. */
-export const clientPatchSchema = z.object({
+/** The parts of a brand its owner can change in Settings. Unknown keys are dropped. */
+export const brandPatchSchema = z.object({
   name: z.string().trim().min(1).optional(),
   industry: z.string().trim().optional(),
   brand: brandKitSchema.optional(),
   business: businessInfoSchema.optional(),
   platforms: z.array(platformSchema).optional(),
-  preferences: clientPreferencesSchema.optional(),
+  preferences: brandPreferencesSchema.optional(),
 });
 
-export const clientSchema = z.object({
+export const brandSchema = z.object({
   id: z.string(),
   ownerId: z.string(),
+  /** Who set the brand up: the owner, or an admin on their behalf. */
+  createdBy: z.string(),
   name: z.string(),
   url: z.string(),
   industry: z.string(),
@@ -140,18 +145,19 @@ export const clientSchema = z.object({
   business: businessInfoSchema,
   platforms: z.array(platformSchema),
   accounts: z.array(socialAccountSchema),
-  preferences: clientPreferencesSchema,
+  preferences: brandPreferencesSchema,
   createdAt: z.string(),
-  stats: clientStatsSchema,
+  stats: brandStatsSchema,
 });
 
 export type Platform = z.infer<typeof platformSchema>;
+export type Weekday = z.infer<typeof weekdaySchema>;
 export type LoopStage = z.infer<typeof loopStageSchema>;
 export type BrandKit = z.infer<typeof brandKitSchema>;
 export type BusinessInfo = z.infer<typeof businessInfoSchema>;
-export type ClientPreferences = z.infer<typeof clientPreferencesSchema>;
+export type BrandPreferences = z.infer<typeof brandPreferencesSchema>;
 export type SocialAccount = z.infer<typeof socialAccountSchema>;
-export type ClientStats = z.infer<typeof clientStatsSchema>;
-export type NewClientInput = z.infer<typeof newClientSchema>;
-export type ClientPatch = z.infer<typeof clientPatchSchema>;
-export type Client = z.infer<typeof clientSchema>;
+export type BrandStats = z.infer<typeof brandStatsSchema>;
+export type NewBrandInput = z.infer<typeof newBrandSchema>;
+export type BrandPatch = z.infer<typeof brandPatchSchema>;
+export type Brand = z.infer<typeof brandSchema>;

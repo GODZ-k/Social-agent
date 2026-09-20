@@ -5,6 +5,7 @@ const commaSeparatedList = (fallback: string) =>
     z.string().default(fallback).transform((value) => value.split(",").map((item) => item.trim()).filter(Boolean));
 
 const envSchema = z.object({
+    NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
     DATABASE_URL: z.string().regex(/^postgres(ql)?:\/\//, "must start with postgres:// or postgresql://"),
     CLERK_SECRET_KEY: z.string().min(1),
     CLERK_PUBLISHABLE_KEY: z.string().min(1),

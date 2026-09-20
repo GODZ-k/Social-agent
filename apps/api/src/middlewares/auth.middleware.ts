@@ -1,4 +1,4 @@
-import type { Request } from "express";
+import type { Request, RequestHandler } from "express";
 import { getClerkUserId } from "@/auth/clerk";
 import { UsersService, type AuthUser } from "@/services/users.service";
 import { AppError } from "@/utils/AppError";
@@ -18,3 +18,9 @@ export function currentUser(req: Request): AuthUser {
     if (!req.user) throw unauthenticated();
     return req.user;
 }
+
+/** Mount after `requireUser`. */
+export const requireAdmin: RequestHandler = (req, _res, next) => {
+    if (currentUser(req).role !== "admin") throw new AppError("Only an admin can do this.", 403, "FORBIDDEN");
+    next();
+};

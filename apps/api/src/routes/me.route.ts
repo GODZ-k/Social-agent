@@ -5,5 +5,6 @@ import { asyncHandler } from "@/utils/asyncHandler";
 const router = Router();
 
 router.get("/", asyncHandler(MeController.me));
+router.get("/overview", asyncHandler(MeController.overview));
 
 export default router;

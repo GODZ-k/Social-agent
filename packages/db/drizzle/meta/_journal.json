@@ -8,6 +8,27 @@
       "when": 1789891938782,
       "tag": "0000_dashing_morph",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1789906881269,
+      "tag": "0001_acoustic_adam_warlock",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1789921677905,
+      "tag": "0002_rename_clients_to_brands",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1789921693270,
+      "tag": "0003_full_schema",
+      "breakpoints": true
     }
   ]
 }
