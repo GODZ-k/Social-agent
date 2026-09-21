@@ -18,8 +18,11 @@ app.use(cors({
 }));
 app.use(express.json({ limit: "1mb" }));
 
-const server = new MastraServer({ app, mastra });
-await server.init();
+// Mastra's built-in routes (used by Studio) have no auth, so never mount them in production.
+if (env.NODE_ENV !== "production") {
+  const server = new MastraServer({ app, mastra });
+  await server.init();
+}
 
 // Routes
 app.use("/health", healthRoute);
