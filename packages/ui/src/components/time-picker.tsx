@@ -145,7 +145,7 @@ function ClockPanel({ value, onChange, suggestions, suggestionsLabel }: Pick<Tim
 
   return (
     // On short screens Done moves up beside the chips, so the dial gets all the remaining height.
-    <div className="grid grid-cols-[minmax(0,1fr)] gap-2.5 short:grid-cols-[minmax(0,1fr)_auto] short:items-center">
+    <div className="grid grid-cols-[minmax(0,1fr)] gap-6 short:grid-cols-[minmax(0,1fr)_auto] short:items-center">
       {suggestions && suggestions.length > 0 && (
         <div>
           <p className="type-label mb-1.5 px-0.5 short:hidden">{suggestionsLabel}</p>

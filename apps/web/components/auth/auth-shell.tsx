@@ -1,4 +1,4 @@
-import { Logo } from "@/components/shell/top-bar";
+import { Logo } from "@/components/shell/logo";
 
 /** Shared frame for the sign-in and sign-up screens. */
 export function AuthShell({ title, description, children }: { title: string; description: string; children: React.ReactNode }) {

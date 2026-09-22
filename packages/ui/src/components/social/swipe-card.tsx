@@ -54,12 +54,9 @@ export const SwipeCard = forwardRef<SwipeCardHandle, Props>(function SwipeCard(
   // Set as soon as a drag starts, so the tap that ends a drag doesn't also open the post.
   const dragged = useRef(false);
 
-  // Read during transforms, so a card that moves up the stack recomputes from its new depth.
-  const depth = useRef(index);
-  depth.current = index;
-
+  // Re-subscribes when the card changes depth, so only the top card drives the stack.
   useMotionValueEvent(x, "change", (v) => {
-    if (depth.current === 0) lead.set(v);
+    if (index === 0) lead.set(v);
   });
 
   // The card tilts around a point below it, like something held at the bottom edge.
@@ -68,11 +65,12 @@ export const SwipeCard = forwardRef<SwipeCardHandle, Props>(function SwipeCard(
   const reject = useTransform(x, [-COMMIT_DISTANCE, -24], [1, 0]);
 
   // Cards beneath rise toward the next depth as the top card leaves: the
-  // in-between frames show what will happen if you let go.
+  // in-between frames show what will happen if you let go. useTransform re-reads
+  // the transformer every render, so a card moving up the stack gets its new depth.
   const progress = (v: number) => Math.min(Math.abs(v) / (COMMIT_DISTANCE * 1.6), 1);
   const mix = (key: "scale" | "y") => (v: number) => {
-    const here = DEPTH[Math.min(depth.current, 2)]!;
-    const next = DEPTH[Math.max(Math.min(depth.current, 2) - 1, 0)]!;
+    const here = DEPTH[Math.min(index, 2)]!;
+    const next = DEPTH[Math.max(Math.min(index, 2) - 1, 0)]!;
     return here[key] + (next[key] - here[key]) * progress(v);
   };
   const scale = useTransform(lead, mix("scale"));

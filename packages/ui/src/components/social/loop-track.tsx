@@ -3,19 +3,11 @@
 import { motion } from "motion/react";
 import { RefreshCw } from "lucide-react";
 import type { LoopStage } from "./types";
+import { LOOP, stageInfo } from "./loop-stages";
 import { spring } from "../../lib/motion";
 import { cn } from "../../lib/utils";
 
-export const LOOP: { stage: LoopStage; label: string; doing: string }[] = [
-  { stage: "onboarding", label: "Onboard", doing: "Reading the website" },
-  { stage: "strategy", label: "Strategy", doing: "Strategy ready to review" },
-  { stage: "content", label: "Create", doing: "Drafting content" },
-  { stage: "approval", label: "Approve", doing: "Waiting for your approval" },
-  { stage: "publishing", label: "Publish", doing: "Publishing on schedule" },
-  { stage: "learning", label: "Learn", doing: "Learning from results" },
-];
-
-export const stageInfo = (stage: LoopStage) => LOOP.find((s) => s.stage === stage) ?? LOOP[0]!;
+export { LOOP, stageInfo } from "./loop-stages";
 
 /** Compact: a row of ticks with the current stage filled. For lists. */
 export function LoopTicks({ stage, className }: { stage: LoopStage; className?: string }) {

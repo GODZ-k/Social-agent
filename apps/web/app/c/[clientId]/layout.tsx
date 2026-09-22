@@ -1,41 +1,28 @@
-"use client";
+import { Suspense } from "react";
+import { WorkspaceChrome } from "@/components/shell/workspace-chrome";
+import { WorkspaceChromeSkeleton } from "@/components/shell/workspace-chrome-skeleton";
 
-import { useParams } from "next/navigation";
-import Link from "next/link";
-import { useQuery } from "@tanstack/react-query";
-import { clientQuery } from "@/lib/api/queries";
-import { BrandTheme } from "@repo/ui/components/brand-theme";
-import { TopBar } from "@/components/shell/top-bar";
-import { WorkspaceNav } from "@/components/shell/workspace-nav";
-import { ErrorState } from "@repo/ui/components/states";
-import { Button } from "@repo/ui/components/button";
-
-export default function WorkspaceLayout({ children }: { children: React.ReactNode }) {
-  const { clientId } = useParams<{ clientId: string }>();
-  const { data: client, error, refetch } = useQuery(clientQuery(clientId));
-
+/**
+ * Renders at once: the chrome streams in under Suspense and the page under its
+ * own loading.tsx, so a navigation into a workspace never shows a blank shell.
+ */
+export default async function WorkspaceLayout({
+  children,
+  params,
+}: {
+  children: React.ReactNode;
+  params: Promise<{ clientId: string }>;
+}) {
+  const { clientId } = await params;
   return (
     <div className="min-h-dvh">
-      <BrandTheme color={client?.accent} />
-      <TopBar client={client} />
-      {error ? (
-        <main className="px-4">
-          <ErrorState error={error} onRetry={() => refetch()} />
-          <div className="flex justify-center">
-            <Button asChild variant="ghost">
-              <Link href="/">Back to all clients</Link>
-            </Button>
-          </div>
-        </main>
-      ) : (
-        <>
-          <WorkspaceNav clientId={clientId} pendingApprovals={client?.stats.pendingApprovals ?? 0} />
-          {/* Bottom padding clears the tab bar on phones; left padding clears the rail on desktop. */}
-          <main className="mx-auto max-w-[88rem] px-4 pt-7 pb-32 md:px-6 lg:pr-8 lg:pb-16 lg:pl-64">
-            {children}
-          </main>
-        </>
-      )}
+      <Suspense fallback={<WorkspaceChromeSkeleton />}>
+        <WorkspaceChrome clientId={clientId} />
+      </Suspense>
+      {/* Bottom padding clears the tab bar on phones; left padding clears the rail on desktop. */}
+      <main className="mx-auto max-w-[88rem] px-4 pt-7 pb-32 md:px-6 lg:pr-8 lg:pb-16 lg:pl-64">
+        {children}
+      </main>
     </div>
   );
 }
