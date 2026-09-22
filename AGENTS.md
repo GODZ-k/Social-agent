@@ -2,12 +2,16 @@
 
 Guidance for any coding agent working in this monorepo. Each app has its own `AGENTS.md` with the rules for that app; read it before working there.
 
+## Project documents (`docs/`)
+
+All project documents live in `docs/`. Read `docs/MEMORY.md` first in every session (`CLAUDE.md` auto-loads it). Then, as needed: `docs/PRD.md` (what we are building and for whom), `docs/ARCHITECTURE.md` (the system as built), `docs/API_SPEC.md` (the live HTTP API), `docs/SECURITY.md` (threat model, the SSRF and prompt-injection boundaries, secrets), `docs/TASKS.md` (roadmap board: priority, status, progress), `docs/LESSION.md` (lessons learned — add to it when something costs time twice), `docs/DESIGN.md` (the design system; web, landing and `packages/ui` all follow it). Rules live in this file and the per-app `AGENTS.md`. Detailed specs and plans are under `docs/superpowers/`.
+
 ## Where things are
 
 | Path | What |
 |---|---|
-| `apps/web` | The product: Next.js app for clients and admins. Start with `apps/web/AGENTS.md` and `apps/web/DESIGN.md` |
-| `apps/landing` | The public marketing site. Follows the same design system (`apps/web/DESIGN.md`, section 12) |
+| `apps/web` | The product: Next.js app for clients and admins. Start with `apps/web/AGENTS.md` and `docs/DESIGN.md` |
+| `apps/landing` | The public marketing site. Follows the same design system (`docs/DESIGN.md`, section 12) |
 | `apps/api` | Express + Mastra API. Start with `apps/api/AGENTS.md` |
 | `packages/ui` | The shared design system (`@repo/ui`): tokens, components, motion, theme |
 | `packages/db` | Drizzle schema, migrations and the Postgres connection (`@social-agent/db`). Postgres is hosted on Neon; see `apps/api/AGENTS.md` |

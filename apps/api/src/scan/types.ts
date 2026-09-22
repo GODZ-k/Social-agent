@@ -1,8 +1,13 @@
 import { z } from "zod";
-import { businessInfoSchema, scanPageSchema, scanResultSchema } from "@social-agent/shared";
+import {
+  businessInfoSchema,
+  scanPageSchema,
+  scanResultSchema,
+  scanStepIdSchema,
+} from "@social-agent/shared";
 
-/** Stable ids: the progress screen shows a scan by them. */
-export const SCAN_STEP_IDS = ["discover", "read-pages", "interpret", "report"] as const;
+/** Stable ids: the progress screen shows a scan by them. One source of truth: the shared schema. */
+export const SCAN_STEP_IDS = scanStepIdSchema.options;
 export type ScanStepId = (typeof SCAN_STEP_IDS)[number];
 
 export const scanErrorCodeSchema = z.enum([

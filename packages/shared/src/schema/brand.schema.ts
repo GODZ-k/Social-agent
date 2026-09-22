@@ -120,6 +120,8 @@ export const newBrandSchema = z.object({
   brand: brandKitSchema,
   platforms: z.array(platformSchema),
   business: businessInfoSchema.optional(),
+  /** The onboarding scan this brand came from. Phase 2: links the scan to the brand. */
+  scanId: z.uuid().optional(),
 });
 
 /** The parts of a brand its owner can change in Settings. Unknown keys are dropped. */

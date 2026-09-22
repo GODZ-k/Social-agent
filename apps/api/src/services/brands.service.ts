@@ -1,6 +1,8 @@
 import type { BrandRow, NewBrandRow } from "@social-agent/db";
 import { DEFAULT_ACCENT, type Brand, type BrandKit, type BrandPatch, type NewBrandInput } from "@social-agent/shared";
 import { BrandsRepository, type BrandScope } from "@/repositories/brands.repository";
+import { ScansRepository } from "@/repositories/scans.repository";
+import { ScansService } from "@/services/scans.service";
 import type { AuthUser } from "@/services/users.service";
 import { AppError } from "@/utils/AppError";
 import { isUuid } from "@/utils/isUuid";
@@ -20,14 +22,20 @@ export class BrandsService {
     /**
      * `ownerId` defaults to the caller. An admin setting a brand up for a client passes the
      * client's id; `createdBy` still records the admin. A client may own any number of brands.
+     * `input.scanId`, when given, must be a scan the caller (or an admin) may claim: done, and
+     * requested by them (`ScansService.claim`). The scan is linked to the new brand afterwards.
      */
     static async create(user: AuthUser, input: NewBrandInput, ownerId: string = user.id): Promise<Brand> {
+        const { scanId, ...brand } = input;
+        const scan = scanId ? await ScansService.claim(user, scanId) : undefined;
+
         const row = await BrandsRepository.create({
-            ...input,
+            ...brand,
             ownerId,
             createdBy: user.id,
-            accent: accentFor(input.brand),
+            accent: accentFor(brand.brand),
         });
+        if (scan) await ScansRepository.attachBrand(scan.id, row.id);
         return toBrand(row);
     }
 

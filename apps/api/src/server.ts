@@ -1,6 +1,8 @@
 import app from "./app"
 import { pool } from "./config/db"
 import { env } from "./config/env"
+import { ScansRepository } from "@/repositories/scans.repository"
+import { pendingScanCount } from "@/scan-queue"
 
 // Neon can drop the first connection after it has been idle, so try twice.
 async function checkDatabase() {
@@ -15,6 +17,9 @@ async function start() {
     try {
         await checkDatabase()
         console.log("Database connected successfully")
+
+        const interrupted = await ScansRepository.failInterrupted()
+        if (interrupted > 0) console.log(`Marked ${interrupted} interrupted scan(s) as failed`)
     } catch (err) {
         console.error("Database connection failed", err)
         process.exit(1)
@@ -40,6 +45,10 @@ async function start() {
 
         server.close(async () => {
             try {
+                if (pendingScanCount() > 0) {
+                    console.log(`${pendingScanCount()} scan(s) still running, marking them interrupted`)
+                    await ScansRepository.failInterrupted()
+                }
                 await pool.end()
                 console.log("Database connection closed")
             } catch (err) {

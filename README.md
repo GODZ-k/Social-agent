@@ -48,7 +48,7 @@ What is left, roughly in order:
 2. Verify the Clerk token and enforce roles in the API. The role check in the UI is cosmetic.
 3. Add the database (`packages/db`) and move the shared types out of `apps/web/lib/types.ts` into `packages/shared`.
 4. Real social account connections, publishing and analytics.
-5. Build the landing page on `packages/ui`, following `apps/web/DESIGN.md`.
+5. Build the landing page on `packages/ui`, following `docs/DESIGN.md`.
 
 ## What's inside
 
@@ -109,6 +109,6 @@ Notes:
 
 ## Where to read more
 
-- `apps/web/DESIGN.md`: the design system and product intent. Read before any UI work, including the landing page.
+- `docs/DESIGN.md`: the design system and product intent. Read before any UI work, including the landing page.
 - `apps/web/AGENTS.md`: rules for working in the web app.
 - `apps/api/AGENTS.md`: rules for Mastra work in the API.
