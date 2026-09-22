@@ -38,7 +38,7 @@ out of real runs between 2026-09-20 and 2026-09-22.
 | [**Windows and tooling**](#windows-and-tooling)       | ![3][c3] | Links, deletes and binaries that behave differently here               |
 | [**Repo, pnpm, Neon**](#repo-pnpm-neon)               | ![7][c7] | Installs, stale `dist` folders, versioning and the git index           |
 | [**Process with AI agents**](#process-with-ai-agents) | ![6][c6] | Stalls, re-reviews, file ownership and where rulings are written       |
-| [**Code**](#code)                                     | ![10][c10] | Facts the model must not own, and refactors that must prove themselves |
+| [**Code**](#code)                                     | ![12][c12] | Facts the model must not own, and refactors that must prove themselves |
 
 <a id="firecrawl"></a>
 
@@ -335,6 +335,18 @@ out of real runs between 2026-09-20 and 2026-09-22.
   Next wires a segment's `not-found.tsx` as the boundary for its children only, so a
   `[clientId]` layout that throws needs a root `app/not-found.tsx`.
 
+- **Clerk's `UserButton` mismatches on hydration when rendered on the server.**
+
+  `ClerkLoaded` did not stop it (4 of 20 loads). Render it only after mount
+  (`useSyncExternalStore` with a server snapshot of `false`) behind a same-size placeholder:
+  `components/shell/user-menu.tsx`. Zero mismatches since.
+
+- **A layout that awaits data hides every `loading.tsx` beneath it.**
+
+  The workspace layout awaited Clerk and the client, so navigations showed the root skeleton
+  with no bar or rail. Keep layouts synchronous: put the data-dependent chrome in an async
+  child under `Suspense` with a same-frame skeleton.
+
 <a id="related"></a>
 
 ## Related
@@ -352,4 +364,4 @@ out of real runs between 2026-09-20 and 2026-09-22.
 [c3]: https://img.shields.io/badge/3-lessons-lightgrey?style=flat-square
 [c6]: https://img.shields.io/badge/6-lessons-lightgrey?style=flat-square
 [c7]: https://img.shields.io/badge/7-lessons-lightgrey?style=flat-square
-[c10]: https://img.shields.io/badge/10-lessons-lightgrey?style=flat-square
+[c12]: https://img.shields.io/badge/12-lessons-lightgrey?style=flat-square

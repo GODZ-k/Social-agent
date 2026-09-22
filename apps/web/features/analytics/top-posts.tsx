@@ -1,11 +1,14 @@
 import { format } from "date-fns";
-import type { BrandKit, Post } from "@/lib/types";
+import { listPosts } from "@/lib/api/server";
+import type { BrandKit } from "@/lib/types";
 import { formatCompact } from "@/lib/utils";
 import { Panel } from "@repo/ui/components/states";
 import { FORMAT_LABEL, PlatformIcon } from "@repo/ui/components/social/platform";
 import { PostArt } from "@repo/ui/components/social/post-art";
 
-export function TopPosts({ posts, brand }: { posts: Post[]; brand: BrandKit }) {
+/** Reads the posts itself so it can stream in after the charts. */
+export async function TopPosts({ clientId, brand }: { clientId: string; brand: BrandKit }) {
+  const posts = await listPosts(clientId);
   const topPosts = posts.filter((p) => p.metrics).sort((a, b) => b.metrics!.reach - a.metrics!.reach).slice(0, 5);
 
   return (

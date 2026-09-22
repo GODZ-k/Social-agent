@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { ClerkLoaded, UserButton } from "@clerk/nextjs";
 import { Settings } from "lucide-react";
 import type { Client, Viewer } from "@/lib/types";
 import { Badge } from "@repo/ui/components/badge";
@@ -7,6 +6,7 @@ import { ThemeMenu } from "@repo/ui/components/theme-menu";
 import { TopBarFrame } from "./top-bar-frame";
 import { ClientSwitcher, type SwitchableClient } from "./client-switcher";
 import { AgentChatButton } from "./agent-chat-button";
+import { UserMenu } from "./user-menu";
 
 /** The switcher only needs these three fields, so only these three cross to the browser. */
 function switchable({ id, name, accent }: Client): SwitchableClient {
@@ -38,10 +38,7 @@ export function TopBar({ viewer, client, clients = [] }: { viewer: Viewer; clien
           )}
           <ThemeMenu />
           {isAdmin && <Badge variant="outline" className="max-md:hidden">Admin</Badge>}
-          {/* Clerk's button is rendered only once clerk-js is up, so the server and the first client render agree. */}
-          <ClerkLoaded>
-            <UserButton />
-          </ClerkLoaded>
+          <UserMenu />
         </div>
     </TopBarFrame>
   );

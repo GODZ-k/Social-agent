@@ -5,7 +5,7 @@ import { useTable } from "@tanstack/react-table";
 import { LayoutGrid } from "lucide-react";
 import type { BrandKit, Post, PostStatus, Strategy } from "@/lib/types";
 import { EmptyState } from "@repo/ui/components/states";
-import { PostSheet } from "@/features/post/post-sheet";
+import { LazyPostSheet } from "@/features/post/lazy-post-sheet";
 import { buildColumns, features } from "./columns";
 import { ContentToolbar, type StatusFilter } from "./content-toolbar";
 import { Pagination } from "./pagination";
@@ -100,7 +100,7 @@ export function ContentView({
         </>
       )}
 
-      <PostSheet post={openPost} brand={brand} strategy={strategy} onClose={() => setOpenId(null)} />
+      <LazyPostSheet post={openPost} brand={brand} strategy={strategy} onClose={() => setOpenId(null)} />
     </>
   );
 }

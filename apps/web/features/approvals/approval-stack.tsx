@@ -6,7 +6,7 @@ import { Maximize2 } from "lucide-react";
 import { toast } from "sonner";
 import { updatePost } from "@/lib/api/actions";
 import type { BrandKit, Post, Strategy } from "@/lib/types";
-import { PostSheet } from "@/features/post/post-sheet";
+import { LazyPostSheet } from "@/features/post/lazy-post-sheet";
 import { useMediaQuery } from "@repo/ui/hooks/use-media-query";
 import { spring } from "@repo/ui/lib/motion";
 import { Button } from "@repo/ui/components/button";
@@ -174,7 +174,7 @@ export function ApprovalStack({ clientId, queue, brand, strategy }: Props) {
 
       {top && <PostLightbox post={top} brand={brand} open={viewingImage} onOpenChange={setViewingImage} />}
 
-      <PostSheet post={editing} brand={brand} strategy={strategy} onClose={() => setEditingId(null)} />
+      <LazyPostSheet post={editing} brand={brand} strategy={strategy} onClose={() => setEditingId(null)} />
     </>
   );
 }

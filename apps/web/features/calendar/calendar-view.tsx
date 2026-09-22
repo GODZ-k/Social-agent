@@ -6,7 +6,7 @@ import { addMonths, format, startOfMonth } from "date-fns";
 import type { BrandKit, Post, Strategy } from "@/lib/types";
 import { spring } from "@repo/ui/lib/motion";
 import { PageHeader } from "@repo/ui/components/states";
-import { PostSheet } from "@/features/post/post-sheet";
+import { LazyPostSheet } from "@/features/post/lazy-post-sheet";
 import { AgendaList } from "./agenda-list";
 import { groupByDay, monthDays } from "./calendar-model";
 import { MonthGrid } from "./month-grid";
@@ -66,7 +66,7 @@ export function CalendarView({ posts, brand, strategy }: { posts: Post[]; brand:
         </AnimatePresence>
       </div>
 
-      <PostSheet post={openPost} brand={brand} strategy={strategy} onClose={() => setOpenId(null)} />
+      <LazyPostSheet post={openPost} brand={brand} strategy={strategy} onClose={() => setOpenId(null)} />
     </>
   );
 }
