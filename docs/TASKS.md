@@ -176,6 +176,7 @@ Cross-cutting, still to do:
 | **1-4**  | `GET /health` (503 when the DB is down), graceful shutdown                                            | ![P1][p1] | ![100%][pr100] | 2026-09-20                                                   |
 | **1-5**  | `GET /me`, `GET /me/overview`                                                                         | ![P0][p0] | ![100%][pr100] | 2026-09-20                                                   |
 | **1-6**  | Brands: list, create, get, patch, archive (never delete), `scopeFor` ownership                        | ![P0][p0] | ![100%][pr100] | 2026-09-20, plan `…/2026-09-20-brands-rename-and-admin.md`   |
+| **W-2**  | `apps/web` installable PWA: manifest, icons, service worker (static assets + offline page), install button. Tauri/Electron shell decided later | ![P2][p2] | ![100%][pr100] | 2026-09-22 |
 | **W-1**  | `apps/web` on server components: `features/<area>` layout, Server Actions, server-side mock, TanStack Query removed; ESLint made real (typescript-eslint, TS 6 pin) | ![P1][p1] | ![100%][pr100] | 2026-09-22 |
 | **1-7**  | Rename `clients` → `brands` everywhere (client = person, brand = website workspace)                   | ![P0][p0] | ![100%][pr100] | 2026-09-20                                                   |
 | **1-8**  | Admin: list clients, get client, invite via Clerk, create a brand for a client                        | ![P1][p1] | ![100%][pr100] | 2026-09-20                                                   |

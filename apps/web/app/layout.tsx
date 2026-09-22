@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Bricolage_Grotesque, Instrument_Sans } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Providers } from "./providers";
+import { RegisterServiceWorker } from "@/components/pwa/register-service-worker";
 import { APP_NAME } from "@/lib/utils";
 import { THEME_SCRIPT } from "@repo/ui/lib/theme";
 import "@repo/ui/styles.css"
@@ -25,6 +26,9 @@ export const metadata: Metadata = {
   title: { default: APP_NAME, template: `%s | ${APP_NAME}` },
   description:
     "Enter a website. Get a brand kit, a content strategy, and a month of posts ready for your approval.",
+  applicationName: APP_NAME,
+  // Installed on iOS from the share sheet; these make it open full screen with the right title.
+  appleWebApp: { capable: true, title: APP_NAME, statusBarStyle: "default" },
 };
 
 export const viewport: Viewport = {
@@ -68,6 +72,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         </head>
         <body>
           <Providers>{children}</Providers>
+          <RegisterServiceWorker />
         </body>
       </html>
     </ClerkProvider>

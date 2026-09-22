@@ -7,6 +7,7 @@ import { TopBarFrame } from "./top-bar-frame";
 import { ClientSwitcher, type SwitchableClient } from "./client-switcher";
 import { AgentChatButton } from "./agent-chat-button";
 import { UserMenu } from "./user-menu";
+import { InstallButton } from "@/components/pwa/install-button";
 
 /** The switcher only needs these three fields, so only these three cross to the browser. */
 function switchable({ id, name, accent }: Client): SwitchableClient {
@@ -36,6 +37,7 @@ export function TopBar({ viewer, client, clients = [] }: { viewer: Viewer; clien
               <Settings className="size-4" />
             </Link>
           )}
+          <InstallButton />
           <ThemeMenu />
           {isAdmin && <Badge variant="outline" className="max-md:hidden">Admin</Badge>}
           <UserMenu />

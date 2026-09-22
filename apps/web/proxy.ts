@@ -1,7 +1,8 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 
 // Everything is private except the pages you need in order to get in.
-const isPublicRoute = createRouteMatcher(["/sign-in(.*)", "/sign-up(.*)"]);
+// /offline is the service worker's fallback page, so it must load without a session.
+const isPublicRoute = createRouteMatcher(["/sign-in(.*)", "/sign-up(.*)", "/offline"]);
 
 // Next.js 16 calls this file `proxy.ts` (it was `middleware.ts` before).
 export default clerkMiddleware(async (auth, request) => {
