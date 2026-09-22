@@ -2,9 +2,8 @@ import { load } from "cheerio";
 import type { Branding } from "./firecrawl";
 import type { StyleFacts } from "./types";
 
-// Colours and fonts from Firecrawl's branding output, cleaned up to our rules. Code owns these
-// facts: a colour is kept only when it is a valid 6-digit hex and is not grey, near-white or
-// near-black; a font is kept only when it is a real choice, not a system fallback.
+// Colours and fonts from Firecrawl's branding output, cleaned up to the rules below. Code owns
+// these facts; the model is never asked for a colour value or a font name.
 
 const MAX_COLORS = 5;
 const COLOR_ROLES = ["primary", "secondary", "accent", "link"] as const; // most important first
@@ -37,6 +36,7 @@ function lightnessAndSaturation(hex: string): Lightness {
 function isBrandColor(hex: string): boolean {
   if (!HEX_COLOR.test(hex)) return false;
   const { lightness, saturation } = lightnessAndSaturation(hex);
+  // Rejected: near-white (>0.92), near-black (<0.1) and grey (<0.12 saturation) — none is a brand colour.
   return lightness <= 0.92 && lightness >= 0.1 && saturation >= 0.12;
 }
 

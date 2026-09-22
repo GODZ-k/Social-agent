@@ -10,7 +10,7 @@ import { ScanError, type Discovery, type PageFacts, type SiteFacts } from "./typ
 export const SCAN_BUDGET_MS = 45_000;
 const MIN_WORDS = 80;
 
-/** Step "discover": the home page with its branding, and which inner pages are worth reading. A failure here fails the scan. */
+/** Step "discover": the home page, its branding, and the inner pages worth reading. A failure here fails the scan. */
 export async function discoverSite(url: string, deadline: number): Promise<Discovery> {
   const home = await fetchPage(url, { deadline, withBranding: true });
   const { style, warnings } = buildStyleFacts(home.branding, home.html);
@@ -62,18 +62,20 @@ function unreadPagesWarning(
   return `${failed} ${failed === 1 ? "page" : "pages"} could not be read.${ranOut}`;
 }
 
+const hasAnyDetail = (info: BusinessInfo) => Object.keys(info).length > 0;
+
 function businessInfo(pages: PageFacts[]): BusinessInfo | undefined {
   const phone = pages.flatMap((page) => page.phones)[0];
   const email = pages.flatMap((page) => page.emails)[0];
   const location = pages.map((page) => page.location).find(Boolean);
   const hours = pages.map((page) => page.hours).find(Boolean);
-  const info: BusinessInfo = {
-    ...(phone ? { phone } : {}),
-    ...(email ? { email } : {}),
-    ...(location ? { location } : {}),
-    ...(hours ? { hours } : {}),
-  };
-  return Object.keys(info).length > 0 ? info : undefined;
+
+  const info: BusinessInfo = {};
+  if (phone) info.phone = phone;
+  if (email) info.email = email;
+  if (location) info.location = location;
+  if (hours) info.hours = hours;
+  return hasAnyDetail(info) ? info : undefined;
 }
 
 /** Step "read-pages": the inner pages in parallel, then one SiteFacts. */

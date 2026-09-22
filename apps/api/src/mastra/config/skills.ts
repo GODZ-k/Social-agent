@@ -9,9 +9,8 @@ const here = dirname(fileURLToPath(import.meta.url));
 const SKILLS_DIR = [join(here, "../skills"), join(here, "skills")].find((dir) => existsSync(dir));
 
 /**
- * The body of a skill's SKILL.md, without its front matter, for putting into an agent's
- * instructions. Use this for an agent that must answer in one model call: attaching the skill
- * through `skills:` gives the model tools to open it, which costs extra calls.
+ * A skill's SKILL.md body, without its front matter, to put straight into an agent's instructions.
+ * Use it when the agent must answer in one call: `skills:` gives the model tools, which cost calls.
  */
 export function loadSkill(name: string): string {
   if (!SKILLS_DIR) throw new Error("Skills folder not found. The build must copy src/mastra/skills to dist/skills.");

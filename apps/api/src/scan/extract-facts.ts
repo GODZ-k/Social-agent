@@ -1,3 +1,5 @@
+// Everything one page of HTML can say about a business on its own: identity, contact details,
+// schema.org facts, social links, logo and readable text. No network, no Mastra.
 import { load, type CheerioAPI } from "cheerio";
 import { z } from "zod";
 import { timeSchema, type BusinessInfo, type Weekday } from "@social-agent/shared";
@@ -5,31 +7,56 @@ import type { PageFacts } from "./types";
 
 const MAX_HEADINGS = 30;
 const MAX_WORDS = 1500;
+const MAX_NODE_DEPTH = 6;
 
-// schema.org types that describe the page, not the business. Includes pure value/component types
-// (an address, a rating, a menu item, ...) that are only ever a property of a business node, never
-// the business itself, so they must not be picked up as one when the walker descends into them.
-// "Place" and "ContactPoint" are deliberately not here: either can legitimately carry the address,
-// phone or email of the business itself.
-const NOT_A_BUSINESS = /^(WebSite|WebPage|AboutPage|ContactPage|ProfilePage|ItemPage|BreadcrumbList|ListItem|Person|Article|BlogPosting|NewsArticle|Product|Offer|Review|AggregateRating|Rating|ImageObject|VideoObject|SearchAction|ReadAction|FAQPage|Question|Answer|ItemList|CollectionPage|PostalAddress|GeoCoordinates|OpeningHoursSpecification|QuantitativeValue|PropertyValue|EntryPoint|Menu|MenuSection|MenuItem|Brand|Country|City|State)$/;
+// Page types, and pure value types (address, rating, menu item). "Place" and "ContactPoint" are
+// left out on purpose: either can carry the business's own address, phone or email.
+const NOT_A_BUSINESS = new Set([
+  "WebSite", "WebPage", "AboutPage", "ContactPage", "ProfilePage", "ItemPage", "CollectionPage",
+  "BreadcrumbList", "ListItem", "ItemList", "Person", "Article", "BlogPosting", "NewsArticle",
+  "Product", "Offer", "Review", "AggregateRating", "Rating", "ImageObject", "VideoObject",
+  "SearchAction", "ReadAction", "EntryPoint", "FAQPage", "Question", "Answer", "PostalAddress",
+  "GeoCoordinates", "OpeningHoursSpecification", "QuantitativeValue", "PropertyValue",
+  "Menu", "MenuSection", "MenuItem", "Brand", "Country", "City", "State",
+]);
 
-// A page-level node's own type (the page IS a WebSite/WebPage/..., not a business). Kept separate
-// from NOT_A_BUSINESS because it drives a different decision below: whether to descend into
-// mainEntity/about, not whether the node itself counts as a business.
-const PAGE_LEVEL_TYPE = /^(WebSite|WebPage|AboutPage|ContactPage|ProfilePage|ItemPage|CollectionPage)$/;
+// Kept apart from NOT_A_BUSINESS because it answers a different question: not "is this node a
+// business?" but "may the walk descend into mainEntity/about from here?".
+const PAGE_LEVEL_TYPES = new Set([
+  "WebSite", "WebPage", "AboutPage", "ContactPage", "ProfilePage", "ItemPage", "CollectionPage",
+]);
 
-// Properties that keep "the same business, or a part of it" when descending FROM A NODE THAT IS
-// ITSELF A BUSINESS: a sub-organization, department or location are still facts about that same
-// business. Never includes itemReviewed/publisher/author/worksFor/parentOrganization/provider/
-// brand/review/memberOf/sponsor/... — those explicitly name a *different* entity.
+// A sub-organization, department or location is still the same business. Never publisher, author,
+// parentOrganization, brand or itemReviewed: donangie.com's reviews carried a Review.itemReviewed
+// LocalBusiness whose phone and address belonged to another company.
 const BUSINESS_CHILD_PROPS = ["subOrganization", "department", "location"];
 
-// Properties that keep "the same business" only when descending FROM A PAGE-LEVEL NODE (the node
-// describes the page itself, e.g. WebPage/AboutPage/ContactPage): what the page's main subject or
-// topic is. A page-level node has no business identity of its own to leak, so this is safe.
+// Descending from a page-level node: what the page is about. Safe only there, because a page-level
+// node has no business identity of its own to leak into the result.
 const PAGE_CHILD_PROPS = ["mainEntity", "about"];
+
 const WEEKDAYS: Weekday[] = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
-const SOCIAL = /^https?:\/\/(www\.)?(instagram\.com\/[\w.]+|facebook\.com\/[\w.-]+|linkedin\.com\/(company|in)\/[\w-]+|tiktok\.com\/@[\w.]+)\/?$/i;
+
+const SOCIAL_PROFILE_PATHS = [
+  "instagram\\.com/[\\w.]+",
+  "facebook\\.com/[\\w.-]+",
+  "linkedin\\.com/(company|in)/[\\w-]+",
+  "tiktok\\.com/@[\\w.]+",
+];
+const SOCIAL_PROFILE_URL = new RegExp(`^https?://(www\\.)?(${SOCIAL_PROFILE_PATHS.join("|")})/?$`, "i");
+const SHARE_PATH = /\/(sharer|share|intent)\b/i;
+const FACEBOOK_HOST = /(^|\.)facebook\.com$/i;
+const FACEBOOK_PROFILE_PATH = /^\/profile\.php\/?$/i;
+const NUMERIC_ID = /^\d+$/;
+const LOOKS_LIKE_LOGO = /logo/i;
+
+const NOISE_WORDS = ["cookie", "consent", "banner", "modal", "popup"];
+const NOISE_NAME = new RegExp(NOISE_WORDS.join("|"), "i");
+const NOISE_TAGS = "nav, header, footer, aside, script, style, noscript, form, svg, iframe, template";
+const CONTENT_TAGS = ["main", "article"];
+const WRAPS_CONTENT = CONTENT_TAGS.join(", ");
+const IS_CONTENT_ROOT = ["html", "body", ...CONTENT_TAGS].join(", ");
+const BLOCK_TAGS = "p, div, li, br, h1, h2, h3, h4, h5, h6, td, th, section, article, blockquote, dt, dd";
 
 type Node = Record<string, unknown>;
 
@@ -37,10 +64,12 @@ export const countWords = (text: string) => (text.trim() === "" ? 0 : text.trim(
 const clean = (value: unknown) => (typeof value === "string" ? value.replace(/\s+/g, " ").trim() : "");
 const unique = (values: string[]) => [...new Set(values.filter(Boolean))];
 
-/**
- * A stray "%" in an href makes decodeURIComponent throw. Such a link identifies nobody, so it is
- * skipped rather than kept as garbage.
- */
+/** schema.org writes a value either as a bare string or as a node carrying the field. */
+function fieldOrSelf(value: unknown, field: string): unknown {
+  return typeof value === "object" && value ? (value as Node)[field] : value;
+}
+
+/** A stray "%" makes decodeURIComponent throw. Such a link identifies nobody, so it is skipped. */
 function decodeOrSkip(value: string): string | undefined {
   try {
     return decodeURIComponent(value);
@@ -55,7 +84,7 @@ function hrefsWithScheme(hrefs: string[], scheme: string): string[] {
   return hrefs.filter((href) => href.toLowerCase().startsWith(scheme)).map((href) => href.slice(scheme.length));
 }
 
-/** The values that decode. One that does not is dropped: a contact detail is right or it is absent. */
+/** One that does not decode is dropped: a contact detail is right, or it is absent. */
 function decodeAll(values: string[]): string[] {
   return values.map(decodeOrSkip).filter((value): value is string => value !== undefined);
 }
@@ -71,15 +100,13 @@ function absolute(value: unknown, base: string): string | undefined {
 }
 
 /**
- * A social profile link, normalised: the query string is dropped, except for a legacy
- * Facebook "profile.php?id=..." link, whose numeric id is the only thing that identifies
- * the profile. A profile.php link with no numeric id identifies nobody, so it is dropped
- * entirely, as are share/sharer/intent links (those point at a piece of content, not a profile).
+ * The query string is dropped, except a legacy Facebook "profile.php?id=": its numeric id is the
+ * only thing identifying the profile. Share/intent links point at content, not a profile.
  */
 function socialProfile(href: string, base: string): string | undefined {
   const found = absolute(href, base);
   if (!found) return undefined;
-  if (/\/(sharer|share|intent)\b/i.test(found)) return undefined;
+  if (SHARE_PATH.test(found)) return undefined;
 
   let url: URL;
   try {
@@ -88,87 +115,79 @@ function socialProfile(href: string, base: string): string | undefined {
     return undefined;
   }
 
-  if (/(^|\.)facebook\.com$/i.test(url.hostname) && /^\/profile\.php\/?$/i.test(url.pathname)) {
+  if (FACEBOOK_HOST.test(url.hostname) && FACEBOOK_PROFILE_PATH.test(url.pathname)) {
     const id = url.searchParams.get("id");
-    return id && /^\d+$/.test(id) ? `${url.origin}/profile.php?id=${id}` : undefined;
+    return id && NUMERIC_ID.test(id) ? `${url.origin}/profile.php?id=${id}` : undefined;
   }
 
   const normalized = `${url.origin}${url.pathname}`;
-  return SOCIAL.test(normalized) ? normalized : undefined;
+  return SOCIAL_PROFILE_URL.test(normalized) ? normalized : undefined;
 }
-
-const MAX_NODE_DEPTH = 6;
 
 function nodeTypes(node: Node): string[] {
   return [node["@type"]].flat().filter((type): type is string => typeof type === "string");
 }
 
-/** Passes the type test used to decide whether a node's OWN facts are eligible to be read as a business. */
 function isBusinessType(node: Node): boolean {
   const types = nodeTypes(node);
-  return types.length > 0 && !types.every((type) => NOT_A_BUSINESS.test(type));
+  return types.length > 0 && !types.every((type) => NOT_A_BUSINESS.has(type));
 }
 
 function isPageLevelType(node: Node): boolean {
-  return nodeTypes(node).some((type) => PAGE_LEVEL_TYPE.test(type));
+  return nodeTypes(node).some((type) => PAGE_LEVEL_TYPES.has(type));
+}
+
+/** The properties that still mean "the same business, or a part of it" from this node. */
+function sameEntityProperties(node: Node): string[] {
+  if (isBusinessType(node)) return BUSINESS_CHILD_PROPS;
+  if (isPageLevelType(node)) return PAGE_CHILD_PROPS;
+  return [];
+}
+
+/** Depth is capped so a malformed or hostile document cannot make the walk unbounded. */
+function collectFrom(value: unknown, depth: number, found: Node[]): void {
+  if (depth > MAX_NODE_DEPTH) return;
+  if (Array.isArray(value)) {
+    value.forEach((item) => collectFrom(item, depth, found)); // array membership never consumes depth
+    return;
+  }
+  if (!value || typeof value !== "object") return;
+  const node = value as Node;
+  found.push(node);
+
+  // @graph always continues the same document, whatever this node's own type is.
+  if ("@graph" in node) collectFrom(node["@graph"], depth + 1, found);
+
+  for (const key of sameEntityProperties(node)) {
+    if (key in node) collectFrom(node[key], depth + 1, found);
+  }
 }
 
 /**
- * Every JSON-LD node on the page that is reachable through a property meaning "the same business,
- * or a part of it" — never through a property that explicitly names a *different* entity
- * (itemReviewed, publisher, author, worksFor, parentOrganization, provider, brand, review,
- * memberOf, sponsor, potentialAction, offers, ...). Concretely: always descend through `@graph`
- * and array membership; from a node that is itself a business, also through
- * subOrganization/department/location; from a page-level node (WebSite/WebPage/AboutPage/...),
- * also through mainEntity/about. Parents are pushed before their children, so when two nodes on
- * the page both have a fact, the outer, more general one is still read first (readLocation/
- * readHours/etc. all take the first node with a truthy result). Depth is capped so a hostile or
- * malformed document cannot make this walk unbounded.
+ * Parents are collected before their children, so when two nodes both carry a fact the outer, more
+ * general one is read first — every reader below takes the first node with a truthy result.
  */
 function businessNodes($: CheerioAPI): Node[] {
-  const nodes: Node[] = [];
-  const walk = (value: unknown, depth: number) => {
-    if (depth > MAX_NODE_DEPTH) return;
-    if (Array.isArray(value)) {
-      value.forEach((item) => walk(item, depth)); // array membership never consumes depth
-      return;
-    }
-    if (!value || typeof value !== "object") return;
-    const node = value as Node;
-    nodes.push(node);
-
-    // @graph always continues the same document, regardless of this node's own type.
-    if ("@graph" in node) walk(node["@graph"], depth + 1);
-
-    const sameEntityProps = isBusinessType(node)
-      ? BUSINESS_CHILD_PROPS
-      : isPageLevelType(node)
-        ? PAGE_CHILD_PROPS
-        : [];
-    for (const key of sameEntityProps) {
-      if (key in node) walk(node[key], depth + 1);
-    }
-  };
+  const found: Node[] = [];
   $('script[type="application/ld+json"]').each((_, element) => {
     try {
-      walk(JSON.parse($(element).text()), 0);
+      collectFrom(JSON.parse($(element).text()), 0, found);
     } catch {
       // Broken JSON-LD is common. It is simply not a source.
     }
   });
-  return nodes.filter(isBusinessType);
+  return found.filter(isBusinessType);
 }
 
 function readLocation(address: unknown): BusinessInfo["location"] {
   if (typeof address === "string") return clean(address) ? { address: clean(address) } : undefined;
   if (!address || typeof address !== "object") return undefined;
   const node = address as Node;
-  const country = node.addressCountry;
   const location = {
     address: clean(node.streetAddress) || undefined,
     city: clean(node.addressLocality) || undefined,
     region: clean(node.addressRegion) || undefined,
-    country: clean(typeof country === "object" && country ? (country as Node).name : country) || undefined,
+    country: clean(fieldOrSelf(node.addressCountry, "name")) || undefined,
   };
   return Object.values(location).some(Boolean) ? location : undefined;
 }
@@ -193,59 +212,26 @@ function readHours(spec: unknown): BusinessInfo["hours"] {
   return hours.length > 0 ? hours : undefined;
 }
 
-function findLogo($: CheerioAPI, nodes: Node[], url: string, ogImage?: string): string | undefined {
-  for (const node of nodes) {
-    const logo = node.logo;
-    const found = absolute(typeof logo === "object" && logo ? (logo as Node).url : logo, url);
-    if (found) return found;
-  }
-  const image = $("img")
-    .filter((_, element) => {
-      const el = $(element);
-      return /logo/i.test([el.attr("class"), el.attr("id"), el.attr("alt"), el.attr("src")].join(" "));
-    })
-    .first();
-  return (
-    absolute(image.attr("src"), url) ??
-    ogImage ??
-    absolute($('link[rel~="icon"]').attr("href") ?? $('link[rel="apple-touch-icon"]').attr("href"), url)
-  );
+function linkHrefs($: CheerioAPI): string[] {
+  return $("a[href]").map((_, element) => $(element).attr("href")?.trim() ?? "").get();
 }
 
-function mainText($: CheerioAPI): string {
-  $("nav, header, footer, aside, script, style, noscript, form, svg, iframe, template").remove();
-  $("[class], [id]")
-    .filter((_, element) => {
-      const el = $(element);
-      // Never drop the structural containers themselves, or a wrapper that holds one of them:
-      // a "modal-open" class on <body>, or a "cookie-banner" wrapper around <main>, must not
-      // erase the whole page.
-      if (el.is("html, body, main, article")) return false;
-      if (el.find("main, article").length > 0) return false;
-      return /cookie|consent|banner|modal|popup/i.test(`${el.attr("class") ?? ""} ${el.attr("id") ?? ""}`);
-    })
-    .remove();
-
-  const root = $("main").first().length ? $("main").first() : $("article").first().length ? $("article").first() : $("body");
-  // .text() joins elements with nothing between them: "<h2>Menu</h2><p>Bread</p>" reads "MenuBread".
-  root.find("p, div, li, br, h1, h2, h3, h4, h5, h6, td, th, section, article, blockquote, dt, dd").append(" ");
-  return root.text().replace(/\s+/g, " ").trim().split(" ").slice(0, MAX_WORDS).join(" ");
-}
-
-/** Everything code can know about one page. Destroys nothing outside its own parsed copy. */
-export function extractPageFacts(url: string, html: string): PageFacts {
-  const $ = load(html);
+function pageIdentity($: CheerioAPI, url: string) {
   const meta = (selector: string) => clean($(selector).attr("content")) || undefined;
-  const nodes = businessNodes($);
-
-  const og = {
-    siteName: meta('meta[property="og:site_name"]'),
-    title: meta('meta[property="og:title"]'),
-    description: meta('meta[property="og:description"]'),
-    image: absolute(meta('meta[property="og:image"]'), url),
+  return {
+    title: clean($("title").first().text()),
+    description: meta('meta[name="description"]'),
+    og: {
+      siteName: meta('meta[property="og:site_name"]'),
+      title: meta('meta[property="og:title"]'),
+      description: meta('meta[property="og:description"]'),
+      image: absolute(meta('meta[property="og:image"]'), url),
+    },
   };
+}
 
-  const hrefs = $("a[href]").map((_, element) => $(element).attr("href")?.trim() ?? "").get();
+function contactDetails($: CheerioAPI, nodes: Node[]): { phones: string[]; emails: string[] } {
+  const hrefs = linkHrefs($);
   // A mailto's headers ("?subject=...") are not part of the address, so they go before decoding.
   const mailtoAddresses = hrefsWithScheme(hrefs, "mailto:").map((value) => value.split("?")[0]!);
 
@@ -258,33 +244,83 @@ export function extractPageFacts(url: string, html: string): PageFacts {
     ...nodes.map((node) => clean(node.email).replace(/^mailto:/i, "").toLowerCase()),
   ]).filter((email) => z.email().safeParse(email).success);
 
-  const socialLinks = unique(
-    hrefs.map((href) => socialProfile(href, url)).filter((href): href is string => Boolean(href)),
-  );
+  return { phones, emails };
+}
 
-  const headings = unique($("h1, h2, h3").map((_, element) => clean($(element).text())).get()).slice(0, MAX_HEADINGS);
-  const logo = findLogo($, nodes, url, og.image);
+function socialLinksOn($: CheerioAPI, url: string): string[] {
+  const profiles = linkHrefs($).map((href) => socialProfile(href, url));
+  return unique(profiles.filter((href): href is string => Boolean(href)));
+}
+
+function headingsOn($: CheerioAPI): string[] {
+  return unique($("h1, h2, h3").map((_, element) => clean($(element).text())).get()).slice(0, MAX_HEADINGS);
+}
+
+/** Document order decides: the header's logo comes before a footer or partner logo. */
+function imageNamedLogo($: CheerioAPI): string | undefined {
+  return $("img")
+    .filter((_, element) => {
+      const el = $(element);
+      return LOOKS_LIKE_LOGO.test([el.attr("class"), el.attr("id"), el.attr("alt"), el.attr("src")].join(" "));
+    })
+    .first()
+    .attr("src");
+}
+
+function logoOn($: CheerioAPI, nodes: Node[], url: string, ogImage?: string): string | undefined {
+  const declared = nodes.map((node) => absolute(fieldOrSelf(node.logo, "url"), url)).find(Boolean);
+  if (declared) return declared;
+  const icon = $('link[rel~="icon"]').attr("href") ?? $('link[rel="apple-touch-icon"]').attr("href");
+  return absolute(imageNamedLogo($), url) ?? ogImage ?? absolute(icon, url);
+}
+
+/** Mutates the parse: chrome and cookie/modal overlays are gone once this has run. */
+function removeNoise($: CheerioAPI): void {
+  $(NOISE_TAGS).remove();
+  $("[class], [id]")
+    .filter((_, element) => {
+      const el = $(element);
+      // A "modal-open" class on <body>, or a cookie wrapper around <main>, must not erase the page.
+      const holdsTheContent = el.is(IS_CONTENT_ROOT) || el.find(WRAPS_CONTENT).length > 0;
+      return !holdsTheContent && NOISE_NAME.test(`${el.attr("class") ?? ""} ${el.attr("id") ?? ""}`);
+    })
+    .remove();
+}
+
+function contentRoot($: CheerioAPI) {
+  const main = $("main").first();
+  if (main.length) return main;
+  const article = $("article").first();
+  if (article.length) return article;
+  return $("body");
+}
+
+function mainText($: CheerioAPI): string {
+  removeNoise($);
+  const root = contentRoot($);
+  // .text() joins elements with nothing between them: "<h2>Menu</h2><p>Bread</p>" reads "MenuBread".
+  root.find(BLOCK_TAGS).append(" ");
+  return root.text().replace(/\s+/g, " ").trim().split(" ").slice(0, MAX_WORDS).join(" ");
+}
+
+/** The parsed copy is torn down while reading, so it is created here and never escapes. */
+export function extractPageFacts(url: string, html: string): PageFacts {
+  const $ = load(html);
+  const nodes = businessNodes($);
+  const identity = pageIdentity($, url);
+  const { phones, emails } = contactDetails($, nodes);
+  const socialLinks = socialLinksOn($, url);
+  const headings = headingsOn($);
+  const logo = logoOn($, nodes, url, identity.og.image);
+  const schemaNames = unique(nodes.map((node) => clean(node.name)));
   const location = nodes.map((node) => readLocation(node.address)).find(Boolean);
   const hours = nodes.map((node) => readHours(node.openingHoursSpecification)).find(Boolean);
-  const title = clean($("title").first().text());
 
   // Last: this removes elements from the parsed copy.
   const text = mainText($);
 
   return {
-    url,
-    title,
-    description: meta('meta[name="description"]'),
-    og,
-    schemaNames: unique(nodes.map((node) => clean(node.name))),
-    headings,
-    text,
-    wordCount: countWords(text),
-    logo,
-    phones,
-    emails,
-    location,
-    hours,
-    socialLinks,
+    url, ...identity, schemaNames, headings, text, wordCount: countWords(text),
+    logo, phones, emails, location, hours, socialLinks,
   };
 }

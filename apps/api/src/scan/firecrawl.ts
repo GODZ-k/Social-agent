@@ -3,20 +3,16 @@ import { isIP } from "node:net";
 import { isBlockedAddress } from "./address-check";
 import { ScanError } from "./types";
 
-// The only file that reads a website. Firecrawl opens the page in a real browser on its own
-// servers and returns the rendered HTML, every link on the page and, when asked, the site's
-// colours and fonts. Our server never connects to a user-typed address.
-//
-// Firecrawl does not refuse private addresses (checked 2026-09-22: it fetched 127.0.0.1:8080),
-// so vetAddress runs before every call. Without FIRECRAWL_API_KEY the calls are keyless, which
-// Firecrawl caps per IP per day: enough for development, not for production.
+// The only file that reads a website: Firecrawl renders the page on its own servers, so our
+// server never connects to a user-typed address. Firecrawl does not refuse private addresses
+// (checked 2026-09-22: it fetched 127.0.0.1:8080), so vetAddress runs before every call.
 
 const FIRECRAWL_SCRAPE_URL = "https://api.firecrawl.dev/v2/scrape";
 const RENDER_TIMEOUT_MS = 30_000; // a browser render of one page takes 2-10 s
 const MAX_HTML_CHARS = 2_000_000;
 // A PDF or an image comes back as a stub document around the extracted text, not as a web page.
 const MIN_WEBPAGE_CHARS = 200;
-const NOT_A_WEBPAGE_CODE = "SCRAPE_BRANDING_NOT_SUPPORTED"; // Firecrawl's answer for a PDF or an image when branding is requested
+const NOT_A_WEBPAGE_CODE = "SCRAPE_BRANDING_NOT_SUPPORTED"; // Firecrawl's answer for a PDF or an image
 
 export type Branding = {
   colors?: Partial<Record<"primary" | "secondary" | "accent" | "link" | "background" | "textPrimary", string>>;
@@ -101,10 +97,9 @@ function parseJson(text: string): FirecrawlResponse {
   }
 }
 
-async function callFirecrawl(url: URL, formats: string[], timeoutMs: number): Promise<FirecrawlResponse> {
-  let response: Response;
+async function postScrape(url: URL, formats: string[], timeoutMs: number): Promise<Response> {
   try {
-    response = await fetch(FIRECRAWL_SCRAPE_URL, {
+    return await fetch(FIRECRAWL_SCRAPE_URL, {
       method: "POST",
       headers: requestHeaders(),
       body: JSON.stringify({ url: url.href, formats, onlyMainContent: false, timeout: timeoutMs }),
@@ -113,38 +108,50 @@ async function callFirecrawl(url: URL, formats: string[], timeoutMs: number): Pr
   } catch {
     throw new ScanError("SITE_UNREACHABLE"); // network error, or our own timeout fired
   }
+}
 
-  let text: string;
+async function readBody(response: Response): Promise<string> {
   try {
-    text = await response.text();
+    return await response.text();
   } catch {
     throw new ScanError("SITE_UNREACHABLE"); // the body did not finish arriving
   }
-  const body = parseJson(text);
-  if (body.code === NOT_A_WEBPAGE_CODE) throw new ScanError("NOT_A_WEBSITE");
+}
 
-  // Our account or Firecrawl itself is the problem, not the website: surface it to the API's
-  // error handling instead of telling the business owner their site is unreachable.
-  const accountOrOutage = response.status === 401 || response.status === 402 || response.status === 429 || response.status >= 500;
-  if (accountOrOutage) throw new Error(`Firecrawl answered ${response.status}: ${text.slice(0, 200)}`);
+/** Our account or Firecrawl itself is the problem, not the website the owner typed. */
+function isAccountOrOutage(status: number): boolean {
+  return status === 401 || status === 402 || status === 429 || status >= 500;
+}
 
-  if (!response.ok || !body.success || !body.data) throw new ScanError("SITE_UNREACHABLE");
+const isSuccessStatus = (status: number) => status >= 200 && status < 300;
+
+/** The body, or the error to throw for it. Order matters: the three taxonomies overlap. */
+function classifyResponse(status: number, body: FirecrawlResponse, text: string): FirecrawlResponse | Error {
+  if (body.code === NOT_A_WEBPAGE_CODE) return new ScanError("NOT_A_WEBSITE");
+  // A plain Error so the API's error handling sees it, rather than the owner being told their
+  // site is unreachable.
+  if (isAccountOrOutage(status)) return new Error(`Firecrawl answered ${status}: ${text.slice(0, 200)}`);
+  if (!isSuccessStatus(status) || !body.success || !body.data) return new ScanError("SITE_UNREACHABLE");
   return body;
 }
 
-/**
- * The address the page was really served from. Firecrawl reports it, but the scan only trusts a
- * reported value it can parse: everything downstream resolves links against this.
- */
+async function callFirecrawl(url: URL, formats: string[], timeoutMs: number): Promise<FirecrawlResponse> {
+  const response = await postScrape(url, formats, timeoutMs);
+  const text = await readBody(response);
+  const outcome = classifyResponse(response.status, parseJson(text), text);
+  if (outcome instanceof Error) throw outcome;
+  return outcome;
+}
+
+/** Only a reported address we can parse is trusted: everything downstream resolves links against it. */
 function finalUrl(reported: string | undefined, requested: URL): string {
   if (typeof reported === "string" && reported.length > 0 && URL.canParse(reported)) return reported;
   return requested.href;
 }
 
 /**
- * One rendered page. Branding is only needed for the home page. Throws ScanError for anything
- * that is the website's fault (or the address's); a Firecrawl account or outage problem is
- * thrown as a plain Error.
+ * One rendered page; branding is only needed for the home page. A ScanError means the website or
+ * the address is at fault, a plain Error means our Firecrawl account or a Firecrawl outage.
  */
 export async function fetchPage(rawUrl: string, options: { deadline: number; withBranding?: boolean }): Promise<FetchedPage> {
   const url = await vetAddress(rawUrl);

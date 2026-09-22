@@ -1,8 +1,8 @@
 import { z } from "zod";
 
 /**
- * What the model is asked for: judgement only. There is deliberately no field for a phone, email,
- * address, hours, colour value or font, so the model cannot write one. Code adds those.
+ * Judgement only. There is deliberately no field for a phone, email, address, hours, colour value
+ * or font, so the model cannot write one — code adds those from what it extracted.
  */
 export const brandAnalysisSchema = z.object({
   name: z.string().describe("The business name, as the business writes it."),

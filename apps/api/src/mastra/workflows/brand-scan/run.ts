@@ -11,8 +11,8 @@ export type RunBrandScanOptions = {
 };
 
 /**
- * The one way the rest of the API runs a brand scan. Expected failures (a bad address, an
- * unreachable site, no readable text) are returned, never thrown, so a caller can store them.
+ * The one way the rest of the API runs a brand scan. Expected failures (a bad address, an unreachable
+ * site, no readable text) are returned, never thrown, so a caller can store them.
  */
 export async function runBrandScan(input: string, options: RunBrandScanOptions = {}): Promise<ScanOutcome> {
   const candidate = normaliseScanUrl(input);

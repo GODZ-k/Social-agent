@@ -34,18 +34,15 @@ function assemble(analysis: BrandAnalysis, facts: SiteFacts): ScanResult {
 const STRUCTURED_OUTPUT_FAILURE_IDS = ["STRUCTURED_OUTPUT_SCHEMA_VALIDATION_FAILED", "STRUCTURED_OUTPUT_OBJECT_UNDEFINED"];
 
 /**
- * The AI SDK's own parse and validation errors, which Mastra passes through untouched. Their classes
- * cannot be imported here (`ai` is not a dependency of this app), so they are matched by name — the
- * same three Mastra's own `isStructuredOutputFormatError` checks.
+ * The AI SDK's parse errors, which Mastra passes through untouched. Matched by name because `ai` is
+ * not a dependency here — the same three Mastra's own `isStructuredOutputFormatError` checks.
  */
 const AI_SDK_FORMAT_ERROR_NAMES = ["AI_JSONParseError", "AI_NoObjectGeneratedError", "AI_TypeValidationError"];
 
 /**
- * True only when the model's answer was the problem. Three shapes can say that:
- * a `ZodError` from our own parse; a `MastraError` from the strict structured-output strategy, which
- * `agent.generate` throws when the answer fails the schema or no object came back at all; and an AI
- * SDK parse error. A 401, a rate limit, an overload or a socket error is none of these, and must not
- * be retried or quoted back to the model.
+ * True only when the model's answer was the problem: our zod parse, Mastra's strict structured-output
+ * error, or an AI SDK parse error. Anything else — 401, rate limit, socket — is rethrown, never
+ * retried or quoted back to the model.
  */
 function isAnswerRejected(error: unknown): error is Error {
   if (error instanceof ZodError) return true;
@@ -66,8 +63,8 @@ function rejectionNote(error: Error): string {
 }
 
 /**
- * One call per scan. A second one happens only when the first answer failed validation, and then
- * the rejection goes back to the model. Every other failure is rethrown, so the workflow fails.
+ * One call per scan. A second happens only when the first answer failed validation, with the
+ * rejection quoted back to the model; every other failure is rethrown, so the workflow fails.
  */
 async function analyseWithOneRetry(
   agent: BrandAnalystAgent,

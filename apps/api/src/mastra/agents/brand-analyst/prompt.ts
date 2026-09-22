@@ -4,37 +4,35 @@ import type { SiteFacts } from "../../../scan/types";
 const TEXT_BUDGET = 28_000;
 const HOME_SHARE = 8_000;
 
-// Scraped text must never be able to close the <site> block early (by accident or as a prompt
-// injection), so strip anything that looks like the delimiter tag before it goes anywhere near the prompt.
-// Zero-width and bidi characters are removed first so a tag hidden with one (a zero-width space
-// between the "s" and the "ite" of "</site>") is still caught.
 const INVISIBLE = /[\u00AD\u200B\u200C\u200D\u2060\uFEFF\u202A-\u202E\u2066-\u2069]/g;
+const SITE_TAG = /<\/?\s*site\b[^>]*>/gi;
 
-const data = (value: string) => value.replace(INVISIBLE, "").replace(/<\/?\s*site\b[^>]*>/gi, " ");
+// Scraped text must never close the <site> block early, by accident or as a prompt injection.
+// Invisible characters go first, so a tag hidden with one ("</si<zero-width space>te>") is caught.
+const stripDelimiters = (value: string) => value.replace(INVISIBLE, "").replace(SITE_TAG, " ");
 
-const line = (label: string, value?: string | string[]) => {
-  const text = Array.isArray(value) ? value.map(data).join(", ") : value !== undefined ? data(value) : value;
+function line(label: string, value?: string | string[]): string {
+  if (value === undefined) return "";
+  const text = Array.isArray(value) ? value.map(stripDelimiters).join(", ") : stripDelimiters(value);
   return text ? `${label}: ${text}\n` : "";
-};
+}
+
+function pageBlock(page: SiteFacts["pages"][number], budget: number): string {
+  const text = stripDelimiters(page.text).slice(0, budget);
+  return (
+    `## Page: ${stripDelimiters(page.url)}\n` +
+    line("Title", page.title) +
+    line("Description", page.description ?? page.og.description) +
+    line("Headings", page.headings.map(stripDelimiters).join(" | ")) +
+    (text ? `Text: ${text}\n` : "")
+  );
+}
 
 /** The one user message of a scan: the site's facts as compact text, inside a marked block. */
 export function renderSiteFacts(facts: SiteFacts): string {
   const others = Math.max(facts.pages.length - 1, 1);
   const perPage = Math.min(HOME_SHARE, Math.floor((TEXT_BUDGET - HOME_SHARE) / others));
-
-  const pages = facts.pages
-    .map((page, index) => {
-      const budget = index === 0 ? HOME_SHARE : perPage;
-      const text = data(page.text).slice(0, budget);
-      return (
-        `## Page: ${data(page.url)}\n` +
-        line("Title", page.title) +
-        line("Description", page.description ?? page.og.description) +
-        line("Headings", page.headings.map(data).join(" | ")) +
-        (text ? `Text: ${text}\n` : "")
-      );
-    })
-    .join("\n");
+  const pages = facts.pages.map((page, index) => pageBlock(page, index === 0 ? HOME_SHARE : perPage)).join("\n");
 
   return (
     "Draft the brand kit for this business.\n\n<site>\n" +

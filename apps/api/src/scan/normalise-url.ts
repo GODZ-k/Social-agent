@@ -3,9 +3,8 @@ import { websiteUrlSchema } from "@social-agent/shared";
 const HAS_SCHEME = /^[a-z][a-z0-9+.-]*:\/\//i;
 
 /**
- * What a person typed, as the address the scan will try. "localhost" and "10.0.0.1:8080" fail the
- * website rule but must answer BLOCKED_ADDRESS, not INVALID_URL, so anything URL-shaped is kept
- * and vetAddress in firecrawl.ts decides.
+ * What a person typed, as the address the scan will try. Anything URL-shaped is kept so that
+ * "localhost" and "10.0.0.1:8080" reach vetAddress and answer BLOCKED_ADDRESS, not INVALID_URL.
  */
 export function normaliseScanUrl(input: string): string {
   const trimmed = input.trim();
