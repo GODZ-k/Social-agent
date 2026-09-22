@@ -42,7 +42,7 @@
   --input: #d5d9e1;
 
   /* Translucent chrome (nav, sheets). Content scrolls underneath. */
-  --material: rgb(255 255 255 / 0.72);
+  --material: rgba(255, 255, 255, 0.925);
   --material-edge: rgb(255 255 255 / 0.7);
   --scrim: rgb(20 24 34 / 0.38);
 

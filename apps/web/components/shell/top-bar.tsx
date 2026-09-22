@@ -4,7 +4,7 @@ import { Settings } from "lucide-react";
 import type { Client, Viewer } from "@/lib/types";
 import { Badge } from "@repo/ui/components/badge";
 import { ThemeMenu } from "@repo/ui/components/theme-menu";
-import { Logo } from "./logo";
+import { TopBarFrame } from "./top-bar-frame";
 import { ClientSwitcher, type SwitchableClient } from "./client-switcher";
 import { AgentChatButton } from "./agent-chat-button";
 
@@ -17,9 +17,7 @@ export function TopBar({ viewer, client, clients = [] }: { viewer: Viewer; clien
   const isAdmin = viewer.role === "admin";
 
   return (
-    <header className="sticky top-0 z-40 px-3 pt-3 md:px-5">
-      <div className="material mx-auto flex h-14 max-w-[88rem] items-center gap-2 rounded-full pr-2 pl-4 md:gap-3">
-        <Logo />
+    <TopBarFrame>
         {client && (
           <>
             <span className="h-5 w-px bg-border" aria-hidden />
@@ -45,7 +43,6 @@ export function TopBar({ viewer, client, clients = [] }: { viewer: Viewer; clien
             <UserButton />
           </ClerkLoaded>
         </div>
-      </div>
-    </header>
+    </TopBarFrame>
   );
 }

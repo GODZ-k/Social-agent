@@ -6,6 +6,7 @@ import { motion } from "motion/react";
 import { CalendarDays, ChartNoAxesCombined, CircleCheckBig, Compass, LayoutGrid, House, Settings } from "lucide-react";
 import { spring } from "@repo/ui/lib/motion";
 import { cn } from "@/lib/utils";
+import { NavFrame } from "./nav-frame";
 
 // Ordered the way work moves through the agent: plan, make, approve, publish, learn.
 const items = [
@@ -19,25 +20,14 @@ const items = [
   { segment: "settings", label: "Settings", icon: Settings },
 ] as const;
 
-/**
- * One nav, two postures: a floating rail beside the content on wide screens,
- * a tab bar within thumb reach on phones. Both are translucent so content
- * scrolls underneath rather than being cut off by a bar.
- */
+/** One nav, two postures (see NavFrame). Translucent so content scrolls underneath. */
 export function WorkspaceNav({ clientId, pendingApprovals }: { clientId: string; pendingApprovals: number }) {
   const pathname = usePathname();
   const base = `/c/${clientId}`;
   const active = pathname === base ? "" : (pathname.slice(base.length + 1).split("/")[0] ?? "");
 
   return (
-    <nav
-      aria-label="Workspace"
-      className={cn(
-        "material fixed z-40 flex",
-        "inset-x-3 bottom-[max(0.75rem,env(safe-area-inset-bottom))] justify-between rounded-[1.75rem] p-1.5",
-        "lg:inset-x-auto lg:top-24 lg:bottom-auto lg:left-5 lg:w-52 lg:flex-col lg:justify-start lg:gap-0.5 lg:rounded-xl lg:p-2",
-      )}
-    >
+    <NavFrame>
       {items.map(({ segment, label, icon: Icon }) => {
         const isActive = segment === active;
         const badge = segment === "approvals" && pendingApprovals > 0 ? pendingApprovals : null;
@@ -77,6 +67,6 @@ export function WorkspaceNav({ clientId, pendingApprovals }: { clientId: string;
           </Link>
         );
       })}
-    </nav>
+    </NavFrame>
   );
 }

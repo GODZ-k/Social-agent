@@ -1,26 +1,23 @@
 import Link from "next/link";
 import { format } from "date-fns";
 import { CalendarDays } from "lucide-react";
-import type { BrandKit, Post } from "@/lib/types";
+import type { BrandKit } from "@/lib/types";
+import { listPosts } from "@/lib/api/server";
 import { EmptyState, Panel } from "@repo/ui/components/states";
 import { PlatformIcon } from "@repo/ui/components/social/platform";
 import { PostArt } from "@repo/ui/components/social/post-art";
 import { Button } from "@repo/ui/components/button";
 
-export function UpcomingPosts({ clientId, posts, brand }: { clientId: string; posts: Post[]; brand: BrandKit }) {
+/** Reads its own posts so the rest of the overview does not wait for them; rendered under Suspense. */
+export async function UpcomingPosts({ clientId, brand }: { clientId: string; brand: BrandKit }) {
+  const posts = await listPosts(clientId);
   const upcoming = posts
     .filter((p) => p.status === "scheduled" && p.scheduledFor)
     .sort((a, b) => a.scheduledFor!.localeCompare(b.scheduledFor!))
     .slice(0, 8);
 
   return (
-    <Panel aria-labelledby="upcoming-heading" className="overflow-hidden">
-      <div className="mb-5 flex items-center justify-between gap-4">
-        <h2 id="upcoming-heading" className="type-heading">Going out next</h2>
-        <Button asChild variant="ghost" size="sm">
-          <Link href={`/c/${clientId}/calendar`}><CalendarDays /> Open calendar</Link>
-        </Button>
-      </div>
+    <UpcomingPostsPanel clientId={clientId}>
       {upcoming.length === 0 ? (
         <EmptyState
           icon={<CalendarDays />}
@@ -43,6 +40,21 @@ export function UpcomingPosts({ clientId, posts, brand }: { clientId: string; po
           ))}
         </ul>
       )}
+    </UpcomingPostsPanel>
+  );
+}
+
+/** The panel frame, shared with the skeleton so the header never jumps. */
+export function UpcomingPostsPanel({ clientId, children }: { clientId: string; children: React.ReactNode }) {
+  return (
+    <Panel aria-labelledby="upcoming-heading" className="overflow-hidden">
+      <div className="mb-5 flex items-center justify-between gap-4">
+        <h2 id="upcoming-heading" className="type-heading">Going out next</h2>
+        <Button asChild variant="ghost" size="sm">
+          <Link href={`/c/${clientId}/calendar`}><CalendarDays /> Open calendar</Link>
+        </Button>
+      </div>
+      {children}
     </Panel>
   );
 }
