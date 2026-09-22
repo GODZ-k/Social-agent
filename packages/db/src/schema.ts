@@ -97,21 +97,15 @@ export const users = pgTable(
   "users",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    /** Null while the person is only invited. Set on their first sign-in. */
     clerkId: text("clerk_id").unique(),
-    /** Always lowercase. An invited row finds its Clerk account by this, once Clerk has verified it. */
     email: text("email").notNull().unique(),
-    /** Copied from Clerk on each sync, or typed by the admin at invite time. */
     name: text("name"),
     imageUrl: text("image_url"),
-    /** The person's own number. A brand's public phone is in `brands.business`. */
     phone: text("phone"),
     role: userRole("role").notNull().default("client"),
     status: userStatus("status").notNull().default("active"),
-    /** The admin who invited them. Null for people who signed up themselves. */
     invitedBy: uuid("invited_by").references((): AnyPgColumn => users.id),
     createdAt: createdAt(),
-    /** Doubles as "last synced from Clerk". */
     updatedAt: updatedAt(),
   },
   () => [check("users_email_lowercase", sql`"email" = lower("email")`)],
@@ -122,11 +116,9 @@ export const brands = pgTable(
   "brands",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    /** The client who owns it. A client may own any number of brands. */
     ownerId: uuid("owner_id")
       .notNull()
       .references(() => users.id),
-    /** Who set it up: the owner, or an admin on their behalf. */
     createdBy: uuid("created_by")
       .notNull()
       .references(() => users.id),
@@ -138,7 +130,6 @@ export const brands = pgTable(
     stage: loopStage("stage").notNull().default("onboarding"),
     brand: jsonb("brand").$type<BrandKit>().notNull(),
     business: jsonb("business").$type<BusinessInfo>().notNull().default({}),
-    /** Where the strategy plans to post. Whether an account is connected is in `social_accounts`. */
     platforms: text("platforms").array().$type<Platform[]>().notNull(),
     preferences: jsonb("preferences").$type<BrandPreferences>().notNull().default(DEFAULT_PREFERENCES),
     /** Soft delete: posts, metrics and learnings hang off a brand. */
@@ -158,7 +149,6 @@ export const brandScans = pgTable(
   "brand_scans",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    /** Null for the onboarding scan, which runs before the brand exists; set when the brand is created from it. */
     brandId: uuid("brand_id").references(() => brands.id),
     requestedBy: uuid("requested_by")
       .notNull()
@@ -167,7 +157,6 @@ export const brandScans = pgTable(
     status: scanStatus("status").notNull().default("queued"),
     currentStep: text("current_step"),
     pages: jsonb("pages").$type<ScanPage[]>().notNull().default([]),
-    /** The proposed brand kit and business info. */
     result: jsonb("result").$type<ScanResult>(),
     error: text("error"),
     startedAt: timestamp("started_at", { withTimezone: true }),
@@ -266,7 +255,6 @@ export const posts = pgTable(
     brandId: uuid("brand_id")
       .notNull()
       .references(() => brands.id),
-    /** The strategy version this came from. Null for a post a person wrote. */
     strategyId: uuid("strategy_id").references(() => strategies.id),
     pillarId: uuid("pillar_id").references(() => contentPillars.id),
     /** Null means the agent made it. */
@@ -313,7 +301,6 @@ export const postMedia = pgTable(
       .notNull()
       .references(() => posts.id, { onDelete: "cascade" }),
     type: mediaType("type").notNull(),
-    /** Public URL the UI shows and the network fetches when publishing. */
     url: text("url").notNull(),
     /** Path in object storage, to delete or replace the file. */
     storageKey: text("storage_key").notNull(),
@@ -345,7 +332,6 @@ export const socialAccounts = pgTable(
       .notNull()
       .references(() => brands.id),
     platform: platform("platform").notNull(),
-    /** The account's id on the network. */
     externalAccountId: text("external_account_id").notNull(),
     handle: text("handle").notNull(),
     avatarUrl: text("avatar_url"),
@@ -400,7 +386,6 @@ export const accountMetrics = pgTable(
       .notNull()
       .references(() => socialAccounts.id),
     date: date("date", { mode: "string" }).notNull(),
-    /** Total on that day. */
     followers: integer("followers").notNull(),
     reach: integer("reach").notNull().default(0),
     /** Interactions that day. The rate (engagement / reach) is calculated, never stored. */
