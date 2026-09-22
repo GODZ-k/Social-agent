@@ -413,7 +413,7 @@ pnpm --filter api run build               # tsup -> dist/server.js, then copy-sk
 pnpm --filter api run start               # node dist/server.js
 pnpm --filter api run check-types
 pnpm --filter api run scan -- <url>       # the scan from the terminal (--facts skips the LLM)
-pnpm --filter api run postman             # rebuild the collection, then check coverage
+pnpm --filter api run dev-token -- <email>   # print a Clerk token for trying endpoints
 pnpm --filter @social-agent/db run db:generate | build | db:migrate
 ```
 

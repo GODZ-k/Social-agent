@@ -129,8 +129,8 @@ flowchart LR
 > **`authorizedParties` in production only.**
 > `const authorizedParties = env.NODE_ENV === "production" ? env.CORS_ORIGINS : undefined`. In
 > production a session must have been issued to one of our own web origins (the token's `azp`
-> claim). In development the check is off so Backend-API-minted tokens work for Postman and
-> scripts. Consequence: a development deployment accepts any token from our Clerk instance.
+> claim). In development the check is off so Backend-API-minted tokens work for `scripts/dev-token.ts`
+> and REST clients. Consequence: a development deployment accepts any token from our Clerk instance.
 > Never run a public deployment with `NODE_ENV` unset.
 
 <a id="5-the-ssrf-boundary"></a>
@@ -263,9 +263,8 @@ retried and never quoted back to the model.
 
 - `apps/api/.env` is never committed. No secret value appears in any repository file, in any
   document, or in any agent memory note; only variable names do.
-- In Postman, `clerk_secret_key` goes in the **Current value** column only, so it is not
-  exported with the collection (`apps/api/postman/build-collection.cjs` says so in its setup
-  text).
+- `scripts/dev-token.ts` reads `CLERK_SECRET_KEY` from `.env` and prints a short-lived session
+  token; the token is never written to a file.
 - `src/config/env.ts` validates the environment at start-up and exits naming what is missing.
   It prints the variable name and the problem, never the value.
 - Social tokens (phase 5) are AES-256-GCM encrypted in `social_accounts.access_token_enc` and
@@ -408,9 +407,8 @@ clients), not a formal rating.
       tokens?
 - [ ] **Logging.** Ids, not tokens; no request bodies; unexpected errors logged server-side
       with a generic message returned.
-- [ ] **Postman.** A request added to `build-collection.cjs` with a demo input, a status test,
-      and a saved example for each response including the errors, then
-      `pnpm --filter api run postman` re-run and passing.
+- [ ] **API reference.** `docs/API_SPEC.md` updated with the endpoint, its body, success
+      shape and every error code it can return (the OpenAPI registry once merged).
 
 <a id="related"></a>
 

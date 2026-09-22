@@ -215,7 +215,7 @@ out of real runs between 2026-09-20 and 2026-09-22.
 - **`docs/` was in `.gitignore`, so the specs and plans that are the design record were
   not versioned.**
 
-  Fixed on 2026-09-22: `docs/superpowers` and `apps/api/postman` are versioned. Anything
+  Fixed on 2026-09-22 for the seven docs in `docs/`; Postman was removed the same day. Anything
   still ignored stays out of the index; do not `git add` it unless asked.
 
 - **`git status` shows files as staged while the owner is working.** The owner stages in
