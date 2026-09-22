@@ -11,8 +11,8 @@
 
 Endpoint counts and phases come from the endpoint catalogue,
 [`docs/superpowers/specs/2026-09-20-api-endpoints-catalogue.md`](./superpowers/specs/2026-09-20-api-endpoints-catalogue.md),
-which lists 39 endpoints. `docs/superpowers` and `apps/api/postman` have been versioned
-since 2026-09-22, so every spec and plan linked below is in git. This is a working file:
+which lists 39 endpoints. The seven docs in `docs/` are versioned; `docs/superpowers` (specs, plans) is local-only
+by the owner's choice. This is a working file:
 update it as work lands.
 
 <details>
@@ -74,7 +74,7 @@ and the ledger is `.superpowers/sdd/2026-09-22-scan-endpoints/progress.md`.
 
 > [!NOTE]
 > Phase 2A is complete and verified on 2026-09-22: 8 of 8 live HTTP checks passed and
-> `postman:check` reports 15 routes / 25 requests, every route covered. Only the owner's
+> 15 routes are live. Postman was removed on 2026-09-22. Only the owner's
 > commit is outstanding.
 
 | ID       | Task                                               | Priority  | Progress     | Notes                                              |
@@ -195,7 +195,7 @@ Cross-cutting, still to do:
 | **2A-c** | Six owner-facing error codes                                                                                 | ![P0][p0] | ![100%][pr100] | 2026-09-22                                                                                         |
 | **2A-d** | Clean-up pass over `src/scan` + brand-scan Mastra files, byte-identical output                               | ![P1][p1] | ![100%][pr100] | 2026-09-22, plan `…/2026-09-22-scan-clean-up.md`; live rerun on the 4 sites done with the API key |
 | **2A-e** | `brand-scan-firecrawl` skill (verified API facts, test sites, expected values)                               | ![P1][p1] | ![100%][pr100] | 2026-09-22                                                                                         |
-| **2A-f** | Scan endpoints (2A-1 … 2A-6)                                                                                 | ![P0][p0] | ![100%][pr100] | 2026-09-22; 8 of 8 live checks, Postman 15 routes / 25 requests                                    |
+| **2A-f** | Scan endpoints (2A-1 … 2A-6)                                                                                 | ![P0][p0] | ![100%][pr100] | 2026-09-22; 8 of 8 live checks, 15 routes live                                    |
 
 </details>
 
@@ -217,8 +217,8 @@ Cross-cutting, still to do:
 
 | ID      | Task                                                                                             | Priority  | Progress       | Notes                                            |
 | ------- | ------------------------------------------------------------------------------------------------ | --------- | -------------- | ------------------------------------------------ |
-| **X-1** | Put `docs/superpowers` (specs, plans) and `apps/api/postman` under version control               | ![P1][p1] | ![100%][pr100] | 2026-09-22; both are tracked now                 |
-| **X-2** | Keep the Postman collection current on every endpoint change                                     | ![P1][p1] | ![100%][pr100] | standing rule; `postman:check` enforces coverage |
+| **X-1** | Version control for the docs: `docs/*.md` tracked; `docs/superpowers` kept local by choice       | ![P1][p1] | ![100%][pr100] | 2026-09-22                                       |
+| **X-2** | Keep the API reference current on every endpoint change (Postman removed 2026-09-22)            | ![P1][p1] | ![100%][pr100] | `docs/API_SPEC.md` now; OpenAPI registry after the merge |
 | **X-6** | Project docs at the root (PRD, ARCHITECTURE, API_SPEC, SECURITY, TASKS, LESSION, MEMORY, DESIGN) | ![P1][p1] | ![100%][pr100] | 8 root docs written and styled 2026-09-22        |
 
 </details>

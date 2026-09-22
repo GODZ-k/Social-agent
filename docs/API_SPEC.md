@@ -3,7 +3,7 @@
 ![base path](https://img.shields.io/badge/base_path-%2Fapi%2Fv1-blue)
 ![endpoints](https://img.shields.io/badge/endpoints-14_live_of_39-yellow)
 ![scans](https://img.shields.io/badge/scan_endpoints-live-brightgreen)
-![postman](https://img.shields.io/badge/postman-15_routes%2C_25_requests-brightgreen)
+![routes](https://img.shields.io/badge/routes-15_live-brightgreen)
 ![updated](https://img.shields.io/badge/updated-2026--09--22-lightgrey)
 
 *The HTTP contract of `apps/api`, for anyone calling the API or adding an endpoint.*
@@ -24,7 +24,7 @@ with its index; the request and response detail sits in the fold under it.
 - [6. Admin](#6-admin)
 - [7. Scans](#7-scans)
 - [8. Planned endpoints](#8-planned-endpoints)
-- [9. The Postman collection](#9-the-postman-collection)
+- [9. Keeping this file current](#9-keeping-this-file-current)
 - [Related](#related)
 
 <a id="1-conventions"></a>
@@ -52,21 +52,20 @@ no body. No endpoint paginates today.
 <summary>Minting a token in development</summary>
 
 In development `authorizedParties` is left undefined (`src/auth/clerk.ts`), so a token minted
-with the Clerk Backend API is accepted. The Postman collection's pre-request script
-(`apps/api/postman/build-collection.cjs`) does exactly this before every `/api/v1` request:
+with the Clerk Backend API is accepted. `pnpm --filter api run dev-token -- <email or user_...>`
+(`apps/api/scripts/dev-token.ts`) does exactly this and prints the token:
 
 1. `POST https://api.clerk.com/v1/sessions` with `Authorization: Bearer <CLERK_SECRET_KEY>` and
    body `{ "user_id": "user_..." }`.
 2. `POST https://api.clerk.com/v1/sessions/{id}/tokens` with the same header.
 3. Use the returned `jwt` as the Bearer token.
 
-Which Clerk user is used comes from the variables `clerk_user_id`, `clerk_admin_user_id` and
-`clerk_client_user_id`, or is forced per request with the header `X-Act-As: admin | client`.
+The script takes an email or a Clerk user id; use an admin's email for admin endpoints.
 
 </details>
 
 > [!TIP]
-> The secret lives in Postman's **Current value** only, so it is never exported. With
+> The secret stays in `apps/api/.env`; the script never writes a token to a file. With
 > `NODE_ENV=production` only sessions issued to an origin in `CORS_ORIGINS` are accepted, and
 > these tokens stop working.
 
@@ -495,28 +494,14 @@ Much work has no endpoint on purpose: publishing due posts, fetching metrics, re
 tokens, writing learnings and activating a strategy after its 15-minute window are background
 jobs (catalogue §12, §14).
 
-<a id="9-the-postman-collection"></a>
+<a id="9-keeping-this-file-current"></a>
 
-## 9. The Postman collection
+## 9. Keeping this file current
 
-`apps/api/postman/cadence-api.postman_collection.json` is **generated, never edited by hand**.
-
-- Edit or add a `request({ ... })` entry in `apps/api/postman/build-collection.cjs`: a demo
-  input, a description saying which fields are required, a status test, and one saved example
-  per response the endpoint can give, errors included.
-- Run `pnpm --filter api run postman`. It rebuilds the JSON and then fails if any route under
-  `src/routes` has no request. `pnpm --filter api run postman:check` runs only the check
-  (`postman/check-collection.cjs` reads the Express routers and follows every
-  `.use("/prefix", router)` mount).
-
-> [!IMPORTANT]
-> The rule: an endpoint change is not done until the collection is regenerated
-> ([`apps/api/AGENTS.md`](../apps/api/AGENTS.md)).
-
-State on 2026-09-22: the "3. Scans" folder (both scan requests, with 202, 200 and 400 examples
-and 200 and 404 examples) is in the generated collection; `postman:check` reports 15 routes and
-25 requests, every route covered. The 15 routes are the 14 endpoints above plus the
-developer-only `GET /health/test-error`.
+There is no generated collection any more (Postman was removed on 2026-09-22). Until the OpenAPI
+registry on `feature/openapi` is merged, this file is the contract: an endpoint change updates
+its table row and shapes here in the same change ([`apps/api/AGENTS.md`](../apps/api/AGENTS.md)).
+The 15 routes are the 14 endpoints above plus the developer-only `GET /health/test-error`.
 
 <a id="related"></a>
 
