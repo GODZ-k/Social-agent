@@ -1,26 +1,33 @@
 
 import { Mastra } from '@mastra/core/mastra';
 import { PinoLogger } from '@mastra/loggers';
-import { LibSQLStore } from '@mastra/libsql';
 import { DuckDBStore } from "@mastra/duckdb";
+import { Memory } from "@mastra/memory";
+import { PostgresStore } from "@mastra/pg";
 import { MastraCompositeStore } from '@mastra/core/storage';
 import { Observability, MastraStorageExporter, MastraPlatformExporter, SensitiveDataFilter } from '@mastra/observability';
-import { weatherWorkflow } from './workflows/weather-workflow';
-import { weatherAgent } from './agents/weather-agent';
+import { brandAnalyst } from './agents/brand-analyst/agent';
+import { brandScanWorkflow } from './workflows/brand-scan/workflow';
 
+// The team, the workflows and the rules for building them are described in ./README.md.
+
+export const postgresStore = new PostgresStore({
+  id: 'mastra-storage',
+  connectionString: process.env.DATABASE_URL!,
+});
+
+export const memory = new Memory({
+  storage: postgresStore,
+});
 
 export const mastra = new Mastra({
-  workflows: { weatherWorkflow },
-  agents: { weatherAgent },
+  // Register each agent and workflow here as it is built (build order: see ./README.md).
+  workflows: { brandScanWorkflow },
+  agents: { brandAnalyst },
+
   storage: new MastraCompositeStore({
     id: 'composite-storage',
-    default: new LibSQLStore({
-      id: "mastra-storage",
-      // Uses a hosted database when deployed (mastra env db create --kind turso),
-      // and a local file during development.
-      url: process.env.TURSO_DATABASE_URL ?? "file:./mastra.db",
-      authToken: process.env.TURSO_AUTH_TOKEN,
-    }),
+    default: postgresStore,
     domains: {
       observability: await new DuckDBStore().getStore('observability'),
     }

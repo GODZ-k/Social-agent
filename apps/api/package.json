@@ -8,9 +8,29 @@
     "build": "tsup",
     "start": "node dist/server.js",
     "check-types": "tsc --noEmit",
+    "postman": "node postman/build-collection.cjs && node postman/check-collection.cjs",
+    "postman:check": "node postman/check-collection.cjs",
+    "scan": "tsx scripts/scan.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "tsup": {
+    "entry": [
+      "src/server.ts"
+    ],
+    "format": [
+      "esm"
+    ],
+    "target": "node24",
+    "platform": "node",
+    "clean": true,
+    "onSuccess": "node scripts/copy-skills.mjs",
+    "noExternal": [
+      "@social-agent/shared",
+      "@social-agent/db"
+    ]
+  },
   "dependencies": {
+    "@clerk/express": "^2.1.69",
     "@mastra/core": "^1.66.0",
     "@mastra/duckdb": "^1.8.0",
     "@mastra/express": "^1.5.10",
@@ -18,12 +38,17 @@
     "@mastra/loggers": "^1.3.1",
     "@mastra/memory": "^1.29.0",
     "@mastra/observability": "^1.17.7",
+    "@mastra/pg": "^1.25.0",
+    "@social-agent/db": "workspace:*",
     "@social-agent/shared": "workspace:*",
+    "cheerio": "^1.2.0",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
+    "drizzle-orm": "^0.45.2",
     "express": "^5.2.1",
     "helmet": "^8.3.0",
     "mastra": "^1.29.0",
+    "pg": "^8.23.0",
     "zod": "^4.6.1"
   },
   "devDependencies": {
@@ -31,6 +56,7 @@
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/node": "26.4.1",
+    "@types/pg": "^8.23.1",
     "tsup": "^8.5.1",
     "tsx": "^4.23.13",
     "typescript": "7.0.2"

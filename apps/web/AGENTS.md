@@ -2,9 +2,9 @@
 
 Guidance for any coding agent working in `apps/web`.
 
-## Before any UI work, read `DESIGN.md`
+## Before any UI work, read `docs/DESIGN.md`
 
-`DESIGN.md` is the design system: colour tokens, typography, layout, components, motion, interaction rules, writing voice, and how to build a landing or marketing page so it matches the app. Follow it instead of asking about styling or layout. If something isn't covered, copy the closest existing screen and choose the quieter option.
+`docs/DESIGN.md` (shared with `apps/landing` and `packages/ui`) is the design system: colour tokens, typography, layout, components, motion, interaction rules, writing voice, and how to build a landing or marketing page so it matches the app. Follow it instead of asking about styling or layout. If something isn't covered, copy the closest existing screen and choose the quieter option.
 
 ## Rules
 

@@ -1,0 +1,42 @@
+{
+  "name": "@social-agent/db",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./migrate": {
+      "types": "./dist/migrate.d.ts",
+      "import": "./dist/migrate.js",
+      "default": "./dist/migrate.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch --preserveWatchOutput",
+    "check-types": "tsc --noEmit",
+    "db:generate": "dotenv -e ../../apps/api/.env -- drizzle-kit generate --config=src/drizzle.config.ts",
+    "db:migrate": "tsx --env-file=../../apps/api/.env src/cli-migrate.ts",
+    "db:studio": "dotenv -e ../../apps/api/.env -- drizzle-kit studio --config=src/drizzle.config.ts"
+  },
+  "dependencies": {
+    "@social-agent/shared": "workspace:*",
+    "drizzle-orm": "^0.45.2",
+    "pg": "^8.23.0"
+  },
+  "devDependencies": {
+    "@repo/typescript-config": "workspace:*",
+    "@types/node": "26.4.1",
+    "@types/pg": "^8.23.1",
+    "dotenv-cli": "^11.0.0",
+    "drizzle-kit": "^0.31.10",
+    "tsx": "^4.23.13",
+    "typescript": "7.0.2"
+  }
+}
