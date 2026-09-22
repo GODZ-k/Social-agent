@@ -98,7 +98,8 @@ const hasScheme = (value: string) =>
   /^(mailto|tel|sms|javascript|data):/i.test(value) ||
   value.startsWith("//");
 
-const websiteUrlSchema = z
+/** A website address as a person types it. "acme.com" becomes "https://acme.com". */
+export const websiteUrlSchema = z
   .string()
   .trim()
   .min(1)

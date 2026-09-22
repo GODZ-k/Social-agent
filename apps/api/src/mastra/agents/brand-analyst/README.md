@@ -2,7 +2,7 @@
 
 **Field:** Understanding a business from its own website.
 
-**Status:** not built yet. This file is the brief for building it.
+**Status:** built.
 
 ## Responsible for
 
@@ -17,17 +17,17 @@
 
 ## Reads
 
-`SiteFacts` (site name candidates, per-page headings and trimmed text, ranked colours, fonts, contact details, social links).
+`SiteFacts` (site name candidates, per-page headings and trimmed text, ranked colours, fonts, social links). The prompt deliberately leaves out `facts.business`: phone, email, address and opening hours are code-owned and are never shown to the model.
 
 ## Returns
 
-`ScanResult` from `@social-agent/shared` (`name?`, `industry?`, `brand: BrandKit`, `business?`).
-
-Returned as structured output validated by a zod schema, so a workflow can rely on its shape.
+`BrandAnalysis` (`output.schema.ts`): judgement only. It has no field for contact details, colour values or fonts, so the model cannot write them. The `interpret` step assembles the `ScanResult` from this and the extracted facts.
 
 ## Skills
 
 - `skills/brand-voice`
+
+Inlined into the instructions with loadSkill(), because a scan is one model call.
 
 ## Model
 
@@ -43,6 +43,7 @@ Designed in `docs/superpowers/specs/2026-09-20-brand-scan-agent-design.md`. No m
 
 ## Files when built
 
-- `agent.ts`: the `Agent` (id `brand-analyst`, model, skills, tools). Registered in `mastra/index.ts`.
+- `agent.ts`: the `Agent` (id `brand-analyst`, instructions, inlined skill, model). No tools and no memory, by design. Registered in `mastra/index.ts`.
 - `instructions.ts`: who the agent is and what it must return. Short. The craft knowledge lives in the skills.
 - `output.schema.ts`: the zod schema of what it returns, unless that shape already exists in `@social-agent/shared`.
+- `prompt.ts`: renders `SiteFacts` as the one user message.

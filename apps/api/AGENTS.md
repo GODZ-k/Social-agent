@@ -40,6 +40,9 @@ All three class layers use static methods, like `HealthController`: `BrandsContr
 - The API reads `packages/shared` and `packages/db` from their `dist` folders. Rebuild a package after changing it.
 - There is no automated test suite yet.
 - **Every endpoint has a Postman request. Adding or changing an endpoint is not done until the collection is updated.** The collection `apps/api/postman/cadence-api.postman_collection.json` is generated; never edit the JSON. Add or edit a `request({ ... })` entry in `apps/api/postman/build-collection.cjs` (a demo input, which fields are required, a status test, and one saved example per response the endpoint can give, errors included), then run `pnpm --filter api run postman`. That rebuilds the file and then fails if any route in `src/routes` has no request. `pnpm --filter api run postman:check` runs only the check.
+- Mastra's own HTTP routes (what Studio talks to) have no auth, so `src/app.ts` mounts them only when `NODE_ENV` is not `production`. The host must set `NODE_ENV=production`. Product code never calls those routes: it calls one function per workflow (`runBrandScan`, ...).
+- The brand scan: `pnpm --filter api run scan -- <url>` runs it from the terminal (`--facts` skips the AI step and needs no API key; `--fetch` downloads the home page only). `src/scan` is plain code with no Mastra import. Websites are read through Firecrawl (`src/scan/firecrawl.ts` is the only file allowed to send a user-typed address anywhere; it vets the address first because Firecrawl does not refuse private hosts). Never fetch a user-supplied URL any other way. `FIRECRAWL_API_KEY` is optional in development (keyless, rate-limited) and required in production.
+- An agent that must answer in one model call gets its skill text through `loadSkill()` (`src/mastra/config/skills.ts`), not through `skills:`, which adds tool calls. The build copies `src/mastra/skills` to `dist/skills`.
 
 ## Resources
 

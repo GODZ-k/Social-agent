@@ -57,13 +57,13 @@ Not agents: planning post slots from the cadence, scheduling, publishing, fetchi
 |---|---|
 | `config/` | `models.ts`: every model id, in one place |
 | `agents/<name>/` | One specialist: `agent.ts`, `instructions.ts`, `output.schema.ts` |
-| `workflows/<name>/` | One pipeline: `workflow.ts` and `steps/` |
+| `workflows/<name>/` | One pipeline: `workflow.ts`, `run.ts` (the exported `run...` function) and `steps/` |
 | `skills/<name>/` | One playbook: `SKILL.md` and `references/`. Shared between agents |
 | `tools/` | What an agent may call |
 | `scorers/` | Automatic quality scores |
 | `index.ts` | Registers every agent and workflow with Mastra, and sets storage |
 
-Code with no AI in it (fetching and parsing websites, for example) lives outside this folder, in `src/scan`.
+Code with no AI in it (reading websites through Firecrawl and parsing them, for example) lives outside this folder, in `src/scan`.
 
 ## Rules for building here
 

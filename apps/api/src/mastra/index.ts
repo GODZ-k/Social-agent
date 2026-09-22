@@ -6,6 +6,8 @@ import { Memory } from "@mastra/memory";
 import { PostgresStore } from "@mastra/pg";
 import { MastraCompositeStore } from '@mastra/core/storage';
 import { Observability, MastraStorageExporter, MastraPlatformExporter, SensitiveDataFilter } from '@mastra/observability';
+import { brandAnalyst } from './agents/brand-analyst/agent';
+import { brandScanWorkflow } from './workflows/brand-scan/workflow';
 
 // The team, the workflows and the rules for building them are described in ./README.md.
 
@@ -20,8 +22,8 @@ export const memory = new Memory({
 
 export const mastra = new Mastra({
   // Register each agent and workflow here as it is built (build order: see ./README.md).
-  workflows: {},
-  agents: {},
+  workflows: { brandScanWorkflow },
+  agents: { brandAnalyst },
 
   storage: new MastraCompositeStore({
     id: 'composite-storage',

@@ -7,7 +7,7 @@ Things an agent may call. Most agents here need none: a workflow hands them ever
 | Tool | For | Does |
 |---|---|---|
 | `web-search` | Growth Consultant, Audience Researcher | Searches the web. Needs a search API and key (not chosen yet). |
-| `read-page` | Growth Consultant, Audience Researcher | Reads one public page through `src/scan/fetch-page.ts`, so the same address safety rules apply. Never a raw `fetch`. |
+| `read-page` | Growth Consultant, Audience Researcher | Reads one public page through `src/scan/firecrawl.ts`, so the same address safety rules apply. Never a raw `fetch`. |
 | `read-audience-insights` | Audience Researcher | The brand's latest `audience_insights`. |
 | `read-brand`, `read-strategy`, `list-posts`, `read-analytics` | Account Manager | Read-only views of the conversation's brand. |
 | `save-intake` | Account Manager | Saves onboarding answers to `brands.intake`. |

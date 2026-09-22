@@ -2,7 +2,7 @@
 
 A website address in, a proposed brand kit and business info out.
 
-**Status:** not built yet.
+**Status:** built. Run it with pnpm --filter api run scan -- <url>.
 
 **Starts:** Onboarding, when the person enters the website. Later: a rescan when the site changes.
 
@@ -10,8 +10,8 @@ A website address in, a proposed brand kit and business info out.
 
 | Step id | Done by | What happens |
 |---|---|---|
-| `discover` | code | Fetch the home page safely and pick up to 6 useful internal pages. |
-| `read-pages` | code | Extract facts from each page, and colours and fonts from the CSS. |
+| `discover` | code | Read the home page through Firecrawl, take its colours and fonts, and pick up to 6 useful internal pages. |
+| `read-pages` | code | Read the picked pages through Firecrawl and extract the facts from every page. |
 | `interpret` | **Brand Analyst** | Turn the facts into a `ScanResult`. Code then overwrites contact details, colour values and fonts with what it extracted. |
 | `report` | code | Return the result, the pages read and the warnings. |
 
@@ -27,5 +27,7 @@ Full design: `docs/superpowers/specs/2026-09-20-brand-scan-agent-design.md`. The
 
 ## Files when built
 
-- `workflow.ts`: the Mastra workflow and one exported `run...` function, the only thing the rest of the API calls.
+- `workflow.ts`: the workflow.
+- `run.ts`: `runBrandScan`, the only thing the rest of the API calls; separate from `workflow.ts` to avoid a circular import with `mastra/index.ts`.
+- `schemas.ts`: step inputs and outputs; a failure is returned in `failure`, never thrown.
 - `steps/<step-id>.ts`: one file per step.

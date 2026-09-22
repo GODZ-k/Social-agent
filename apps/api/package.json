@@ -10,6 +10,7 @@
     "check-types": "tsc --noEmit",
     "postman": "node postman/build-collection.cjs && node postman/check-collection.cjs",
     "postman:check": "node postman/check-collection.cjs",
+    "scan": "tsx scripts/scan.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "tsup": {
@@ -22,6 +23,7 @@
     "target": "node24",
     "platform": "node",
     "clean": true,
+    "onSuccess": "node scripts/copy-skills.mjs",
     "noExternal": [
       "@social-agent/shared",
       "@social-agent/db"
@@ -39,6 +41,7 @@
     "@mastra/pg": "^1.25.0",
     "@social-agent/db": "workspace:*",
     "@social-agent/shared": "workspace:*",
+    "cheerio": "^1.2.0",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "drizzle-orm": "^0.45.2",
