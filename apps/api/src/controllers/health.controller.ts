@@ -1,9 +1,10 @@
+import type { Request, Response } from "express";
 import { HealthService } from "@/services/health.service";
 import { AppError } from "@/utils/AppError";
-import type { Request, Response } from "express";
 
 export class HealthController {
-    static async healthCheck(req: Request, res: Response) {
+    /** 503 when the database is down, so a load balancer takes this instance out. */
+    static async healthCheck(_req: Request, res: Response) {
         const report = await HealthService.check();
         const isHealthy = report.status === "healthy";
 
@@ -12,11 +13,9 @@ export class HealthController {
             data: report,
         });
     }
-    static async testError(req: Request, res: Response): Promise<never> {
-        throw new AppError(
-            "This is a test error",
-            400,
-            "TEST_ERROR"
-        );
+
+    /** Proves the error middleware is wired up. */
+    static async testError(_req: Request, _res: Response): Promise<never> {
+        throw new AppError("This is a test error", 400, "TEST_ERROR");
     }
 }

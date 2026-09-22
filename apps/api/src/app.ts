@@ -24,7 +24,6 @@ if (env.NODE_ENV !== "production") {
   await server.init();
 }
 
-// Routes
 app.use("/health", healthRoute);
 app.use("/api/v1", v1Route);
 

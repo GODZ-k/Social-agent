@@ -90,11 +90,10 @@ Next up, in order.
 | Order | Task                                                                     | Priority  | Progress     | Pointer                                                                  |
 | ----- | ------------------------------------------------------------------------ | --------- | ------------ | ------------------------------------------------------------------------ |
 | **1** | Finish 2A (above)                                                        | ![P0][p0] | ![90%][pr90] | Five tasks done; the owner's commit is left                              |
-| **2** | **Before any backend work: remind the owner, then run the `code-simplifier` plugin over `apps/api`** (owner's ask, 2026-09-22) | ![P0][p0] | ![0%][pr0]   | `apps/api/AGENTS.md`, root `AGENTS.md` "Agent skills"                    |
-| **3** | Strategist agent spec (design conversation like the brand scan)          | ![P1][p1] | ![0%][pr0]   | `apps/api/src/mastra/agents/strategist`, `workflows/strategy-generation` |
-| **4** | Strategy endpoints (5)                                                   | ![P1][p1] | ![0%][pr0]   | catalogue §8                                                             |
-| **5** | Onboarding screens in `apps/web` wired to real scan + strategy endpoints | ![P1][p1] | ![0%][pr0]   | [`DESIGN.md`](./DESIGN.md)                                               |
-| **6** | Phase 3 — posts                                                          | ![P2][p2] | ![0%][pr0]   | catalogue §9                                                             |
+| **2** | Strategist agent spec (design conversation like the brand scan)          | ![P1][p1] | ![0%][pr0]   | `apps/api/src/mastra/agents/strategist`, `workflows/strategy-generation` |
+| **3** | Strategy endpoints (5)                                                   | ![P1][p1] | ![0%][pr0]   | catalogue §8                                                             |
+| **4** | Onboarding screens in `apps/web` wired to real scan + strategy endpoints | ![P1][p1] | ![0%][pr0]   | [`DESIGN.md`](./DESIGN.md)                                               |
+| **5** | Phase 3 — posts                                                          | ![P2][p2] | ![0%][pr0]   | catalogue §9                                                             |
 
 <details>
 <summary>Phase 2B — strategy, 6 tasks (part of phase 2, 7 endpoints with 2A)</summary>

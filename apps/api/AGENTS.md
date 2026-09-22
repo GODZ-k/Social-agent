@@ -1,9 +1,5 @@
 # AGENTS.md
 
-## FIRST, before any change here: remind the owner about `code-simplifier`
-
-The owner asked on 2026-09-22 to be reminded, at the start of any backend work, that the `code-simplifier` plugin agent has not yet run over `apps/api`. Say it in the first message of that session, run it over `apps/api` when they say go, and delete this section once it has run.
-
 ## CRITICAL: Load `mastra` skill first
 
 Load the `mastra` skill BEFORE any Mastra work. Never rely on cached knowledge — APIs change between versions.
