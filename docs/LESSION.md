@@ -1,7 +1,7 @@
 # Lessons learned
 
 ![living document](https://img.shields.io/badge/living_document-blue)
-![lessons](https://img.shields.io/badge/lessons-35-blue)
+![lessons](https://img.shields.io/badge/lessons-38-blue)
 ![source](https://img.shields.io/badge/source-real_runs-lightgrey)
 ![updated](https://img.shields.io/badge/updated-2026--09--22-lightgrey)
 
@@ -38,7 +38,7 @@ out of real runs between 2026-09-20 and 2026-09-22.
 | [**Windows and tooling**](#windows-and-tooling)       | ![3][c3] | Links, deletes and binaries that behave differently here               |
 | [**Repo, pnpm, Neon**](#repo-pnpm-neon)               | ![7][c7] | Installs, stale `dist` folders, versioning and the git index           |
 | [**Process with AI agents**](#process-with-ai-agents) | ![6][c6] | Stalls, re-reviews, file ownership and where rulings are written       |
-| [**Code**](#code)                                     | ![6][c6] | Facts the model must not own, and refactors that must prove themselves |
+| [**Code**](#code)                                     | ![9][c9] | Facts the model must not own, and refactors that must prove themselves |
 
 <a id="firecrawl"></a>
 
@@ -215,7 +215,7 @@ out of real runs between 2026-09-20 and 2026-09-22.
 - **`docs/` was in `.gitignore`, so the specs and plans that are the design record were
   not versioned.**
 
-  Fixed on 2026-09-22: `docs/superpowers` and `apps/api/postman` are versioned. Anything
+  Fixed on 2026-09-22: `docs/superpowers` is versioned (Postman was removed the same day). Anything
   still ignored stays out of the index; do not `git add` it unless asked.
 
 - **`git status` shows files as staged while the owner is working.** The owner stages in
@@ -305,13 +305,30 @@ out of real runs between 2026-09-20 and 2026-09-22.
   per function, no nested ternaries, word lists as data at the top of the file, and
   comments only for the *why*. Not new layers of structure.
 
+- **`curl` said `/api/docs` was fine; a browser showed an empty page.** helmet's default CSP blocks
+  Scalar's inline module script and its jsdelivr import, and curl does not enforce CSP.
+
+  A page is verified in a browser or by reading its `Content-Security-Policy` header, never by
+  status code alone; dev-only CSP loosening is chained on the one route, not `router.use`,
+  which runs for every request that reaches the router.
+
+- **A route-vs-operation check passed on a stale `openapi.json`.** It compared only methods and
+  paths, so a changed schema or error code slipped through with a green check.
+
+  `openapi:check` rebuilds the document in memory and fails when the file on disk differs.
+
+- **Two API descriptions drift.** Postman's hand-written collection and the OpenAPI registry
+  both claimed to be the contract; the collection was retired on 2026-09-22.
+
+  One registry (`src/openapi/operations.ts`), one generated document, one check.
+
 <a id="related"></a>
 
 ## Related
 
 - [PRD.md](./PRD.md) sets out what the product must do.
 - [ARCHITECTURE.md](./ARCHITECTURE.md) describes how the system is built.
-- [API_SPEC.md](./API_SPEC.md) is the HTTP contract.
+- `/api/docs` (development) and `apps/api/openapi/openapi.json` are the HTTP contract.
 - [SECURITY.md](./SECURITY.md) holds the threat model and the controls.
 - [DESIGN.md](./DESIGN.md) is the design system.
 - [TASKS.md](./TASKS.md) is the board.
@@ -321,4 +338,5 @@ out of real runs between 2026-09-20 and 2026-09-22.
 
 [c3]: https://img.shields.io/badge/3-lessons-lightgrey?style=flat-square
 [c6]: https://img.shields.io/badge/6-lessons-lightgrey?style=flat-square
+[c9]: https://img.shields.io/badge/9-lessons-lightgrey?style=flat-square
 [c7]: https://img.shields.io/badge/7-lessons-lightgrey?style=flat-square

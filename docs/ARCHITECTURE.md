@@ -413,7 +413,7 @@ pnpm --filter api run build               # tsup -> dist/server.js, then copy-sk
 pnpm --filter api run start               # node dist/server.js
 pnpm --filter api run check-types
 pnpm --filter api run scan -- <url>       # the scan from the terminal (--facts skips the LLM)
-pnpm --filter api run postman             # rebuild the collection, then check coverage
+pnpm --filter api run openapi             # regenerate openapi.json, then check routes vs operations
 pnpm --filter @social-agent/db run db:generate | build | db:migrate
 ```
 
@@ -479,7 +479,7 @@ limit nobody has started sits at zero.
 ## Related
 
 - [PRD.md](./PRD.md) sets out what the product must do.
-- [API_SPEC.md](./API_SPEC.md) is the HTTP contract.
+- `/api/docs` (development) and `apps/api/openapi/openapi.json` are the HTTP contract.
 - [SECURITY.md](./SECURITY.md) holds the threat model and the controls.
 - [DESIGN.md](./DESIGN.md) is the design system.
 - [TASKS.md](./TASKS.md) is the board.

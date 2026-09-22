@@ -1,0 +1,2744 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Cadence API",
+    "version": "1.0.0",
+    "description": "Every answer is an envelope: `{ success: true, data }`, or `{ success: false, error: { code, message, details? } }`. Everything under `/api/v1` needs a Clerk session token."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:4000"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Health",
+      "description": "Whether the API and its database are up."
+    },
+    {
+      "name": "Me",
+      "description": "The signed-in person's own account."
+    },
+    {
+      "name": "Brands",
+      "description": "A brand is one website plus the social accounts managed for it."
+    },
+    {
+      "name": "Scans",
+      "description": "Reading a website to propose a brand kit."
+    },
+    {
+      "name": "Admin",
+      "description": "The agency owner's view of clients (people)."
+    }
+  ],
+  "paths": {
+    "/health": {
+      "get": {
+        "operationId": "getHealth",
+        "tags": [
+          "Health"
+        ],
+        "summary": "Report whether the API is up and the database is reachable.",
+        "responses": {
+          "200": {
+            "description": "The API is up and the database answers.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "const": true
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/HealthReport"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/INTERNAL_SERVER_ERROR"
+          },
+          "503": {
+            "description": "The database is unreachable. The body is the same report, with `status: \"unhealthy\"`, `database: \"down\"` and `success: false`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "const": false
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/HealthReport"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health/test-error": {
+      "get": {
+        "operationId": "getTestError",
+        "tags": [
+          "Health"
+        ],
+        "summary": "Throw a test error, to see the error envelope.",
+        "responses": {
+          "400": {
+            "$ref": "#/components/responses/TEST_ERROR"
+          },
+          "500": {
+            "$ref": "#/components/responses/INTERNAL_SERVER_ERROR"
+          }
+        }
+      }
+    },
+    "/api/v1/me": {
+      "get": {
+        "operationId": "getMe",
+        "tags": [
+          "Me"
+        ],
+        "summary": "Return the signed-in person's account.",
+        "security": [
+          {
+            "clerkBearer": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "const": true
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Me"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UNAUTHENTICATED"
+          },
+          "403": {
+            "$ref": "#/components/responses/EMAIL_REQUIRED"
+          },
+          "409": {
+            "$ref": "#/components/responses/EMAIL_IN_USE"
+          },
+          "500": {
+            "$ref": "#/components/responses/INTERNAL_SERVER_ERROR"
+          }
+        }
+      }
+    },
+    "/api/v1/me/overview": {
+      "get": {
+        "operationId": "getMeOverview",
+        "tags": [
+          "Me"
+        ],
+        "summary": "Return the signed-in person with the brands they own, for a dashboard's first paint.",
+        "security": [
+          {
+            "clerkBearer": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "const": true
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/MeOverview"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UNAUTHENTICATED"
+          },
+          "403": {
+            "$ref": "#/components/responses/EMAIL_REQUIRED"
+          },
+          "409": {
+            "$ref": "#/components/responses/EMAIL_IN_USE"
+          },
+          "500": {
+            "$ref": "#/components/responses/INTERNAL_SERVER_ERROR"
+          }
+        }
+      }
+    },
+    "/api/v1/brands": {
+      "get": {
+        "operationId": "listBrands",
+        "tags": [
+          "Brands"
+        ],
+        "summary": "List the brands the caller owns; every brand for an admin.",
+        "security": [
+          {
+            "clerkBearer": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Newest first. Archived brands are left out.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "const": true
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Brand"
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UNAUTHENTICATED"
+          },
+          "403": {
+            "$ref": "#/components/responses/EMAIL_REQUIRED"
+          },
+          "409": {
+            "$ref": "#/components/responses/EMAIL_IN_USE"
+          },
+          "500": {
+            "$ref": "#/components/responses/INTERNAL_SERVER_ERROR"
+          }
+        }
+      },
+      "post": {
+        "operationId": "createBrand",
+        "tags": [
+          "Brands"
+        ],
+        "summary": "Create a brand for the caller, optionally from a finished scan.",
+        "security": [
+          {
+            "clerkBearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewBrandInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "const": true
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Brand"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_ERROR · INVALID_JSON",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "VALIDATION_ERROR": {
+                    "value": {
+                      "success": false,
+                      "error": {
+                        "code": "VALIDATION_ERROR",
+                        "message": "Some fields are invalid.",
+                        "details": [
+                          {
+                            "path": "name",
+                            "message": "This field is required."
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  "INVALID_JSON": {
+                    "value": {
+                      "success": false,
+                      "error": {
+                        "code": "INVALID_JSON",
+                        "message": "The request body is not valid JSON."
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UNAUTHENTICATED"
+          },
+          "403": {
+            "$ref": "#/components/responses/EMAIL_REQUIRED"
+          },
+          "404": {
+            "$ref": "#/components/responses/SCAN_NOT_FOUND"
+          },
+          "409": {
+            "description": "SCAN_NOT_DONE · EMAIL_IN_USE",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "SCAN_NOT_DONE": {
+                    "value": {
+                      "success": false,
+                      "error": {
+                        "code": "SCAN_NOT_DONE",
+                        "message": "This scan hasn't finished yet."
+                      }
+                    }
+                  },
+                  "EMAIL_IN_USE": {
+                    "value": {
+                      "success": false,
+                      "error": {
+                        "code": "EMAIL_IN_USE",
+                        "message": "This email already belongs to another account. Verify your email address, then try again."
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/INTERNAL_SERVER_ERROR"
+          }
+        }
+      }
+    },
+    "/api/v1/brands/{id}": {
+      "get": {
+        "operationId": "getBrand",
+        "tags": [
+          "Brands"
+        ],
+        "summary": "Return one brand.",
+        "security": [
+          {
+            "clerkBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The brand's id.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "const": true
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Brand"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UNAUTHENTICATED"
+          },
+          "403": {
+            "$ref": "#/components/responses/EMAIL_REQUIRED"
+          },
+          "404": {
+            "$ref": "#/components/responses/BRAND_NOT_FOUND"
+          },
+          "409": {
+            "$ref": "#/components/responses/EMAIL_IN_USE"
+          },
+          "500": {
+            "$ref": "#/components/responses/INTERNAL_SERVER_ERROR"
+          }
+        }
+      },
+      "patch": {
+        "operationId": "updateBrand",
+        "tags": [
+          "Brands"
+        ],
+        "summary": "Change the parts of a brand its owner may edit.",
+        "security": [
+          {
+            "clerkBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The brand's id.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BrandPatch"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "const": true
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Brand"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_ERROR · INVALID_JSON",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "VALIDATION_ERROR": {
+                    "value": {
+                      "success": false,
+                      "error": {
+                        "code": "VALIDATION_ERROR",
+                        "message": "Some fields are invalid."
+                      }
+                    }
+                  },
+                  "INVALID_JSON": {
+                    "value": {
+                      "success": false,
+                      "error": {
+                        "code": "INVALID_JSON",
+                        "message": "The request body is not valid JSON."
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UNAUTHENTICATED"
+          },
+          "403": {
+            "$ref": "#/components/responses/EMAIL_REQUIRED"
+          },
+          "404": {
+            "$ref": "#/components/responses/BRAND_NOT_FOUND"
+          },
+          "409": {
+            "$ref": "#/components/responses/EMAIL_IN_USE"
+          },
+          "500": {
+            "$ref": "#/components/responses/INTERNAL_SERVER_ERROR"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "archiveBrand",
+        "tags": [
+          "Brands"
+        ],
+        "summary": "Archive a brand.",
+        "security": [
+          {
+            "clerkBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The brand's id.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Archived: the brand leaves every list and its history stays. No body."
+          },
+          "401": {
+            "$ref": "#/components/responses/UNAUTHENTICATED"
+          },
+          "403": {
+            "$ref": "#/components/responses/EMAIL_REQUIRED"
+          },
+          "404": {
+            "$ref": "#/components/responses/BRAND_NOT_FOUND"
+          },
+          "409": {
+            "$ref": "#/components/responses/EMAIL_IN_USE"
+          },
+          "500": {
+            "$ref": "#/components/responses/INTERNAL_SERVER_ERROR"
+          }
+        }
+      }
+    },
+    "/api/v1/scans": {
+      "post": {
+        "operationId": "createScan",
+        "tags": [
+          "Scans"
+        ],
+        "summary": "Start a brand scan of a website.",
+        "security": [
+          {
+            "clerkBearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewScanInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The caller's scan that is already queued or running. No second scan was started.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "const": true
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Scan"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Queued. Poll `GET /api/v1/scans/{id}` for the result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "const": true
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Scan"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_ERROR · INVALID_JSON",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "VALIDATION_ERROR": {
+                    "value": {
+                      "success": false,
+                      "error": {
+                        "code": "VALIDATION_ERROR",
+                        "message": "Some fields are invalid.",
+                        "details": [
+                          {
+                            "path": "url",
+                            "message": "This field is required."
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  "INVALID_JSON": {
+                    "value": {
+                      "success": false,
+                      "error": {
+                        "code": "INVALID_JSON",
+                        "message": "The request body is not valid JSON."
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UNAUTHENTICATED"
+          },
+          "403": {
+            "$ref": "#/components/responses/EMAIL_REQUIRED"
+          },
+          "409": {
+            "$ref": "#/components/responses/EMAIL_IN_USE"
+          },
+          "500": {
+            "$ref": "#/components/responses/INTERNAL_SERVER_ERROR"
+          }
+        }
+      }
+    },
+    "/api/v1/scans/{id}": {
+      "get": {
+        "operationId": "getScan",
+        "tags": [
+          "Scans"
+        ],
+        "summary": "Return one scan with its progress and, once done, its result.",
+        "security": [
+          {
+            "clerkBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The scan's id.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "const": true
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Scan"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UNAUTHENTICATED"
+          },
+          "403": {
+            "$ref": "#/components/responses/EMAIL_REQUIRED"
+          },
+          "404": {
+            "$ref": "#/components/responses/SCAN_NOT_FOUND"
+          },
+          "409": {
+            "$ref": "#/components/responses/EMAIL_IN_USE"
+          },
+          "500": {
+            "$ref": "#/components/responses/INTERNAL_SERVER_ERROR"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/clients": {
+      "get": {
+        "operationId": "listClients",
+        "tags": [
+          "Admin"
+        ],
+        "summary": "List every client, with how many brands each owns.",
+        "security": [
+          {
+            "clerkBearer": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "const": true
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/AdminClient"
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UNAUTHENTICATED"
+          },
+          "403": {
+            "description": "FORBIDDEN · EMAIL_REQUIRED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "FORBIDDEN": {
+                    "value": {
+                      "success": false,
+                      "error": {
+                        "code": "FORBIDDEN",
+                        "message": "Only an admin can do this."
+                      }
+                    }
+                  },
+                  "EMAIL_REQUIRED": {
+                    "value": {
+                      "success": false,
+                      "error": {
+                        "code": "EMAIL_REQUIRED",
+                        "message": "Your account has no email address. Add one, then try again."
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "$ref": "#/components/responses/EMAIL_IN_USE"
+          },
+          "500": {
+            "$ref": "#/components/responses/INTERNAL_SERVER_ERROR"
+          }
+        }
+      },
+      "post": {
+        "operationId": "inviteClient",
+        "tags": [
+          "Admin"
+        ],
+        "summary": "Invite a client by email, creating their row before they sign in.",
+        "security": [
+          {
+            "clerkBearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InviteClientInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "const": true
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/AdminClient"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_ERROR · INVALID_JSON",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "VALIDATION_ERROR": {
+                    "value": {
+                      "success": false,
+                      "error": {
+                        "code": "VALIDATION_ERROR",
+                        "message": "Some fields are invalid.",
+                        "details": [
+                          {
+                            "path": "email",
+                            "message": "This field is required."
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  "INVALID_JSON": {
+                    "value": {
+                      "success": false,
+                      "error": {
+                        "code": "INVALID_JSON",
+                        "message": "The request body is not valid JSON."
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UNAUTHENTICATED"
+          },
+          "403": {
+            "description": "FORBIDDEN · EMAIL_REQUIRED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "FORBIDDEN": {
+                    "value": {
+                      "success": false,
+                      "error": {
+                        "code": "FORBIDDEN",
+                        "message": "Only an admin can do this."
+                      }
+                    }
+                  },
+                  "EMAIL_REQUIRED": {
+                    "value": {
+                      "success": false,
+                      "error": {
+                        "code": "EMAIL_REQUIRED",
+                        "message": "Your account has no email address. Add one, then try again."
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "CLIENT_EXISTS · EMAIL_IN_USE",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "CLIENT_EXISTS": {
+                    "value": {
+                      "success": false,
+                      "error": {
+                        "code": "CLIENT_EXISTS",
+                        "message": "Someone with this email is already here."
+                      }
+                    }
+                  },
+                  "EMAIL_IN_USE": {
+                    "value": {
+                      "success": false,
+                      "error": {
+                        "code": "EMAIL_IN_USE",
+                        "message": "This email already belongs to another account. Verify your email address, then try again."
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/INTERNAL_SERVER_ERROR"
+          },
+          "502": {
+            "$ref": "#/components/responses/INVITE_FAILED"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/clients/{id}": {
+      "get": {
+        "operationId": "getClient",
+        "tags": [
+          "Admin"
+        ],
+        "summary": "Return one client with the brands they own.",
+        "security": [
+          {
+            "clerkBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The client's id.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "const": true
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/AdminClientDetail"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UNAUTHENTICATED"
+          },
+          "403": {
+            "description": "FORBIDDEN · EMAIL_REQUIRED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "FORBIDDEN": {
+                    "value": {
+                      "success": false,
+                      "error": {
+                        "code": "FORBIDDEN",
+                        "message": "Only an admin can do this."
+                      }
+                    }
+                  },
+                  "EMAIL_REQUIRED": {
+                    "value": {
+                      "success": false,
+                      "error": {
+                        "code": "EMAIL_REQUIRED",
+                        "message": "Your account has no email address. Add one, then try again."
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/CLIENT_NOT_FOUND"
+          },
+          "409": {
+            "$ref": "#/components/responses/EMAIL_IN_USE"
+          },
+          "500": {
+            "$ref": "#/components/responses/INTERNAL_SERVER_ERROR"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/clients/{id}/brands": {
+      "post": {
+        "operationId": "createClientBrand",
+        "tags": [
+          "Admin"
+        ],
+        "summary": "Create a brand owned by a client, on their behalf.",
+        "security": [
+          {
+            "clerkBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The client's id.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewBrandInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "const": true
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Brand"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_ERROR · INVALID_JSON",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "VALIDATION_ERROR": {
+                    "value": {
+                      "success": false,
+                      "error": {
+                        "code": "VALIDATION_ERROR",
+                        "message": "Some fields are invalid.",
+                        "details": [
+                          {
+                            "path": "name",
+                            "message": "This field is required."
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  "INVALID_JSON": {
+                    "value": {
+                      "success": false,
+                      "error": {
+                        "code": "INVALID_JSON",
+                        "message": "The request body is not valid JSON."
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UNAUTHENTICATED"
+          },
+          "403": {
+            "description": "FORBIDDEN · EMAIL_REQUIRED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "FORBIDDEN": {
+                    "value": {
+                      "success": false,
+                      "error": {
+                        "code": "FORBIDDEN",
+                        "message": "Only an admin can do this."
+                      }
+                    }
+                  },
+                  "EMAIL_REQUIRED": {
+                    "value": {
+                      "success": false,
+                      "error": {
+                        "code": "EMAIL_REQUIRED",
+                        "message": "Your account has no email address. Add one, then try again."
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "CLIENT_NOT_FOUND · SCAN_NOT_FOUND",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "CLIENT_NOT_FOUND": {
+                    "value": {
+                      "success": false,
+                      "error": {
+                        "code": "CLIENT_NOT_FOUND",
+                        "message": "This client doesn't exist."
+                      }
+                    }
+                  },
+                  "SCAN_NOT_FOUND": {
+                    "value": {
+                      "success": false,
+                      "error": {
+                        "code": "SCAN_NOT_FOUND",
+                        "message": "This scan doesn't exist, or you don't have access to it."
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "SCAN_NOT_DONE · EMAIL_IN_USE",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "SCAN_NOT_DONE": {
+                    "value": {
+                      "success": false,
+                      "error": {
+                        "code": "SCAN_NOT_DONE",
+                        "message": "This scan hasn't finished yet."
+                      }
+                    }
+                  },
+                  "EMAIL_IN_USE": {
+                    "value": {
+                      "success": false,
+                      "error": {
+                        "code": "EMAIL_IN_USE",
+                        "message": "This email already belongs to another account. Verify your email address, then try again."
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/INTERNAL_SERVER_ERROR"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "HealthReport": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "healthy",
+              "unhealthy"
+            ]
+          },
+          "database": {
+            "type": "string",
+            "enum": [
+              "up",
+              "down"
+            ]
+          },
+          "timestamp": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "database",
+          "timestamp"
+        ],
+        "additionalProperties": false
+      },
+      "Me": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "imageUrl": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "admin",
+              "client"
+            ]
+          },
+          "createdAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "name",
+          "imageUrl",
+          "role",
+          "createdAt"
+        ],
+        "additionalProperties": false
+      },
+      "MeOverview": {
+        "type": "object",
+        "properties": {
+          "user": {
+            "$ref": "#/components/schemas/Me"
+          },
+          "brands": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Brand"
+            }
+          },
+          "counts": {
+            "type": "object",
+            "properties": {
+              "brands": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "brands"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "user",
+          "brands",
+          "counts"
+        ],
+        "additionalProperties": false
+      },
+      "Brand": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "ownerId": {
+            "type": "string"
+          },
+          "createdBy": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          },
+          "industry": {
+            "type": "string"
+          },
+          "accent": {
+            "type": "string"
+          },
+          "stage": {
+            "type": "string",
+            "enum": [
+              "onboarding",
+              "strategy",
+              "content",
+              "approval",
+              "publishing",
+              "learning"
+            ]
+          },
+          "brand": {
+            "type": "object",
+            "properties": {
+              "tagline": {
+                "type": "string"
+              },
+              "summary": {
+                "type": "string"
+              },
+              "audience": {
+                "type": "string"
+              },
+              "voice": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "colors": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "hex": {
+                      "type": "string",
+                      "pattern": "^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$"
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "hex"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "fonts": {
+                "type": "object",
+                "properties": {
+                  "heading": {
+                    "type": "string"
+                  },
+                  "body": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "heading",
+                  "body"
+                ],
+                "additionalProperties": false
+              },
+              "aesthetic": {
+                "type": "string"
+              },
+              "keywords": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "tagline",
+              "summary",
+              "audience",
+              "voice",
+              "colors",
+              "fonts"
+            ],
+            "additionalProperties": false
+          },
+          "business": {
+            "type": "object",
+            "properties": {
+              "phone": {
+                "type": "string"
+              },
+              "email": {
+                "type": "string",
+                "format": "email",
+                "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+              },
+              "location": {
+                "type": "object",
+                "properties": {
+                  "address": {
+                    "type": "string"
+                  },
+                  "city": {
+                    "type": "string"
+                  },
+                  "region": {
+                    "type": "string"
+                  },
+                  "country": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false
+              },
+              "hours": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "day": {
+                      "type": "string",
+                      "enum": [
+                        "mon",
+                        "tue",
+                        "wed",
+                        "thu",
+                        "fri",
+                        "sat",
+                        "sun"
+                      ]
+                    },
+                    "open": {
+                      "type": "string",
+                      "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"
+                    },
+                    "close": {
+                      "type": "string",
+                      "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"
+                    }
+                  },
+                  "required": [
+                    "day",
+                    "open",
+                    "close"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "additionalProperties": false
+          },
+          "platforms": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "instagram",
+                "facebook",
+                "linkedin",
+                "tiktok"
+              ]
+            }
+          },
+          "accounts": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "platform": {
+                  "type": "string",
+                  "enum": [
+                    "instagram",
+                    "facebook",
+                    "linkedin",
+                    "tiktok"
+                  ]
+                },
+                "handle": {
+                  "type": "string"
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "connected",
+                    "expired"
+                  ]
+                },
+                "connectedAt": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "platform",
+                "handle",
+                "status",
+                "connectedAt"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "preferences": {
+            "type": "object",
+            "properties": {
+              "timezone": {
+                "type": "string",
+                "minLength": 1
+              },
+              "approvalEmails": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "timezone",
+              "approvalEmails"
+            ],
+            "additionalProperties": false
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "stats": {
+            "type": "object",
+            "properties": {
+              "followers": {
+                "type": "number"
+              },
+              "followersDelta": {
+                "type": "number"
+              },
+              "engagementRate": {
+                "type": "number"
+              },
+              "engagementDelta": {
+                "type": "number"
+              },
+              "scheduled": {
+                "type": "number"
+              },
+              "pendingApprovals": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "followers",
+              "followersDelta",
+              "engagementRate",
+              "engagementDelta",
+              "scheduled",
+              "pendingApprovals"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "id",
+          "ownerId",
+          "createdBy",
+          "name",
+          "url",
+          "industry",
+          "accent",
+          "stage",
+          "brand",
+          "business",
+          "platforms",
+          "accounts",
+          "preferences",
+          "createdAt",
+          "stats"
+        ],
+        "additionalProperties": false
+      },
+      "Scan": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "brandId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "url": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "queued",
+              "running",
+              "done",
+              "failed"
+            ]
+          },
+          "currentStep": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "discover",
+                  "read-pages",
+                  "interpret",
+                  "report"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "pages": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "url": {
+                  "type": "string"
+                },
+                "title": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "url",
+                "title"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "result": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "industry": {
+                    "type": "string"
+                  },
+                  "brand": {
+                    "type": "object",
+                    "properties": {
+                      "tagline": {
+                        "type": "string"
+                      },
+                      "summary": {
+                        "type": "string"
+                      },
+                      "audience": {
+                        "type": "string"
+                      },
+                      "voice": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "colors": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "name": {
+                              "type": "string"
+                            },
+                            "hex": {
+                              "type": "string",
+                              "pattern": "^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$"
+                            }
+                          },
+                          "required": [
+                            "name",
+                            "hex"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "fonts": {
+                        "type": "object",
+                        "properties": {
+                          "heading": {
+                            "type": "string"
+                          },
+                          "body": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "heading",
+                          "body"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "aesthetic": {
+                        "type": "string"
+                      },
+                      "keywords": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "required": [
+                      "tagline",
+                      "summary",
+                      "audience",
+                      "voice",
+                      "colors",
+                      "fonts"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "business": {
+                    "type": "object",
+                    "properties": {
+                      "phone": {
+                        "type": "string"
+                      },
+                      "email": {
+                        "type": "string",
+                        "format": "email",
+                        "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                      },
+                      "location": {
+                        "type": "object",
+                        "properties": {
+                          "address": {
+                            "type": "string"
+                          },
+                          "city": {
+                            "type": "string"
+                          },
+                          "region": {
+                            "type": "string"
+                          },
+                          "country": {
+                            "type": "string"
+                          }
+                        },
+                        "additionalProperties": false
+                      },
+                      "hours": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "day": {
+                              "type": "string",
+                              "enum": [
+                                "mon",
+                                "tue",
+                                "wed",
+                                "thu",
+                                "fri",
+                                "sat",
+                                "sun"
+                              ]
+                            },
+                            "open": {
+                              "type": "string",
+                              "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"
+                            },
+                            "close": {
+                              "type": "string",
+                              "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"
+                            }
+                          },
+                          "required": [
+                            "day",
+                            "open",
+                            "close"
+                          ],
+                          "additionalProperties": false
+                        }
+                      }
+                    },
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "brand"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "error": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "startedAt": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "finishedAt": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "createdAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "brandId",
+          "url",
+          "status",
+          "currentStep",
+          "pages",
+          "result",
+          "error",
+          "startedAt",
+          "finishedAt",
+          "createdAt"
+        ],
+        "additionalProperties": false
+      },
+      "AdminClient": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "imageUrl": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "phone": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "invited",
+              "active"
+            ]
+          },
+          "brandCount": {
+            "type": "number"
+          },
+          "createdAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "name",
+          "imageUrl",
+          "phone",
+          "status",
+          "brandCount",
+          "createdAt"
+        ],
+        "additionalProperties": false
+      },
+      "AdminClientDetail": {
+        "type": "object",
+        "properties": {
+          "client": {
+            "$ref": "#/components/schemas/AdminClient"
+          },
+          "brands": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Brand"
+            }
+          }
+        },
+        "required": [
+          "client",
+          "brands"
+        ],
+        "additionalProperties": false
+      },
+      "NewBrandInput": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "url": {
+            "type": "string",
+            "minLength": 1
+          },
+          "industry": {
+            "type": "string"
+          },
+          "brand": {
+            "type": "object",
+            "properties": {
+              "tagline": {
+                "type": "string"
+              },
+              "summary": {
+                "type": "string"
+              },
+              "audience": {
+                "type": "string"
+              },
+              "voice": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "colors": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "hex": {
+                      "type": "string",
+                      "pattern": "^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$"
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "hex"
+                  ]
+                }
+              },
+              "fonts": {
+                "type": "object",
+                "properties": {
+                  "heading": {
+                    "type": "string"
+                  },
+                  "body": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "heading",
+                  "body"
+                ]
+              },
+              "aesthetic": {
+                "type": "string"
+              },
+              "keywords": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "tagline",
+              "summary",
+              "audience",
+              "voice",
+              "colors",
+              "fonts"
+            ]
+          },
+          "platforms": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "instagram",
+                "facebook",
+                "linkedin",
+                "tiktok"
+              ]
+            }
+          },
+          "business": {
+            "type": "object",
+            "properties": {
+              "phone": {
+                "type": "string"
+              },
+              "email": {
+                "type": "string",
+                "format": "email",
+                "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+              },
+              "location": {
+                "type": "object",
+                "properties": {
+                  "address": {
+                    "type": "string"
+                  },
+                  "city": {
+                    "type": "string"
+                  },
+                  "region": {
+                    "type": "string"
+                  },
+                  "country": {
+                    "type": "string"
+                  }
+                }
+              },
+              "hours": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "day": {
+                      "type": "string",
+                      "enum": [
+                        "mon",
+                        "tue",
+                        "wed",
+                        "thu",
+                        "fri",
+                        "sat",
+                        "sun"
+                      ]
+                    },
+                    "open": {
+                      "type": "string",
+                      "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"
+                    },
+                    "close": {
+                      "type": "string",
+                      "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"
+                    }
+                  },
+                  "required": [
+                    "day",
+                    "open",
+                    "close"
+                  ]
+                }
+              }
+            }
+          },
+          "scanId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          }
+        },
+        "required": [
+          "name",
+          "url",
+          "industry",
+          "brand",
+          "platforms"
+        ]
+      },
+      "BrandPatch": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "industry": {
+            "type": "string"
+          },
+          "brand": {
+            "type": "object",
+            "properties": {
+              "tagline": {
+                "type": "string"
+              },
+              "summary": {
+                "type": "string"
+              },
+              "audience": {
+                "type": "string"
+              },
+              "voice": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "colors": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "hex": {
+                      "type": "string",
+                      "pattern": "^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$"
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "hex"
+                  ]
+                }
+              },
+              "fonts": {
+                "type": "object",
+                "properties": {
+                  "heading": {
+                    "type": "string"
+                  },
+                  "body": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "heading",
+                  "body"
+                ]
+              },
+              "aesthetic": {
+                "type": "string"
+              },
+              "keywords": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "tagline",
+              "summary",
+              "audience",
+              "voice",
+              "colors",
+              "fonts"
+            ]
+          },
+          "business": {
+            "type": "object",
+            "properties": {
+              "phone": {
+                "type": "string"
+              },
+              "email": {
+                "type": "string",
+                "format": "email",
+                "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+              },
+              "location": {
+                "type": "object",
+                "properties": {
+                  "address": {
+                    "type": "string"
+                  },
+                  "city": {
+                    "type": "string"
+                  },
+                  "region": {
+                    "type": "string"
+                  },
+                  "country": {
+                    "type": "string"
+                  }
+                }
+              },
+              "hours": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "day": {
+                      "type": "string",
+                      "enum": [
+                        "mon",
+                        "tue",
+                        "wed",
+                        "thu",
+                        "fri",
+                        "sat",
+                        "sun"
+                      ]
+                    },
+                    "open": {
+                      "type": "string",
+                      "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"
+                    },
+                    "close": {
+                      "type": "string",
+                      "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"
+                    }
+                  },
+                  "required": [
+                    "day",
+                    "open",
+                    "close"
+                  ]
+                }
+              }
+            }
+          },
+          "platforms": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "instagram",
+                "facebook",
+                "linkedin",
+                "tiktok"
+              ]
+            }
+          },
+          "preferences": {
+            "type": "object",
+            "properties": {
+              "timezone": {
+                "type": "string",
+                "minLength": 1
+              },
+              "approvalEmails": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "timezone",
+              "approvalEmails"
+            ]
+          }
+        }
+      },
+      "NewScanInput": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "url"
+        ]
+      },
+      "InviteClientInput": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "phone": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "email"
+        ]
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "const": false
+          },
+          "error": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "enum": [
+                  "VALIDATION_ERROR",
+                  "INVALID_JSON",
+                  "TEST_ERROR",
+                  "UNAUTHENTICATED",
+                  "FORBIDDEN",
+                  "EMAIL_REQUIRED",
+                  "BRAND_NOT_FOUND",
+                  "CLIENT_NOT_FOUND",
+                  "SCAN_NOT_FOUND",
+                  "CLIENT_EXISTS",
+                  "SCAN_NOT_DONE",
+                  "EMAIL_IN_USE",
+                  "INTERNAL_SERVER_ERROR",
+                  "INVITE_FAILED"
+                ]
+              },
+              "message": {
+                "type": "string"
+              },
+              "details": {
+                "type": "array",
+                "description": "Which fields were rejected. Only on VALIDATION_ERROR.",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "path": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "path",
+                    "message"
+                  ]
+                }
+              }
+            },
+            "required": [
+              "code",
+              "message"
+            ]
+          }
+        },
+        "required": [
+          "success",
+          "error"
+        ]
+      }
+    },
+    "responses": {
+      "VALIDATION_ERROR": {
+        "description": "VALIDATION_ERROR — Some fields are invalid.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            },
+            "example": {
+              "success": false,
+              "error": {
+                "code": "VALIDATION_ERROR",
+                "message": "Some fields are invalid."
+              }
+            }
+          }
+        }
+      },
+      "INVALID_JSON": {
+        "description": "INVALID_JSON — The request body is not valid JSON.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            },
+            "example": {
+              "success": false,
+              "error": {
+                "code": "INVALID_JSON",
+                "message": "The request body is not valid JSON."
+              }
+            }
+          }
+        }
+      },
+      "TEST_ERROR": {
+        "description": "TEST_ERROR — This is a test error",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            },
+            "example": {
+              "success": false,
+              "error": {
+                "code": "TEST_ERROR",
+                "message": "This is a test error"
+              }
+            }
+          }
+        }
+      },
+      "UNAUTHENTICATED": {
+        "description": "UNAUTHENTICATED — Sign in to continue.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            },
+            "example": {
+              "success": false,
+              "error": {
+                "code": "UNAUTHENTICATED",
+                "message": "Sign in to continue."
+              }
+            }
+          }
+        }
+      },
+      "FORBIDDEN": {
+        "description": "FORBIDDEN — Only an admin can do this.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            },
+            "example": {
+              "success": false,
+              "error": {
+                "code": "FORBIDDEN",
+                "message": "Only an admin can do this."
+              }
+            }
+          }
+        }
+      },
+      "EMAIL_REQUIRED": {
+        "description": "EMAIL_REQUIRED — Your account has no email address. Add one, then try again.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            },
+            "example": {
+              "success": false,
+              "error": {
+                "code": "EMAIL_REQUIRED",
+                "message": "Your account has no email address. Add one, then try again."
+              }
+            }
+          }
+        }
+      },
+      "BRAND_NOT_FOUND": {
+        "description": "BRAND_NOT_FOUND — This brand doesn't exist, or you don't have access to it.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            },
+            "example": {
+              "success": false,
+              "error": {
+                "code": "BRAND_NOT_FOUND",
+                "message": "This brand doesn't exist, or you don't have access to it."
+              }
+            }
+          }
+        }
+      },
+      "CLIENT_NOT_FOUND": {
+        "description": "CLIENT_NOT_FOUND — This client doesn't exist.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            },
+            "example": {
+              "success": false,
+              "error": {
+                "code": "CLIENT_NOT_FOUND",
+                "message": "This client doesn't exist."
+              }
+            }
+          }
+        }
+      },
+      "SCAN_NOT_FOUND": {
+        "description": "SCAN_NOT_FOUND — This scan doesn't exist, or you don't have access to it.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            },
+            "example": {
+              "success": false,
+              "error": {
+                "code": "SCAN_NOT_FOUND",
+                "message": "This scan doesn't exist, or you don't have access to it."
+              }
+            }
+          }
+        }
+      },
+      "CLIENT_EXISTS": {
+        "description": "CLIENT_EXISTS — Someone with this email is already here.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            },
+            "example": {
+              "success": false,
+              "error": {
+                "code": "CLIENT_EXISTS",
+                "message": "Someone with this email is already here."
+              }
+            }
+          }
+        }
+      },
+      "SCAN_NOT_DONE": {
+        "description": "SCAN_NOT_DONE — This scan hasn't finished yet.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            },
+            "example": {
+              "success": false,
+              "error": {
+                "code": "SCAN_NOT_DONE",
+                "message": "This scan hasn't finished yet."
+              }
+            }
+          }
+        }
+      },
+      "EMAIL_IN_USE": {
+        "description": "EMAIL_IN_USE — This email already belongs to another account. Verify your email address, then try again.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            },
+            "example": {
+              "success": false,
+              "error": {
+                "code": "EMAIL_IN_USE",
+                "message": "This email already belongs to another account. Verify your email address, then try again."
+              }
+            }
+          }
+        }
+      },
+      "INTERNAL_SERVER_ERROR": {
+        "description": "INTERNAL_SERVER_ERROR — Something went wrong",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            },
+            "example": {
+              "success": false,
+              "error": {
+                "code": "INTERNAL_SERVER_ERROR",
+                "message": "Something went wrong"
+              }
+            }
+          }
+        }
+      },
+      "INVITE_FAILED": {
+        "description": "INVITE_FAILED — The invitation email could not be sent. Try again.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            },
+            "example": {
+              "success": false,
+              "error": {
+                "code": "INVITE_FAILED",
+                "message": "The invitation email could not be sent. Try again."
+              }
+            }
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "clerkBearer": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "A Clerk session token, sent as `Authorization: Bearer <token>`."
+      }
+    }
+  }
+}

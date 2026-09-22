@@ -78,8 +78,8 @@ Fifteen rulings every session inherits. Reopen one only on evidence, and record 
    repositories import Drizzle, only `src/auth/clerk.ts` imports Clerk.
 5. Only `src/scan/firecrawl.ts` may send a user-typed address anywhere, and it vets the address
    first.
-6. Every endpoint change updates the Postman collection: edit `postman/build-collection.cjs`,
-   then run `pnpm --filter api run postman`.
+6. Every endpoint change updates its operation in `src/openapi/operations.ts`, then
+   `pnpm --filter api run openapi` (regenerates `openapi.json`, fails on a route/operation mismatch).
 7. Long work is split across parallel agents by file ownership, with time estimates up front and
    rulings written to the ledger.
 
@@ -94,7 +94,7 @@ Fuller rules live in [`AGENTS.md`](../AGENTS.md) and [`apps/api/AGENTS.md`](../a
 | **Specs and plans**                | `docs/superpowers/specs/` and `docs/superpowers/plans/`, versioned since 2026-09-22                                                |
 | **Ledgers**                        | `.superpowers/sdd/<date>-<name>/progress.md` holds progress, briefs, reports and reviews                                           |
 | **Shared skills**                  | `.agents/skills/<name>`, linked from `.claude/skills`, recorded in `skills-lock.json`                                              |
-| **Postman**                        | `apps/api/postman/build-collection.cjs` generates `cadence-api.postman_collection.json`, never edited by hand                      |
+| **API reference**                  | `src/openapi/operations.ts` → `apps/api/openapi/openapi.json` (generated) and `/api/docs` in development; `scripts/dev-token.ts` mints a Clerk token |
 | **Apps**                           | `apps/web` (product), `apps/landing` (marketing), `apps/api` (Express + Mastra)                                                    |
 | **Packages**                       | `packages/ui`, `packages/db`, `packages/shared`, `packages/config/*`                                                               |
 | **The agent team and build order** | `apps/api/src/mastra/README.md`                                                                                                    |
@@ -112,11 +112,11 @@ complete; phase 2B strategy ![0%][pr0] has not started.
 | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Branch**         | `backend`. Last commit `e019e6c "done scan"` carries phase 1 foundation, brands and admin endpoints, the brand scan on Firecrawl, and the scan clean-up pass                                                                                                  |
 | **Uncommitted**    | The scan endpoints (`scans.controller.ts`, `scans.repository.ts`, `scans.route.ts`, `scans.service.ts`, `src/scan-queue/`), the edits to `v1.route.ts`, `server.ts`, `brands.service.ts`, `scan/types.ts` and the two shared schemas, and the eight root docs |
-| **Phase 2A**       | Built and verified: all five tasks done and reviewed, 8 of 8 live HTTP checks passed, `postman:check` at 15 routes / 25 requests. Nothing is committed, because the owner commits. Ledger: `.superpowers/sdd/2026-09-22-scan-endpoints/progress.md`           |
+| **Phase 2A**       | Built and verified: all five tasks done and reviewed, 8 of 8 live HTTP checks passed, the OpenAPI check at 15 routes / 15 operations. Nothing is committed, because the owner commits. Ledger: `.superpowers/sdd/2026-09-22-scan-endpoints/progress.md`           |
 | **Live endpoints** | `/health`, `/me`, `/me/overview`, `/brands` (5), `/admin/clients*` (4), `/scans` (2). Planned total is 39                                                                                                                                                     |
 | **`apps/web`**     | Still on its mock data seam; it comes off for onboarding in phase 2B and for the rest of the app in phase 3. Strategy, posts, chat, social accounts and analytics are not started                                                                             |
 | **Next**           | The Strategist agent spec (2B-1), then the strategy endpoints                                                                                                                                                                                                 |
-| **Docs**           | `CLAUDE.md` now auto-loads this file, and `docs/superpowers` and `apps/api/postman` are versioned since 2026-09-22                                                                                                                                            |
+| **Docs**           | `CLAUDE.md` now auto-loads this file, and `docs/superpowers` is versioned since 2026-09-22; Postman was removed in favour of OpenAPI + Scalar                                                                                                                                            |
 
 <a id="6-before-you-start"></a>
 
@@ -135,7 +135,7 @@ complete; phase 2B strategy ![0%][pr0] has not started.
 
 - [PRD.md](./PRD.md) sets out what the product must do.
 - [ARCHITECTURE.md](./ARCHITECTURE.md) describes how the system is built.
-- [API_SPEC.md](./API_SPEC.md) is the HTTP contract.
+- `/api/docs` (development) and `apps/api/openapi/openapi.json` are the HTTP contract.
 - [SECURITY.md](./SECURITY.md) holds the threat model and the controls.
 - [DESIGN.md](./DESIGN.md) is the design system.
 - [TASKS.md](./TASKS.md) is the board.

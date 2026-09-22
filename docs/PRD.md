@@ -309,7 +309,7 @@ Admin revocation lags up to 1 hour, because of the `users` row cache. Secrets li
 ## Related
 
 - [ARCHITECTURE.md](./ARCHITECTURE.md) describes how the system is built.
-- [API_SPEC.md](./API_SPEC.md) is the HTTP contract.
+- `/api/docs` (development) and `apps/api/openapi/openapi.json` are the HTTP contract.
 - [SECURITY.md](./SECURITY.md) holds the threat model and the controls.
 - [DESIGN.md](./DESIGN.md) is the design system.
 - [TASKS.md](./TASKS.md) is the board.

@@ -11,8 +11,8 @@
 
 Endpoint counts and phases come from the endpoint catalogue,
 [`docs/superpowers/specs/2026-09-20-api-endpoints-catalogue.md`](./superpowers/specs/2026-09-20-api-endpoints-catalogue.md),
-which lists 39 endpoints. `docs/superpowers` and `apps/api/postman` have been versioned
-since 2026-09-22, so every spec and plan linked below is in git. This is a working file:
+which lists 39 endpoints. `docs/superpowers` has been versioned since 2026-09-22, so every spec and plan
+linked below is in git. This is a working file:
 update it as work lands.
 
 <details>
@@ -74,7 +74,7 @@ and the ledger is `.superpowers/sdd/2026-09-22-scan-endpoints/progress.md`.
 
 > [!NOTE]
 > Phase 2A is complete and verified on 2026-09-22: 8 of 8 live HTTP checks passed and
-> `postman:check` reports 15 routes / 25 requests, every route covered. Only the owner's
+> the OpenAPI check reports 15 routes / 15 operations, every route covered. Only the owner's
 > commit is outstanding.
 
 | ID       | Task                                               | Priority  | Progress     | Notes                                              |
@@ -217,9 +217,10 @@ Cross-cutting, still to do:
 
 | ID      | Task                                                                                             | Priority  | Progress       | Notes                                            |
 | ------- | ------------------------------------------------------------------------------------------------ | --------- | -------------- | ------------------------------------------------ |
-| **X-1** | Put `docs/superpowers` (specs, plans) and `apps/api/postman` under version control               | ![P1][p1] | ![100%][pr100] | 2026-09-22; both are tracked now                 |
-| **X-2** | Keep the Postman collection current on every endpoint change                                     | ![P1][p1] | ![100%][pr100] | standing rule; `postman:check` enforces coverage |
-| **X-6** | Project docs at the root (PRD, ARCHITECTURE, API_SPEC, SECURITY, TASKS, LESSION, MEMORY, DESIGN) | ![P1][p1] | ![100%][pr100] | 8 root docs written and styled 2026-09-22        |
+| **X-1** | Put `docs/superpowers` (specs, plans) under version control                                     | ![P1][p1] | ![100%][pr100] | 2026-09-22; tracked now                          |
+| **X-2** | Keep the OpenAPI registry current on every endpoint change (Postman removed 2026-09-22)         | ![P1][p1] | ![100%][pr100] | standing rule; `openapi:check` enforces it       |
+| **X-7** | OpenAPI 3.1 from the code: `src/openapi/*`, `/api/docs` (Scalar), `openapi.json`, route↔operation check, `dev-token` script | ![P1][p1] | ![100%][pr100] | 2026-09-22                                       |
+| **X-6** | Project docs in `docs/` (PRD, ARCHITECTURE, SECURITY, TASKS, LESSION, MEMORY, DESIGN); API_SPEC retired for OpenAPI | ![P1][p1] | ![100%][pr100] | 7 docs written and styled 2026-09-22        |
 
 </details>
 
@@ -282,7 +283,7 @@ yet; it is a later idea rather than a decision waiting on anyone.
 
 - [PRD.md](./PRD.md) sets out what the product must do.
 - [ARCHITECTURE.md](./ARCHITECTURE.md) describes how the system is built.
-- [API_SPEC.md](./API_SPEC.md) is the HTTP contract.
+- `/api/docs` (development) and `apps/api/openapi/openapi.json` are the HTTP contract.
 - [SECURITY.md](./SECURITY.md) holds the threat model and the controls.
 - [DESIGN.md](./DESIGN.md) is the design system.
 - [LESSION.md](./LESSION.md) collects the lessons learned.

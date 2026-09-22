@@ -617,7 +617,7 @@ Before calling UI work finished:
 
 - [PRD.md](./PRD.md) sets out what the product must do.
 - [ARCHITECTURE.md](./ARCHITECTURE.md) describes how the system is built.
-- [API_SPEC.md](./API_SPEC.md) is the HTTP contract.
+- `/api/docs` (development) and `apps/api/openapi/openapi.json` are the HTTP contract.
 - [SECURITY.md](./SECURITY.md) holds the threat model and the controls.
 - [TASKS.md](./TASKS.md) is the board.
 - [LESSION.md](./LESSION.md) collects the lessons learned.

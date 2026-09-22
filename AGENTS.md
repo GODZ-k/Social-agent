@@ -4,7 +4,7 @@ Guidance for any coding agent working in this monorepo. Each app has its own `AG
 
 ## Project documents (`docs/`)
 
-All project documents live in `docs/`. Read `docs/MEMORY.md` first in every session (`CLAUDE.md` auto-loads it). Then, as needed: `docs/PRD.md` (what we are building and for whom), `docs/ARCHITECTURE.md` (the system as built), `docs/API_SPEC.md` (the live HTTP API), `docs/SECURITY.md` (threat model, the SSRF and prompt-injection boundaries, secrets), `docs/TASKS.md` (roadmap board: priority, status, progress), `docs/LESSION.md` (lessons learned — add to it when something costs time twice), `docs/DESIGN.md` (the design system; web, landing and `packages/ui` all follow it). Rules live in this file and the per-app `AGENTS.md`. Detailed specs and plans are under `docs/superpowers/`.
+All project documents live in `docs/`. Read `docs/MEMORY.md` first in every session (`CLAUDE.md` auto-loads it). Then, as needed: `docs/PRD.md` (what we are building and for whom), `docs/ARCHITECTURE.md` (the system as built), `docs/SECURITY.md` (threat model, the SSRF and prompt-injection boundaries, secrets), `docs/TASKS.md` (roadmap board: priority, status, progress), the API reference at `/api/docs` in development (generated from `apps/api/src/openapi/operations.ts`; committed copy `apps/api/openapi/openapi.json`), `docs/LESSION.md` (lessons learned — add to it when something costs time twice), `docs/DESIGN.md` (the design system; web, landing and `packages/ui` all follow it). Rules live in this file and the per-app `AGENTS.md`. Detailed specs and plans are under `docs/superpowers/`.
 
 ## Where things are
 

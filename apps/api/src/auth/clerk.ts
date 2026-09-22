@@ -5,7 +5,7 @@ import { env } from "@/config/env";
 // The only file that talks to Clerk. When Clerk is replaced by our own auth, this is the file that changes.
 
 // In production a session must have been issued to one of our own web origins (the token's `azp` claim).
-// In development the check is off, so tokens minted with the Clerk Backend API (Postman, scripts) work too.
+// In development the check is off, so tokens minted with the Clerk Backend API (`scripts/dev-token.ts`, Scalar try-it) work too.
 const authorizedParties = env.NODE_ENV === "production" ? env.CORS_ORIGINS : undefined;
 
 export const clerkAuth = clerkMiddleware({ authorizedParties });

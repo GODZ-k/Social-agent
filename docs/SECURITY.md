@@ -129,8 +129,8 @@ flowchart LR
 > **`authorizedParties` in production only.**
 > `const authorizedParties = env.NODE_ENV === "production" ? env.CORS_ORIGINS : undefined`. In
 > production a session must have been issued to one of our own web origins (the token's `azp`
-> claim). In development the check is off so Backend-API-minted tokens work for Postman and
-> scripts. Consequence: a development deployment accepts any token from our Clerk instance.
+> claim). In development the check is off so Backend-API-minted tokens work for `scripts/dev-token.ts`
+> and Scalar try-it. Consequence: a development deployment accepts any token from our Clerk instance.
 > Never run a public deployment with `NODE_ENV` unset.
 
 <a id="5-the-ssrf-boundary"></a>
@@ -263,9 +263,8 @@ retried and never quoted back to the model.
 
 - `apps/api/.env` is never committed. No secret value appears in any repository file, in any
   document, or in any agent memory note; only variable names do.
-- In Postman, `clerk_secret_key` goes in the **Current value** column only, so it is not
-  exported with the collection (`apps/api/postman/build-collection.cjs` says so in its setup
-  text).
+- `scripts/dev-token.ts` reads `CLERK_SECRET_KEY` from `.env` and prints a short-lived session
+  token; the token is never written to a file.
 - `src/config/env.ts` validates the environment at start-up and exits naming what is missing.
   It prints the variable name and the problem, never the value.
 - Social tokens (phase 5) are AES-256-GCM encrypted in `social_accounts.access_token_enc` and
@@ -397,7 +396,7 @@ clients), not a formal rating.
 - [ ] **Response.** `{ success, data }`, the right status code, and no secret column in the
       shape (tokens, `storage_key`, `external_account_id`, `meta`).
 - [ ] **Errors.** Every failure is an `AppError` with a code from the table in
-      [API_SPEC.md](./API_SPEC.md), and a message a business owner can read. Nothing internal
+      the OpenAPI document (`apps/api/openapi/openapi.json`), and a message a business owner can read. Nothing internal
       leaks into the message.
 - [ ] **Outbound requests.** Does it fetch anything a user supplied? If yes, it must go through
       `src/scan/firecrawl.ts`. Any other outbound fetch of a user-supplied address is a
@@ -408,9 +407,8 @@ clients), not a formal rating.
       tokens?
 - [ ] **Logging.** Ids, not tokens; no request bodies; unexpected errors logged server-side
       with a generic message returned.
-- [ ] **Postman.** A request added to `build-collection.cjs` with a demo input, a status test,
-      and a saved example for each response including the errors, then
-      `pnpm --filter api run postman` re-run and passing.
+- [ ] **OpenAPI.** The operation added to `src/openapi/operations.ts` with its body, success
+      shape and every error code it can return, then `pnpm --filter api run openapi` passing.
 
 <a id="related"></a>
 
@@ -418,7 +416,7 @@ clients), not a formal rating.
 
 - [PRD.md](./PRD.md) sets out what the product must do.
 - [ARCHITECTURE.md](./ARCHITECTURE.md) describes how the system is built.
-- [API_SPEC.md](./API_SPEC.md) is the HTTP contract.
+- `/api/docs` (development) and `apps/api/openapi/openapi.json` are the HTTP contract.
 - [DESIGN.md](./DESIGN.md) is the design system.
 - [TASKS.md](./TASKS.md) is the board.
 - [LESSION.md](./LESSION.md) collects the lessons learned.
