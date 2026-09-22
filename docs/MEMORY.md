@@ -68,19 +68,23 @@ Fifteen rulings every session inherits. Reopen one only on evidence, and record 
 > [!CAUTION]
 > Never commit, stage, push, or touch the git index. The owner does that.
 
-1. Read the app's `AGENTS.md` before touching that app; the repo-root [`AGENTS.md`](../AGENTS.md)
+1. Load the `caveman` skill first and reply in that style all session. Then load the skills
+   that match the work (root [`AGENTS.md`](../AGENTS.md) lists them) and run the
+   `code-simplifier` agent over changed code before reporting done. Installed skills and
+   plugins are there to be used, every session, by every agent.
+2. Read the app's `AGENTS.md` before touching that app; the repo-root [`AGENTS.md`](../AGENTS.md)
    says where everything is.
-2. Load the `mastra` skill and read `node_modules/@mastra/core/dist/docs` before any Mastra API.
+3. Load the `mastra` skill and read `node_modules/@mastra/core/dist/docs` before any Mastra API.
    Never trust memory.
-3. No tests. Finish every task with a real run and record the output against what the task
+4. No tests. Finish every task with a real run and record the output against what the task
    expected.
-4. API layering is strict: Route → Controller → Service → Repository, static classes; only
+5. API layering is strict: Route → Controller → Service → Repository, static classes; only
    repositories import Drizzle, only `src/auth/clerk.ts` imports Clerk.
-5. Only `src/scan/firecrawl.ts` may send a user-typed address anywhere, and it vets the address
+6. Only `src/scan/firecrawl.ts` may send a user-typed address anywhere, and it vets the address
    first.
-6. Every endpoint change updates `docs/API_SPEC.md` in the same change (the OpenAPI registry
+7. Every endpoint change updates `docs/API_SPEC.md` in the same change (the OpenAPI registry
    on `feature/openapi` replaces this once merged).
-7. Long work is split across parallel agents by file ownership, with time estimates up front and
+8. Long work is split across parallel agents by file ownership, with time estimates up front and
    rulings written to the ledger.
 
 Fuller rules live in [`AGENTS.md`](../AGENTS.md) and [`apps/api/AGENTS.md`](../apps/api/AGENTS.md).
@@ -114,7 +118,7 @@ complete; phase 2B strategy ![0%][pr0] has not started.
 | **Uncommitted**    | The scan endpoints (`scans.controller.ts`, `scans.repository.ts`, `scans.route.ts`, `scans.service.ts`, `src/scan-queue/`), the edits to `v1.route.ts`, `server.ts`, `brands.service.ts`, `scan/types.ts` and the two shared schemas, and the eight root docs |
 | **Phase 2A**       | Built and verified: all five tasks done and reviewed, 8 of 8 live HTTP checks passed, 15 routes live. Nothing is committed, because the owner commits. Ledger: `.superpowers/sdd/2026-09-22-scan-endpoints/progress.md`           |
 | **Live endpoints** | `/health`, `/me`, `/me/overview`, `/brands` (5), `/admin/clients*` (4), `/scans` (2). Planned total is 39                                                                                                                                                     |
-| **`apps/web`**     | Still on its mock data seam; it comes off for onboarding in phase 2B and for the rest of the app in phase 3. Strategy, posts, chat, social accounts and analytics are not started                                                                             |
+| **`apps/web`**     | Restructured 2026-09-22 onto server components: `app/` route files, `features/<area>/` pieces, reads in `lib/api/server.ts`, Server Actions in `lib/api/actions.ts`, mock on the server. Still on the mock seam; it comes off for onboarding in phase 2B and for the rest in phase 3. Spec `docs/superpowers/specs/2026-09-22-web-server-components.md` |
 | **Next**           | The Strategist agent spec (2B-1), then the strategy endpoints                                                                                                                                                                                                 |
 | **Docs**           | `CLAUDE.md` now auto-loads this file, since 2026-09-22; Postman was removed in favour of OpenAPI + Scalar (branch `feature/openapi`, not merged)                                                                                                                                            |
 
@@ -122,6 +126,7 @@ complete; phase 2B strategy ![0%][pr0] has not started.
 
 ## 6. Before you start
 
+- [ ] Load the `caveman` skill, then the skills for the work (root `AGENTS.md`, "Agent skills").
 - [ ] Read the root `AGENTS.md` and the `AGENTS.md` of the app you are touching.
 - [ ] Load the `mastra` skill if any Mastra file is in scope.
 - [ ] Run `git status` to see what the owner already has in flight, and leave it alone.

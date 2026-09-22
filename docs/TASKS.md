@@ -90,10 +90,11 @@ Next up, in order.
 | Order | Task                                                                     | Priority  | Progress     | Pointer                                                                  |
 | ----- | ------------------------------------------------------------------------ | --------- | ------------ | ------------------------------------------------------------------------ |
 | **1** | Finish 2A (above)                                                        | ![P0][p0] | ![90%][pr90] | Five tasks done; the owner's commit is left                              |
-| **2** | Strategist agent spec (design conversation like the brand scan)          | ![P1][p1] | ![0%][pr0]   | `apps/api/src/mastra/agents/strategist`, `workflows/strategy-generation` |
-| **3** | Strategy endpoints (5)                                                   | ![P1][p1] | ![0%][pr0]   | catalogue §8                                                             |
-| **4** | Onboarding screens in `apps/web` wired to real scan + strategy endpoints | ![P1][p1] | ![0%][pr0]   | [`DESIGN.md`](./DESIGN.md)                                               |
-| **5** | Phase 3 — posts                                                          | ![P2][p2] | ![0%][pr0]   | catalogue §9                                                             |
+| **2** | **Before any backend work: remind the owner, then run the `code-simplifier` plugin over `apps/api`** (owner's ask, 2026-09-22) | ![P0][p0] | ![0%][pr0]   | `apps/api/AGENTS.md`, root `AGENTS.md` "Agent skills"                    |
+| **3** | Strategist agent spec (design conversation like the brand scan)          | ![P1][p1] | ![0%][pr0]   | `apps/api/src/mastra/agents/strategist`, `workflows/strategy-generation` |
+| **4** | Strategy endpoints (5)                                                   | ![P1][p1] | ![0%][pr0]   | catalogue §8                                                             |
+| **5** | Onboarding screens in `apps/web` wired to real scan + strategy endpoints | ![P1][p1] | ![0%][pr0]   | [`DESIGN.md`](./DESIGN.md)                                               |
+| **6** | Phase 3 — posts                                                          | ![P2][p2] | ![0%][pr0]   | catalogue §9                                                             |
 
 <details>
 <summary>Phase 2B — strategy, 6 tasks (part of phase 2, 7 endpoints with 2A)</summary>
@@ -175,6 +176,7 @@ Cross-cutting, still to do:
 | **1-4**  | `GET /health` (503 when the DB is down), graceful shutdown                                            | ![P1][p1] | ![100%][pr100] | 2026-09-20                                                   |
 | **1-5**  | `GET /me`, `GET /me/overview`                                                                         | ![P0][p0] | ![100%][pr100] | 2026-09-20                                                   |
 | **1-6**  | Brands: list, create, get, patch, archive (never delete), `scopeFor` ownership                        | ![P0][p0] | ![100%][pr100] | 2026-09-20, plan `…/2026-09-20-brands-rename-and-admin.md`   |
+| **W-1**  | `apps/web` on server components: `features/<area>` layout, Server Actions, server-side mock, TanStack Query removed; ESLint made real (typescript-eslint, TS 6 pin) | ![P1][p1] | ![100%][pr100] | 2026-09-22 |
 | **1-7**  | Rename `clients` → `brands` everywhere (client = person, brand = website workspace)                   | ![P0][p0] | ![100%][pr100] | 2026-09-20                                                   |
 | **1-8**  | Admin: list clients, get client, invite via Clerk, create a brand for a client                        | ![P1][p1] | ![100%][pr100] | 2026-09-20                                                   |
 | **1-9**  | Invited user links to its row on first sign-in by verified email (409 / 403)                          | ![P1][p1] | ![100%][pr100] | 2026-09-20                                                   |

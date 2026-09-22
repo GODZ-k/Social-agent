@@ -38,7 +38,7 @@ out of real runs between 2026-09-20 and 2026-09-22.
 | [**Windows and tooling**](#windows-and-tooling)       | ![3][c3] | Links, deletes and binaries that behave differently here               |
 | [**Repo, pnpm, Neon**](#repo-pnpm-neon)               | ![7][c7] | Installs, stale `dist` folders, versioning and the git index           |
 | [**Process with AI agents**](#process-with-ai-agents) | ![6][c6] | Stalls, re-reviews, file ownership and where rulings are written       |
-| [**Code**](#code)                                     | ![6][c6] | Facts the model must not own, and refactors that must prove themselves |
+| [**Code**](#code)                                     | ![10][c10] | Facts the model must not own, and refactors that must prove themselves |
 
 <a id="firecrawl"></a>
 
@@ -305,6 +305,36 @@ out of real runs between 2026-09-20 and 2026-09-22.
   per function, no nested ternaries, word lists as data at the top of the file, and
   comments only for the *why*. Not new layers of structure.
 
+- **Every `apps/web` screen was one 150–330 line client component, and "lint clean" meant
+  nothing (2026-09-22).**
+
+  The shared ESLint flat config never named `.ts`/`.tsx` in `files`, and the babel parser
+  could not parse TSX, so ESLint had linted zero TypeScript files since the repo began.
+  Fixed with `typescript-eslint`, which refuses TypeScript 7; the config package pins its
+  own `typescript@6` so pnpm links the parser against TS 6. Run `eslint` from inside the
+  app (`./node_modules/.bin/eslint --max-warnings 0 .`) when piping `-f json`.
+
+- **Server components need the data on the server.**
+
+  The mock lived in the browser (localStorage), so nothing could render server-side. It
+  now runs in the Next.js process on `globalThis`; reads are `React.cache`d server
+  functions, writes are Server Actions returning `ActionResult<T>` (thrown errors lose
+  their message in production) and ending with `revalidatePath`. The approvals swipe keeps
+  its instant feel with `useOptimistic` inside the transition.
+
+- **The React Compiler lint rejects refs the old code leaned on.**
+
+  `react-hooks/refs` flags `ref.current` written during render, and refs read inside
+  callbacks handed to hooks or to `form.handleSubmit(...)` built in render.
+  `react-hooks/incompatible-library` flags `form.watch()`; use `useWatch({ control })`.
+  Motion's `useTransform` re-reads its transformer every render, so props can be closed
+  over directly.
+
+- **A layout's `notFound()` skips its own segment's `not-found.tsx`.**
+
+  Next wires a segment's `not-found.tsx` as the boundary for its children only, so a
+  `[clientId]` layout that throws needs a root `app/not-found.tsx`.
+
 <a id="related"></a>
 
 ## Related
@@ -322,3 +352,4 @@ out of real runs between 2026-09-20 and 2026-09-22.
 [c3]: https://img.shields.io/badge/3-lessons-lightgrey?style=flat-square
 [c6]: https://img.shields.io/badge/6-lessons-lightgrey?style=flat-square
 [c7]: https://img.shields.io/badge/7-lessons-lightgrey?style=flat-square
+[c10]: https://img.shields.io/badge/10-lessons-lightgrey?style=flat-square

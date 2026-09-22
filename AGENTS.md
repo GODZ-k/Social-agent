@@ -23,7 +23,14 @@ All skills live at the repo root, whichever app uses them (decided 2026-09-22: o
 
 - `.agents/skills/<name>` holds the files. `.claude/skills/<name>` links to them for Claude Code (symlink or junction; on Windows without admin rights use `New-Item -ItemType Junction`).
 - `skills-lock.json` records where each installed one came from.
-- Here now: `apple-design` and `frontend-design` (web, landing, ui); the Clerk skills (auth); `mastra` and `mastra-factory` (the API's agents); `firecrawl-build-scrape` (official, general `/scrape` guidance) and `brand-scan-firecrawl` (ours: how the brand scan uses Firecrawl, verified API facts, the test sites and their expected results).
+- Here now: `apple-design` and `frontend-design` (web, landing, ui); `vercel-react-best-practices`, `vercel-composition-patterns` and `web-design-guidelines` (every React component); the Next.js skills (`next-dev-loop` for verifying a change in the running app, plus cache-components and partial-prefetching adoption/optimizers); the Clerk skills (auth); `mastra` and `mastra-factory` (the API's agents); `firecrawl-build-scrape` (official, general `/scrape` guidance) and `brand-scan-firecrawl` (ours: how the brand scan uses Firecrawl, verified API facts, the test sites and their expected results); the `caveman` pack (`caveman` reply style, `caveman-review`, `safe-refactor`, `surgical-patch`, `verify-and-stop`, `investigate-first`, `lean-build`, `migration`, `cavecrew`).
+
+**Using skills is not optional.** The owner installs a skill because they want it used. Every session and every dispatched agent:
+
+1. Loads `caveman` first and replies in that style for the whole session (code, comments, commits and docs stay normal prose, as the skill says).
+2. Loads the skills that match the work before writing anything: the three Vercel skills and `next-dev-loop` for `apps/web`; `mastra` for any Mastra file; `brand-scan-firecrawl` for the scan; the Clerk skills for auth.
+3. Runs the `code-simplifier` plugin agent over new or changed code before reporting done.
+4. Uses `safe-refactor` for restructures, `surgical-patch` for bug fixes, `verify-and-stop` for verification-only passes, `investigate-first` for unclear failures.
 
 **Installing a skill:** always run `npx skills add ...` from the repo root. Running it inside an app creates a second `.agents/skills` and `skills-lock.json` there, which nothing loads.
 

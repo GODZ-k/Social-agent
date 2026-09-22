@@ -62,8 +62,11 @@ pnpm 11 workspaces and Turborepo 2, TypeScript 7, Node 24 or newer (`package.jso
 | **`packages/shared`**   | `@social-agent/shared`                           | Zod schemas and types shared by API, web and db             |
 | **`packages/config/*`** | `@repo/eslint-config`, `@repo/typescript-config` | Lint and TypeScript configs                                 |
 
-`apps/web` leaves its mock data seam (`apps/web/lib/api/client.ts`, `mock-db.ts`) for
-onboarding in phase 2B and for the rest of the app in phase 3.
+`apps/web` renders on the server since 2026-09-22: pages are async server components that read
+through `lib/api/server.ts`, client islands write through the Server Actions in
+`lib/api/actions.ts`, and the mock behind both (`lib/api/mock/`) runs in the Next.js process.
+Route files live in `app/`, each screen's pieces in `features/<area>/`. The seam to the real
+API is those two files; it is crossed for onboarding in phase 2B and for the rest in phase 3.
 
 ```mermaid
 flowchart TD
@@ -96,8 +99,9 @@ The diagram at the top of this page is the whole of it.
   `src/mastra/config/models.ts`.
 - **Clerk** authenticates; our `users` table owns identity for everything else, so Clerk can be
   replaced without touching ownership data.
-- `apps/web` talks to Clerk directly for sign-in and, from phase 2B (the onboarding screens)
-  and fully in phase 3, to this API. Today its `lib/api/client.ts` returns mock data.
+- `apps/web` talks to Clerk directly for sign-in (`lib/auth/viewer.ts`, once per request) and,
+  from phase 2B (the onboarding screens) and fully in phase 3, to this API. Today
+  `lib/api/server.ts` and `lib/api/actions.ts` serve mock data from the Next.js process.
 
 > [!CAUTION]
 > The API never connects to a user-typed URL. Firecrawl fetches and renders websites from its

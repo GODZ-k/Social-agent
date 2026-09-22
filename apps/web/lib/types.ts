@@ -170,3 +170,39 @@ export interface ClientPatch {
   platforms?: Platform[];
   preferences?: ClientPreferences;
 }
+
+export type Role = "admin" | "client";
+
+/** The signed-in person, resolved on the server from Clerk. */
+export interface Viewer {
+  id: string;
+  role: Role;
+  name: string;
+  email: string;
+}
+
+export interface ScanResult {
+  name: string;
+  industry: string;
+  brand: BrandKit;
+}
+
+/** A brand scan job: started once, then polled until it is done. */
+export interface Scan {
+  id: string;
+  url: string;
+  /** Index of the step in progress; equals the step count when done. */
+  step: number;
+  status: "running" | "done";
+  result: ScanResult | null;
+}
+
+export interface PostPatch {
+  status?: PostStatus;
+  caption?: string;
+  hook?: string;
+  hashtags?: string[];
+  /** A data URL in the mock. The real API takes an upload and returns a hosted URL. */
+  mediaUrl?: string | null;
+  scheduledFor?: string | null;
+}

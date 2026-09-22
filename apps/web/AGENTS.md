@@ -6,14 +6,34 @@ Guidance for any coding agent working in `apps/web`.
 
 `docs/DESIGN.md` (shared with `apps/landing` and `packages/ui`) is the design system: colour tokens, typography, layout, components, motion, interaction rules, writing voice, and how to build a landing or marketing page so it matches the app. Follow it instead of asking about styling or layout. If something isn't covered, copy the closest existing screen and choose the quieter option.
 
+Load the `vercel-react-best-practices`, `vercel-composition-patterns` and `web-design-guidelines` skills before writing components. They are the standard this app is held to.
+
+## Where things live
+
+| Path | What |
+|---|---|
+| `app/` | Route files only: `page`, `layout`, `loading`, `error`, `not-found`. A page reads data and composes pieces from `features/`; it holds no markup of its own beyond layout |
+| `features/<area>/` | One folder per screen or product area. Each piece is one small named component in its own file |
+| `components/shell`, `components/auth` | Chrome shared across screens: top bar, workspace nav, auth frame |
+| `lib/api/server.ts` | Reads. Server-only, `React.cache`d, called from server components |
+| `lib/api/actions.ts` | Writes. Server Actions returning `ActionResult<T>`, each ends with `revalidatePath` |
+| `lib/api/use-server-action.ts` | The client hook that calls an action inside a transition and toasts failures |
+| `lib/api/mock/` | The server-side mock behind both files above. Only they may import it |
+| `lib/auth/viewer.ts` | `getViewer()`: the signed-in person from Clerk, resolved once per request |
+| `packages/ui` | Reusable UI with no routing, auth or data fetching (`@repo/ui/components/...`). See DESIGN.md section 14 |
+
 ## Rules
 
+- **Server first.** A file gets `"use client"` only when it needs state, effects, refs, browser APIs, event handlers with closures, motion, or a library that demands it (react-hook-form, TanStack Table, radix). Rendering lists, formatting dates and numbers, and choosing which piece to show are server work.
+- **Small props across the boundary.** A client island receives the fields it uses, not whole records, unless it passes the record on to another component that needs it all.
+- **Compose, don't configure.** No boolean or "variant" props that switch a component's behaviour. Make two explicit components that share the same inner pieces.
+- **One component per file**, named after what it shows. A page composes them; it does not define them inline.
+- **Data:** reads come from `lib/api/server.ts` in server components; writes go through `lib/api/actions.ts` from client components via `useServerAction`. Keep the function signatures stable so the real API can replace the bodies.
 - Never hardcode colours or the product name. Use the tokens in `packages/ui/src/styles/globals.css` and `APP_NAME` from `lib/utils.ts`.
-- Reusable UI lives in `packages/ui` (`@repo/ui/components/...`). Put a component there when it has no routing, auth or data fetching; otherwise keep it in this app. See DESIGN.md section 14.
-- All data goes through `lib/api/client.ts` and the hooks in `lib/api/queries.ts`. The API layer is currently an in-browser mock; keep its function signatures stable so the real API can replace the bodies.
-- Auth is Clerk. Every route is private unless listed in `proxy.ts`. Admins see all clients; everyone else sees only the clients they own.
+- Auth is Clerk. Every route is private unless listed in `proxy.ts`. Admins see all clients; everyone else sees only the clients they own. Access is checked on the server; the browser is never trusted.
 - Read the installed types or bundled docs before using TanStack Table v9, TanStack Charts or TanStack AI. Their APIs differ from older versions.
-- A page file in `app/` may export only its default component.
+- A page file in `app/` may export only its default component (plus `metadata`).
+- Comments say why, not what, and only where the code cannot say it.
 
 ## Done means
 
