@@ -1,0 +1,19 @@
+{
+  "mcpServers": {
+    "graft": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@nanonets/graft",
+        "mcp"
+      ]
+    },
+    "codebase-memory-mcp": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "codebase-memory-mcp"
+      ]
+    }
+  }
+}

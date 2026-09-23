@@ -15,6 +15,7 @@ All project documents live in `docs/`. Read `docs/MEMORY.md` first in every sess
 | `apps/api` | Express + Mastra API. Start with `apps/api/AGENTS.md` |
 | `packages/ui` | The shared design system (`@repo/ui`): tokens, components, motion, theme |
 | `packages/db` | Drizzle schema, migrations and the Postgres connection (`@social-agent/db`). Postgres is hosted on Neon; see `apps/api/AGENTS.md` |
+| `packages/social-connect` | Connecting social accounts (`@social-agent/social-connect`): one provider per network with authorize URL, code exchange, refresh and profile. No framework, no storage; meant to be published later. Only `apps/api/src/social` calls it |
 | `packages/shared`, `packages/config/*` | Shared zod schemas, and lint/TypeScript configs |
 
 ## Agent skills
@@ -23,7 +24,8 @@ All skills live at the repo root, whichever app uses them (decided 2026-09-22: o
 
 - `.agents/skills/<name>` holds the files. `.claude/skills/<name>` links to them for Claude Code (symlink or junction; on Windows without admin rights use `New-Item -ItemType Junction`).
 - `skills-lock.json` records where each installed one came from.
-- Here now: `apple-design` and `frontend-design` (web, landing, ui); `vercel-react-best-practices`, `vercel-composition-patterns` and `web-design-guidelines` (every React component); the Next.js skills (`next-dev-loop` for verifying a change in the running app, plus cache-components and partial-prefetching adoption/optimizers); the Clerk skills (auth); `mastra` and `mastra-factory` (the API's agents); `firecrawl-build-scrape` (official, general `/scrape` guidance) and `brand-scan-firecrawl` (ours: how the brand scan uses Firecrawl, verified API facts, the test sites and their expected results); the `caveman` pack (`caveman` reply style, `caveman-review`, `safe-refactor`, `surgical-patch`, `verify-and-stop`, `investigate-first`, `lean-build`, `migration`, `cavecrew`).
+- Here now (pruned 2026-09-23 to what the code uses): `apple-design` and `frontend-design` (web, landing, ui); `vercel-react-best-practices`, `vercel-composition-patterns` and `web-design-guidelines` (every React component); the Next.js skills (`next-dev-loop` for verifying a change in the running app; `next-cache-components-adoption`, on since 2026-09-24 with every route opted out pending route-by-route adoption; the cache-components optimizer and the partial-prefetching adoption/optimizer for what comes after); `drizzle`, `neon-postgres`, `zod-4` and `turborepo` (the data and build layers); the Clerk skills we use (`clerk` router, `clerk-nextjs-patterns`, `clerk-custom-ui`; no orgs, no Clerk webhooks, no CLI, per `docs/PRD.md`); `mastra` (the API's agents); `graft` (the code graph, use it before grep); `firecrawl-build-scrape` (official, general `/scrape` guidance) and `brand-scan-firecrawl` (ours: how the brand scan uses Firecrawl, verified API facts, the test sites and their expected results); the `caveman` pack (`caveman` reply style, `caveman-review`, `caveman-stats`, `safe-refactor`, `surgical-patch`, `verify-and-stop`, `investigate-first`, `lean-build`, `migration`).
+- Before adding a skill, check that the repo actually uses the feature it covers; a skill for an unused feature costs listing tokens every turn and nothing else. Reinstall with `npx skills add` from the root when the feature arrives.
 
 **Using skills is not optional.** The owner installs a skill because they want it used. Every session and every dispatched agent:
 

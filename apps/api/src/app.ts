@@ -6,6 +6,7 @@ import { MastraServer } from "@mastra/express";
 import { env } from "@/config/env";
 import { errorMiddleware } from "@/middlewares/error.middleware";
 import healthRoute from "@/routes/health.route";
+import oauthRoute from "@/routes/oauth.route";
 import v1Route from "@/routes/v1.route";
 import { mastra } from "./mastra";
 
@@ -24,8 +25,9 @@ if (env.NODE_ENV !== "production") {
   await server.init();
 }
 
-// Routes
 app.use("/health", healthRoute);
+// The OAuth callback has no Bearer token, so it sits outside the v1 auth chain.
+app.use("/api/v1/oauth", oauthRoute);
 app.use("/api/v1", v1Route);
 
 app.use(errorMiddleware);

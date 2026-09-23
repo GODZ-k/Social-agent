@@ -21,6 +21,7 @@ with its index; the request and response detail sits in the fold under it.
 - [3. Health](#3-health)
 - [4. Me](#4-me)
 - [5. Brands](#5-brands)
+  - [5.1 Social accounts](#5-1-social-accounts)
 - [6. Admin](#6-admin)
 - [7. Scans](#7-scans)
 - [8. Planned endpoints](#8-planned-endpoints)
@@ -41,7 +42,7 @@ with its index; the request and response detail sits in the fold under it.
   development shortcut that also needs a verified primary email
   (`src/services/users.service.ts`).
 - **Ids** are UUID strings. A malformed id answers `404`, not `400` (`isUuid` in
-  `src/utils/isUuid.ts`).
+  `src/utils/index.ts`).
 - **Timestamps** are ISO 8601 UTC strings, for example `"2026-09-22T12:30:00.000Z"`.
 - **Content type** is JSON; the body limit is 1 MB (`src/app.ts`).
 
@@ -89,7 +90,7 @@ A validation failure adds `details`, a list of `{ path, message }`
              "details": [ { "path": "url", "message": "Enter a website address such as acme.com" } ] } }
 ```
 
-Thirteen codes are in use:
+Fifteen codes are in use:
 
 | Status         | Code                        | Message                                                                                   | Thrown by                                       |
 | -------------- | --------------------------- | ----------------------------------------------------------------------------------------- | ----------------------------------------------- |
@@ -101,10 +102,12 @@ Thirteen codes are in use:
 | ![404][st404]  | **`BRAND_NOT_FOUND`**       | This brand doesn't exist, or you don't have access to it.                                 | `brands.service.ts`                             |
 | ![404][st404]  | **`CLIENT_NOT_FOUND`**      | This client doesn't exist.                                                                | `admin-clients.service.ts`                      |
 | ![404][st404]  | **`SCAN_NOT_FOUND`**        | This scan doesn't exist, or you don't have access to it.                                  | `scans.service.ts`                              |
+| ![404][st404]  | **`ACCOUNT_NOT_FOUND`**     | This account is not connected.                                                            | `social-accounts.service.ts`                    |
 | ![409][st409]  | **`CLIENT_EXISTS`**         | Someone with this email is already here.                                                  | `admin-clients.service.ts`                      |
 | ![409][st409]  | **`EMAIL_IN_USE`**          | This email already belongs to another account. Verify your email address, then try again. | `users.service.ts`                              |
 | ![409][st409]  | **`SCAN_NOT_DONE`**         | This scan hasn't finished yet.                                                            | `scans.service.ts`                              |
 | ![502][st502]  | **`INVITE_FAILED`**         | The invitation email could not be sent. Try again.                                        | `admin-clients.service.ts`                      |
+| ![501][st501]  | **`PLATFORM_NOT_AVAILABLE`** | Connecting <platform> is not available yet.                                              | `social-accounts.service.ts`                    |
 | ![500][st500]  | **`INTERNAL_SERVER_ERROR`** | Something went wrong                                                                      | `error.middleware.ts` (details stay in the log) |
 
 `401 UNAUTHENTICATED` and `500 INTERNAL_SERVER_ERROR` are possible on every `/api/v1` endpoint
@@ -204,7 +207,7 @@ Errors: as `GET /me`.
   "id": "b3c1f1de-5e0a-4f0e-8f65-6d1f4a2c9e77",
   "ownerId": "7d1f0c6e-...", "createdBy": "7d1f0c6e-...",
   "name": "Crumb & Co", "url": "https://crumbandco.com", "industry": "Bakery",
-  "accent": "#3B2F2F", "stage": "onboarding",
+  "accent": "#3B2F2F", "status": "active", "stage": "onboarding",
   "brand": { "tagline": "Small-batch bakes, made before sunrise", "summary": "...", "audience": "...",
              "voice": ["warm", "direct"], "colors": [ { "name": "Espresso", "hex": "#3B2F2F" } ],
              "fonts": { "heading": "Fraunces", "body": "Inter" },
@@ -266,8 +269,112 @@ success the scan's `brand_id` is set (`ScansRepository.attachBrand`).
 `brand`, `business`, `platforms`, `preferences`. Changing `brand` recomputes `accent`. `200`:
 the updated `Brand`. Errors: `400 VALIDATION_ERROR`, `404 BRAND_NOT_FOUND`.
 
-`DELETE` archives the brand (`archived_at`); nothing is deleted. `204`, no body. Errors:
+`DELETE` archives the brand (`status` becomes `archived`, `archived_at` records when); nothing is deleted. `204`, no body. Errors:
 `404 BRAND_NOT_FOUND`, including when it is already archived.
+
+</details>
+
+<a id="5-1-social-accounts"></a>
+
+### 5.1 Social accounts
+
+Built on 2026-09-23 for Instagram (Meta's "Instagram API with Instagram Login": the person signs
+in with the Instagram professional account itself, no Facebook Page). The other three platforms
+answer `501` until their apps exist. One account per platform per brand, so the platform name is
+the key in the URL.
+
+| Method            | Path                                                | Who                | Answers                                                   |
+| ----------------- | --------------------------------------------------- | ------------------ | --------------------------------------------------------- |
+| ![GET][get]       | `/api/v1/brands/:brandId/social-accounts`           | owner, or an admin | ![200][st200] ![404][st404]                               |
+| ![POST][post]     | `/api/v1/brands/:brandId/social-accounts/connect`   | owner, or an admin | ![200][st200] ![400][st400] ![404][st404] ![501][st501]   |
+| ![GET][get]       | `/api/v1/oauth/:platform/callback`                  | the browser, no token | ![302][st302]                                          |
+| ![DELETE][delete] | `/api/v1/brands/:brandId/social-accounts/:platform` | owner, or an admin | ![204][st204] ![400][st400] ![404][st404]                 |
+
+<details>
+<summary>The SocialAccountDetail shape</summary>
+
+`socialAccountDetailSchema` (`packages/shared/src/schema/social.schema.ts`), mapped by
+`toDetail` in `src/services/social-accounts.service.ts`. **Never in any output:**
+`access_token_enc`, `refresh_token_enc`, `meta`, `external_account_id`.
+
+```json
+{
+  "id": "a1b2c3d4-...", "platform": "instagram", "handle": "kilncoffee",
+  "avatarUrl": "https://scontent.cdninstagram.com/...", "status": "connected",
+  "scopes": ["instagram_business_basic", "instagram_business_content_publish", "instagram_business_manage_insights"],
+  "tokenExpiresAt": "2026-11-22T09:00:00.000Z",
+  "connectedBy": "7d1f0c6e-...", "connectedAt": "2026-09-23T09:00:00.000Z", "lastSyncedAt": null
+}
+```
+
+`status` is `connected`, `expired` or `disconnected`. The short form inside `Brand.accounts`
+stays `{ platform, handle, status, connectedAt }` and lists only `connected` and `expired` rows.
+
+</details>
+
+<details>
+<summary>GET /api/v1/brands/:brandId/social-accounts</summary>
+
+Every row for the brand, `disconnected` included, ordered by platform. `200`:
+`SocialAccountDetail[]`. Errors: `404 BRAND_NOT_FOUND` (missing, archived, or not yours).
+
+</details>
+
+<details>
+<summary>POST /api/v1/brands/:brandId/social-accounts/connect, and the callback</summary>
+
+Body `connectSocialAccountSchema`: `{ "platform": "instagram" }`. The API signs a `state`
+(brand id, user id, platform, nonce, 10-minute expiry; HMAC-SHA256, `src/social/state.ts`) and
+answers `200`:
+
+```json
+{ "authorizeUrl": "https://www.instagram.com/oauth/authorize?client_id=...&redirect_uri=...&response_type=code&scope=instagram_business_basic,instagram_business_content_publish,instagram_business_manage_insights&state=..." }
+```
+
+The web app sets `window.location = authorizeUrl`. Reconnecting uses this same call; the
+callback then overwrites the brand's row for that platform.
+
+Meta sends the browser to `GET /api/v1/oauth/instagram/callback?code=...&state=...` (or
+`?error=access_denied&state=...`). That route is mounted outside the `/api/v1` auth chain
+(`src/app.ts`): a redirect carries no Bearer token, so the signed `state` is the identity. The
+API swaps the code for a 60-day token (three Meta calls: code to short-lived token, exchange for
+long-lived, read the profile; `createInstagramProvider` in `packages/social-connect`), encrypts the
+token with AES-256-GCM (`src/social/crypto.ts`),
+upserts `social_accounts` with `status: "connected"`, and always answers `302`, never JSON:
+
+- success: `<FRONTEND_URL>/c/<brandId>/settings?tab=accounts&connected=instagram`
+- failure: `<FRONTEND_URL>/c/<brandId>/settings?tab=accounts&connect_error=<code>`
+- no usable `state`: `<FRONTEND_URL>/?connect_error=invalid_state`
+
+`connect_error` codes: `denied` (the person said no), `invalid_state` (missing, tampered,
+older than ten minutes, or for another platform), `missing_scopes` (a permission was refused),
+`account_mismatch` (a reconnect chose a different Instagram account), `account_in_use` (that
+Instagram account already belongs to another brand), `failed` (Meta or the database said no;
+the reason is in the API log, never in the URL).
+
+Errors on `connect`: `400 VALIDATION_ERROR` (unknown platform), `404 BRAND_NOT_FOUND`,
+`501 PLATFORM_NOT_AVAILABLE` (no app for the platform, or `SOCIAL_TOKEN_KEY`,
+`INSTAGRAM_APP_ID` or `INSTAGRAM_APP_SECRET` unset).
+
+</details>
+
+<details>
+<summary>DELETE /api/v1/brands/:brandId/social-accounts/:platform</summary>
+
+Disconnects: both token columns become null, `status` becomes `disconnected`, the row stays
+because metric history hangs off it. `204`, no body. Errors: `400 VALIDATION_ERROR` (unknown
+platform), `404 BRAND_NOT_FOUND`, `404 ACCOUNT_NOT_FOUND` (never connected, or already
+disconnected). The token is not revoked on Meta's side.
+
+</details>
+
+<details>
+<summary>Token refresh</summary>
+
+Long-lived Instagram tokens last 60 days and can be refreshed once they are a day old
+(`provider.refresh(token)` in `packages/social-connect`). The daily job that calls it, marks
+overdue rows `expired` and writes the new token back is task 5-3, which waits on decision D-6
+(always-on process or not). Not built yet.
 
 </details>
 
@@ -454,8 +561,8 @@ There is no third scan endpoint. The person edits the proposed kit in the browse
 
 The full catalogue is
 [`2026-09-20-api-endpoints-catalogue.md`](./superpowers/specs/2026-09-20-api-endpoints-catalogue.md),
-which carries request and response shapes for all 39. Fourteen are live: the 12 from phase 1
-plus the 2 scans.
+which carries request and response shapes for all 39. Eighteen are live: the 12 from phase 1,
+the 2 scans and the 4 social account endpoints.
 
 | Phase                                   | Endpoints | Built          |
 | --------------------------------------- | --------- | -------------- |
@@ -463,29 +570,28 @@ plus the 2 scans.
 | **2 — scan and strategy**               | 7         | ![29%][pr29]   |
 | **3 — posts**                           | 10        | ![0%][pr0]     |
 | **4 — chat**                            | 3         | ![0%][pr0]     |
-| **5 — accounts, publishing, analytics** | 7         | ![0%][pr0]     |
-| **everything**                          | 39        | ![36%][pr36]   |
+| **5 — accounts, publishing, analytics** | 7         | ![57%][pr57]   |
+| **everything**                          | 39        | ![46%][pr46]   |
 
 <details>
-<summary>What the remaining 25 are, by phase and group</summary>
+<summary>What the remaining 21 are, by phase and group</summary>
 
 | Phase | Group           | Endpoints                                                                                                                                                                        |
 | ----- | --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **2** | Strategy        | `GET /brands/:brandId/strategy`, `GET\|POST /brands/:brandId/strategies`, `GET /brands/:brandId/strategies/:strategyId`, `POST /brands/:brandId/strategies/:strategyId/activate` |
 | **3** | Posts           | list, `generate`, get one, `PATCH`, `approve`, `reject`, `request-changes`, `reopen`, media upload, media delete (10)                                                            |
 | **4** | Chat            | `POST /brands/:brandId/chat` (SSE stream, the one response without the `{ success, data }` envelope), thread list, thread messages                                               |
-| **5** | Social accounts | list, `connect`, `GET /oauth/:platform/callback` (no Bearer token; a signed `state` instead), disconnect                                                                         |
 | **5** | Publishing      | `POST /brands/:brandId/posts/:postId/publish`                                                                                                                                    |
 | **5** | Analytics       | `GET /brands/:brandId/analytics`, `GET /brands/:brandId/audience`                                                                                                                |
 
 </details>
 
 <details>
-<summary>The fourteen error codes those phases add</summary>
+<summary>The twelve error codes those phases add</summary>
 
 `STRATEGY_NOT_FOUND`, `STRATEGY_NOT_DRAFT`, `STRATEGY_DRAFT_EXISTS`, `NO_ACTIVE_STRATEGY`,
 `POST_NOT_FOUND`, `INVALID_POST_STATE`, `MEDIA_NOT_FOUND`, `MEDIA_TOO_LARGE`,
-`UNSUPPORTED_MEDIA`, `ACCOUNT_NOT_FOUND`, `ACCOUNT_NOT_CONNECTED`, `PLATFORM_NOT_AVAILABLE`,
+`UNSUPPORTED_MEDIA`, `ACCOUNT_NOT_CONNECTED`,
 `THREAD_NOT_FOUND`, `AGENT_FAILED`.
 
 </details>
@@ -530,10 +636,14 @@ The 15 routes are the 14 endpoints above plus the developer-only `GET /health/te
 [st403]: https://img.shields.io/badge/-403-orange
 [st404]: https://img.shields.io/badge/-404-orange
 [st409]: https://img.shields.io/badge/-409-orange
+[st302]: https://img.shields.io/badge/-302-blue
+[st501]: https://img.shields.io/badge/-501-orange
 [st500]: https://img.shields.io/badge/-500-red
 [st502]: https://img.shields.io/badge/-502-red
 [st503]: https://img.shields.io/badge/-503-red
 [pr0]: https://img.shields.io/badge/%20-%7C%7C%7C%7C%7C%7C%7C%7C%7C%7C%200%25-lightgrey?style=flat-square&labelColor=lightgrey
 [pr29]: https://img.shields.io/badge/%7C%7C%7C-%7C%7C%7C%7C%7C%7C%7C%2029%25-lightgrey?style=flat-square&labelColor=brightgreen
 [pr36]: https://img.shields.io/badge/%7C%7C%7C%7C-%7C%7C%7C%7C%7C%7C%2036%25-lightgrey?style=flat-square&labelColor=brightgreen
+[pr46]: https://img.shields.io/badge/%7C%7C%7C%7C%7C-%7C%7C%7C%7C%7C%2046%25-lightgrey?style=flat-square&labelColor=brightgreen
+[pr57]: https://img.shields.io/badge/%7C%7C%7C%7C%7C%7C-%7C%7C%7C%7C%2057%25-lightgrey?style=flat-square&labelColor=brightgreen
 [pr100]: https://img.shields.io/badge/%7C%7C%7C%7C%7C%7C%7C%7C%7C%7C-100%25-brightgreen?style=flat-square&labelColor=brightgreen

@@ -29,6 +29,13 @@
       "when": 1789921693270,
       "tag": "0003_full_schema",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1790143660346,
+      "tag": "0004_brand_status_and_scan_steps",
+      "breakpoints": true
     }
   ]
 }

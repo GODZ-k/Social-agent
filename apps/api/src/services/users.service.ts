@@ -3,7 +3,7 @@ import { fetchClerkUser, type ClerkUser } from "@/auth/clerk";
 import { env } from "@/config/env";
 import { UsersRepository, type UserProfile } from "@/repositories/users.repository";
 import { AppError } from "@/utils/AppError";
-import { isUniqueViolation } from "@/utils/isUniqueViolation";
+import { isUniqueViolation } from "@/utils";
 
 export type Role = "admin" | "client";
 

@@ -60,6 +60,7 @@ pnpm 11 workspaces and Turborepo 2, TypeScript 7, Node 24 or newer (`package.jso
 | **`packages/ui`**       | `@repo/ui`                                       | Design system: tokens, components, motion, theme            |
 | **`packages/db`**       | `@social-agent/db`                               | Drizzle schema, migrations, the Postgres connection factory |
 | **`packages/shared`**   | `@social-agent/shared`                           | Zod schemas and types shared by API, web and db             |
+| **`packages/social-connect`** | `@social-agent/social-connect`             | Network OAuth providers (Instagram built; Facebook, LinkedIn, TikTok planned): authorize URL, exchange, refresh, profile. No framework or storage |
 | **`packages/config/*`** | `@repo/eslint-config`, `@repo/typescript-config` | Lint and TypeScript configs                                 |
 
 `apps/web` renders on the server since 2026-09-22: pages are async server components that read
@@ -75,6 +76,7 @@ flowchart TD
     web -.->|"HTTP, phase 3"| api["apps/api"]
     api --> db["@social-agent/db"]
     api --> shared["@social-agent/shared"]
+    api --> connect["@social-agent/social-connect"]
     db --> shared
 ```
 
@@ -341,11 +343,13 @@ only invited), lowercase unique `email` (a check constraint enforces the lowerca
 workspace: `owner_id` and `created_by` (both pointing at `users`), `name`, `url`, `industry`,
 `accent`, `stage` (`onboarding`, `strategy`, `content`, `approval`, `publishing`, `learning`),
 the `brand` JSON brand kit, `business` JSON (public phone, email, location, hours),
-`platforms[]`, `preferences`, and `archived_at` for the soft delete.
+`platforms[]`, `preferences`, and the soft delete: `status` (`active`, `archived`) is what every
+query filters on, `archived_at` records when.
 
 **Onboarding and strategy.** `brand_scans` is one row per scan: nullable `brand_id` (the
 onboarding scan runs before the brand exists), `requested_by`, `url`, `status` (`queued`,
-`running`, `done`, `failed`), `current_step`, `pages`, `result`, `error`, `started_at` and
+`running`, `done`, `failed`), `current_step` (the `brand_scan_steps` enum: `discover`,
+`read-pages`, `interpret`, `report`), `pages`, `result`, `error`, `started_at` and
 `finished_at`. `strategies` is one immutable row per version per brand, `status` (`draft`,
 `active`, `superseded`) with a partial unique index allowing one `active` per brand, plus
 `goal`, `cadence` (per platform: `perWeek` and `bestTimes` as `{ day, time }`), `audience`,
@@ -364,7 +368,9 @@ rows; the files themselves live in object storage (provider not decided yet).
 **Accounts and analytics.** `social_accounts` is one account per platform per brand (unique on
 `(brand_id, platform)` and on `(platform, external_account_id)`), with AES-256-GCM token
 columns that are never selected into a client response, `scopes[]`, `meta`, and a `status` of
-`connected`, `expired` or `disconnected`. `post_metrics` (primary key `(post_id, captured_at)`)
+`connected`, `expired` or `disconnected`. Instagram connects through Meta's Instagram Login
+(`createInstagramProvider` in `packages/social-connect`, bound to the app keys by
+`src/social/providers.ts`); the flow is in `docs/API_SPEC.md` §5.1. `post_metrics` (primary key `(post_id, captured_at)`)
 snapshots a post over time; `account_metrics` (primary key `(social_account_id, date)`) is one
 row per account per day; `audience_insights` (primary key `(social_account_id, captured_on)`)
 stores each network's `active_hours` and `demographics` as JSON.
@@ -393,6 +399,10 @@ naming every missing or invalid variable. Validated there:
 | **`ADMIN_EMAILS`**                              | comma-separated list, default empty                          |
 | **`PORT`**                                      | positive integer, default `4000`                             |
 | **`CORS_ORIGINS`**                              | comma-separated list, default `http://localhost:3000`        |
+| **`FRONTEND_URL`**                              | URL, default `http://localhost:3000`; where OAuth callbacks send the browser |
+| **`SOCIAL_TOKEN_KEY`**                          | optional, 64 hex characters; token encryption and `state` signing (`src/social/crypto.ts`) |
+| **`INSTAGRAM_APP_ID`, `INSTAGRAM_APP_SECRET`**  | optional; without them `connect` answers `501`               |
+| **`INSTAGRAM_REDIRECT_URI`**                    | optional, default `http://localhost:<PORT>/api/v1/oauth/instagram/callback`; must match the Meta app |
 
 Read directly from the environment, **not** through `env.ts`: `FIRECRAWL_API_KEY`
 (`src/scan/firecrawl.ts`; absent means keyless, which is fine in development and must be set in

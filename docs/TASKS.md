@@ -60,7 +60,7 @@ of steps finished.
 | **Phase 2B — Strategy**                       | ![0%][pr0]     | ![P1][p1] | Strategist agent spec (2B-1)                             |
 | **Phase 3 — Posts**                           | ![0%][pr0]     | ![P2][p2] | Copywriter, Art Director, Editor agents (3-1)            |
 | **Phase 4 — Chat**                            | ![0%][pr0]     | ![P2][p2] | Account Manager agent (4-1)                              |
-| **Phase 5 — Accounts, publishing, analytics** | ![0%][pr0]     | ![P3][p3] | Social accounts and the OAuth callback (5-1)             |
+| **Phase 5 — Accounts, publishing, analytics** | ![15%][pr15]   | ![P3][p3] | 5-1 built for Instagram (2026-09-23); live check waits on Meta app keys |
 
 <a id="now"></a>
 
@@ -90,11 +90,10 @@ Next up, in order.
 | Order | Task                                                                     | Priority  | Progress     | Pointer                                                                  |
 | ----- | ------------------------------------------------------------------------ | --------- | ------------ | ------------------------------------------------------------------------ |
 | **1** | Finish 2A (above)                                                        | ![P0][p0] | ![90%][pr90] | Five tasks done; the owner's commit is left                              |
-| **2** | **Before any backend work: remind the owner, then run the `code-simplifier` plugin over `apps/api`** (owner's ask, 2026-09-22) | ![P0][p0] | ![0%][pr0]   | `apps/api/AGENTS.md`, root `AGENTS.md` "Agent skills"                    |
-| **3** | Strategist agent spec (design conversation like the brand scan)          | ![P1][p1] | ![0%][pr0]   | `apps/api/src/mastra/agents/strategist`, `workflows/strategy-generation` |
-| **4** | Strategy endpoints (5)                                                   | ![P1][p1] | ![0%][pr0]   | catalogue §8                                                             |
-| **5** | Onboarding screens in `apps/web` wired to real scan + strategy endpoints | ![P1][p1] | ![0%][pr0]   | [`DESIGN.md`](./DESIGN.md)                                               |
-| **6** | Phase 3 — posts                                                          | ![P2][p2] | ![0%][pr0]   | catalogue §9                                                             |
+| **2** | Strategist agent spec (design conversation like the brand scan)          | ![P1][p1] | ![0%][pr0]   | `apps/api/src/mastra/agents/strategist`, `workflows/strategy-generation` |
+| **3** | Strategy endpoints (5)                                                   | ![P1][p1] | ![0%][pr0]   | catalogue §8                                                             |
+| **4** | Onboarding screens in `apps/web` wired to real scan + strategy endpoints | ![P1][p1] | ![0%][pr0]   | [`DESIGN.md`](./DESIGN.md)                                               |
+| **5** | Phase 3 — posts                                                          | ![P2][p2] | ![0%][pr0]   | catalogue §9                                                             |
 
 <details>
 <summary>Phase 2B — strategy, 6 tasks (part of phase 2, 7 endpoints with 2A)</summary>
@@ -146,7 +145,7 @@ Phases nobody has opened yet, plus the one cross-cutting job that waits for a de
 
 | ID      | Task                                                                        | Priority  | Progress   | Notes                   |
 | ------- | --------------------------------------------------------------------------- | --------- | ---------- | ----------------------- |
-| **5-1** | Social accounts: list, connect, OAuth callback (signed `state`), disconnect | ![P3][p3] | ![0%][pr0] | catalogue §11           |
+| **5-1** | Social accounts: list, connect, OAuth callback (signed `state`), disconnect | ![P3][p3] | ![90%][pr90] | Instagram built 2026-09-23 (`packages/social-connect` + `src/social`, API_SPEC §5.1); 501 for the other three. Left: end-to-end run with a Meta app + tester account, then the web Connect button |
 | **5-2** | Publish a post                                                              | ![P3][p3] | ![0%][pr0] | catalogue §12           |
 | **5-3** | Background jobs: publish due posts, fetch metrics, refresh tokens           | ![P3][p3] | ![0%][pr0] | no endpoints on purpose |
 | **5-4** | Performance Analyst agent + `learning-cycle` workflow                       | ![P3][p3] | ![0%][pr0] | —                       |
@@ -171,12 +170,14 @@ Cross-cutting, still to do:
 | ID       | Task                                                                                                  | Priority  | Progress       | Notes                                                        |
 | -------- | ----------------------------------------------------------------------------------------------------- | --------- | -------------- | ------------------------------------------------------------ |
 | **1-1**  | `packages/db`: Drizzle schema, 12 tables, migrations 0000–0003 applied to Neon                        | ![P0][p0] | ![100%][pr100] | 2026-09-20, spec `…/2026-09-20-database-schema-design.md`    |
+| **1-14** | Migration 0004: `brands.status` enum (`active`/`archived`, queries filter on it, `archived_at` keeps the time) and `brand_scans.current_step` typed as the `brand_scan_steps` enum; `status` on the `Brand` API shape | ![P1][p1] | ![90%][pr90] | 2026-09-23, generated + type-checked; owner runs `db:migrate` |
 | **1-2**  | `apps/api` Express 5 at `/api/v1`, Controller → Service → Repository, `{ success, data }`, `AppError` | ![P0][p0] | ![100%][pr100] | 2026-09-20, plan `…/2026-09-20-backend-foundation.md`        |
 | **1-3**  | Clerk auth: `requireUser` + own `users` row, `requireAdmin`, `authorizedParties` in production only   | ![P0][p0] | ![100%][pr100] | 2026-09-20                                                   |
 | **1-4**  | `GET /health` (503 when the DB is down), graceful shutdown                                            | ![P1][p1] | ![100%][pr100] | 2026-09-20                                                   |
 | **1-5**  | `GET /me`, `GET /me/overview`                                                                         | ![P0][p0] | ![100%][pr100] | 2026-09-20                                                   |
 | **1-6**  | Brands: list, create, get, patch, archive (never delete), `scopeFor` ownership                        | ![P0][p0] | ![100%][pr100] | 2026-09-20, plan `…/2026-09-20-brands-rename-and-admin.md`   |
 | **W-1**  | `apps/web` on server components: `features/<area>` layout, Server Actions, server-side mock, TanStack Query removed; ESLint made real (typescript-eslint, TS 6 pin) | ![P1][p1] | ![100%][pr100] | 2026-09-22 |
+| **W-2**  | Cache Components on in `apps/web` (`cacheComponents: true`, Next 16.3.4): build passes, every route `◐`, all 13 pages and layouts opted out with `instant = false` pending route-by-route adoption via `next-cache-components-adoption` | ![P2][p2] | ![100%][pr100] | 2026-09-24 |
 | **1-7**  | Rename `clients` → `brands` everywhere (client = person, brand = website workspace)                   | ![P0][p0] | ![100%][pr100] | 2026-09-20                                                   |
 | **1-8**  | Admin: list clients, get client, invite via Clerk, create a brand for a client                        | ![P1][p1] | ![100%][pr100] | 2026-09-20                                                   |
 | **1-9**  | Invited user links to its row on first sign-in by verified email (409 / 403)                          | ![P1][p1] | ![100%][pr100] | 2026-09-20                                                   |
@@ -296,6 +297,7 @@ yet; it is a later idea rather than a decision waiting on anyone.
 [p1]: https://img.shields.io/badge/P1-this_phase-orange
 [p2]: https://img.shields.io/badge/P2-next_phase-yellow
 [p3]: https://img.shields.io/badge/P3-later-lightgrey
+[pr15]: https://img.shields.io/badge/%7C%7C-%7C%7C%7C%7C%7C%7C%7C%7C%2015%25-lightgrey?style=flat-square&labelColor=brightgreen
 [pr0]: https://img.shields.io/badge/%20-%7C%7C%7C%7C%7C%7C%7C%7C%7C%7C%200%25-lightgrey?style=flat-square&labelColor=lightgrey
 [pr50]: https://img.shields.io/badge/%7C%7C%7C%7C%7C-%7C%7C%7C%7C%7C%2050%25-lightgrey?style=flat-square&labelColor=brightgreen
 [pr90]: https://img.shields.io/badge/%7C%7C%7C%7C%7C%7C%7C%7C%7C-%7C%2090%25-lightgrey?style=flat-square&labelColor=brightgreen

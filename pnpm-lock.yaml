@@ -57,6 +57,9 @@ importers:
       '@social-agent/shared':
         specifier: workspace:*
         version: link:../../packages/shared
+      '@social-agent/social-connect':
+        specifier: workspace:*
+        version: link:../../packages/social-connect
       cheerio:
         specifier: ^1.2.0
         version: 1.2.0
@@ -365,6 +368,19 @@ importers:
         version: 7.0.2
 
   packages/shared:
+    dependencies:
+      zod:
+        specifier: ^4.6.1
+        version: 4.6.1
+    devDependencies:
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../config/typescript-config
+      typescript:
+        specifier: 7.0.2
+        version: 7.0.2
+
+  packages/social-connect:
     dependencies:
       zod:
         specifier: ^4.6.1

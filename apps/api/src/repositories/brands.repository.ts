@@ -1,5 +1,5 @@
 import { brands, type BrandRow, type NewBrandRow } from "@social-agent/db";
-import { and, desc, eq, isNull } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { db } from "@/config/db";
 
 /**
@@ -12,7 +12,7 @@ export type BrandScope = "all" | { ownerId: string };
 const inScope = (scope: BrandScope) => (scope === "all" ? undefined : eq(brands.ownerId, scope.ownerId));
 
 /** Archived brands are invisible to every query here. */
-const live = (scope: BrandScope) => and(isNull(brands.archivedAt), inScope(scope));
+const live = (scope: BrandScope) => and(eq(brands.status, "active"), inScope(scope));
 
 const byId = (id: string, scope: BrandScope) => and(eq(brands.id, id), live(scope));
 
@@ -51,7 +51,7 @@ export class BrandsRepository {
         const now = new Date();
         const archived = await db
             .update(brands)
-            .set({ archivedAt: now, updatedAt: now })
+            .set({ status: "archived", archivedAt: now, updatedAt: now })
             .where(byId(id, scope))
             .returning({ id: brands.id });
         return archived.length > 0;

@@ -25,7 +25,8 @@
     "onSuccess": "node scripts/copy-skills.mjs",
     "noExternal": [
       "@social-agent/shared",
-      "@social-agent/db"
+      "@social-agent/db",
+      "@social-agent/social-connect"
     ]
   },
   "dependencies": {
@@ -40,6 +41,7 @@
     "@mastra/pg": "^1.25.0",
     "@social-agent/db": "workspace:*",
     "@social-agent/shared": "workspace:*",
+    "@social-agent/social-connect": "workspace:*",
     "cheerio": "^1.2.0",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",

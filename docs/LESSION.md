@@ -35,9 +35,9 @@ out of real runs between 2026-09-20 and 2026-09-22.
 | ----------------------------------------------------- | -------- | ---------------------------------------------------------------------- |
 | [**Firecrawl**](#firecrawl)                           | ![7][c7] | Limits, lying status codes, and fields that look useful but are not    |
 | [**Mastra 1.66**](#mastra-166)                        | ![6][c6] | Method names, structured output, and routes that carry no auth         |
-| [**Windows and tooling**](#windows-and-tooling)       | ![3][c3] | Links, deletes and binaries that behave differently here               |
+| [**Windows and tooling**](#windows-and-tooling)       | ![4][c4] | Links, deletes and binaries that behave differently here               |
 | [**Repo, pnpm, Neon**](#repo-pnpm-neon)               | ![7][c7] | Installs, stale `dist` folders, versioning and the git index           |
-| [**Process with AI agents**](#process-with-ai-agents) | ![6][c6] | Stalls, re-reviews, file ownership and where rulings are written       |
+| [**Process with AI agents**](#process-with-ai-agents) | ![7][c7] | Stalls, re-reviews, file ownership and where rulings are written       |
 | [**Code**](#code)                                     | ![12][c12] | Facts the model must not own, and refactors that must prove themselves |
 
 <a id="firecrawl"></a>
@@ -159,6 +159,14 @@ out of real runs between 2026-09-20 and 2026-09-22.
 
 ## Windows and tooling
 
+- **A throwaway script that imports API code needs `tsx`, a `.mts` name and `file:///` imports.**
+
+  `apps/api` is CommonJS output, so a `.ts` scratch file with top-level `await` fails with
+  "Top-level await is currently not supported". Name it `.mts`, import the API modules by
+  `file:///C:/...` URL (a bare `C:/...` path is read as a URL scheme), and run
+  `node node_modules/tsx/dist/cli.mjs --tsconfig tsconfig.json <file>` from `apps/api` so `@/`
+  resolves and `.env` loads.
+
 - **Git Bash `ln -s` silently copies instead of linking, and git stores `.claude/skills`
   links as file copies.**
 
@@ -182,9 +190,25 @@ out of real runs between 2026-09-20 and 2026-09-22.
   Retry, or bypass turbo with `pnpm --filter <name> run <script>`, which is what the
   plans do anyway.
 
+- **Cache Components on (2026-09-24): the first `next dev` after the flag flip served 404 for every
+  nested `/c/[clientId]/*` route while `/c/[clientId]` itself was 200.
+
+  Stale dev state, not the code: the same files on a cold restart returned 200 everywhere, and
+  so did every bisection. After changing `cacheComponents`, restart `next dev` before trusting
+  a 404. Two more things the flip brings: `next dev` appends an `nextjs-agent-rules` block to
+  `apps/web/AGENTS.md` (commit it, or set `agentRules: false`), and Clerk logs
+  `This operation was aborted` when a prerender abandons `currentUser()` after the shell is done.
+
 <a id="repo-pnpm-neon"></a>
 
 ## Repo, pnpm, Neon
+
+- **`apps/api` type-checks against `packages/shared/dist` and `packages/db/dist`, not their
+  sources.**
+
+  A schema edit that passes `check-types` in the package still fails in the API until the
+  package is rebuilt (`tsc` in `packages/shared`, then `packages/db`). A stale `dist` also
+  shows up as errors about fields the API never touched.
 
 - **One unanswered dependency build script makes every `pnpm run` fail with
   `ERR_PNPM_IGNORED_BUILDS`.**
@@ -259,6 +283,14 @@ out of real runs between 2026-09-20 and 2026-09-22.
 
   The controller updates [TASKS.md](./TASKS.md) and [MEMORY.md](./MEMORY.md) after every
   task completes, not at the end.
+
+- **Skills piled up for features the code never used**: Clerk orgs, Clerk webhooks, the
+  Clerk CLI, Mastra Factory, cache-components optimizers, and six Caveman Cloud skills.
+
+  Transcripts of 19 sessions showed 13 skills ever invoked out of 47 installed. Pruned on
+  2026-09-23 to 23. Before installing a skill, check the repo uses the feature; every
+  unused skill costs listing tokens on every turn. Global copies under `~/.claude/skills`
+  still show up in the listing and need pruning separately.
 
 <a id="code"></a>
 
@@ -362,6 +394,7 @@ out of real runs between 2026-09-20 and 2026-09-22.
 <!-- Lesson counts per area. -->
 
 [c3]: https://img.shields.io/badge/3-lessons-lightgrey?style=flat-square
+[c4]: https://img.shields.io/badge/4-lessons-lightgrey?style=flat-square
 [c6]: https://img.shields.io/badge/6-lessons-lightgrey?style=flat-square
 [c7]: https://img.shields.io/badge/7-lessons-lightgrey?style=flat-square
 [c12]: https://img.shields.io/badge/12-lessons-lightgrey?style=flat-square

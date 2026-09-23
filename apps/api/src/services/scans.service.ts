@@ -4,7 +4,7 @@ import { ScansRepository, type ScanScope } from "@/repositories/scans.repository
 import { enqueueScan } from "@/scan-queue";
 import type { AuthUser } from "@/services/users.service";
 import { AppError } from "@/utils/AppError";
-import { isUuid } from "@/utils/isUuid";
+import { isUuid } from "@/utils";
 
 export class ScansService {
     /** Starts a scan, or returns the one this person already has running: a double click must not start two. */
@@ -18,7 +18,8 @@ export class ScansService {
     }
 
     static async get(user: AuthUser, id: string): Promise<Scan> {
-        return toScan(await findScan(user, id));
+        const scan = await findScan(user, id);
+        return toScan(scan);
     }
 
     /** A finished scan the caller may attach to a brand they are creating. */
@@ -55,7 +56,7 @@ export function toScan(row: BrandScanRow): Scan {
         brandId: row.brandId,
         url: row.url,
         status: row.status,
-        currentStep: row.currentStep as Scan["currentStep"],
+        currentStep: row.currentStep,
         pages: row.pages,
         result: row.result ?? null,
         error: row.error,

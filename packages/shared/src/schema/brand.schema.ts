@@ -4,6 +4,8 @@ export const DEFAULT_ACCENT = "#4B3FE4";
 
 export const platformSchema = z.enum(["instagram", "facebook", "linkedin", "tiktok"]);
 
+export const brandStatusSchema = z.enum(["active", "archived"]);
+
 /** Where a brand currently sits in the agent loop. */
 export const loopStageSchema = z.enum([
   "onboarding",
@@ -143,6 +145,7 @@ export const brandSchema = z.object({
   url: z.string(),
   industry: z.string(),
   accent: z.string(),
+  status: brandStatusSchema,
   stage: loopStageSchema,
   brand: brandKitSchema,
   business: businessInfoSchema,
@@ -155,6 +158,7 @@ export const brandSchema = z.object({
 
 export type Platform = z.infer<typeof platformSchema>;
 export type Weekday = z.infer<typeof weekdaySchema>;
+export type BrandStatus = z.infer<typeof brandStatusSchema>;
 export type LoopStage = z.infer<typeof loopStageSchema>;
 export type BrandKit = z.infer<typeof brandKitSchema>;
 export type BusinessInfo = z.infer<typeof businessInfoSchema>;

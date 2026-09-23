@@ -29,16 +29,6 @@ import {
   type ScanResult,
 } from "@social-agent/shared";
 
-/*
- * Who is who:
- * - a CLIENT is a person, a business owner (users.role = "client");
- * - a BRAND is one website plus the social accounts managed for it. A client can own several.
- * Everything below `brands` hangs off the brand, never off the user.
- *
- * Nothing with history under it is hard-deleted: brands are archived, strategies are
- * superseded, social accounts are disconnected.
- */
-
 const createdAt = () => timestamp("created_at", { withTimezone: true }).notNull().defaultNow();
 const updatedAt = () => timestamp("updated_at", { withTimezone: true }).notNull().defaultNow();
 
@@ -58,6 +48,16 @@ export const loopStage = pgEnum("loop_stage", [
   "approval",
   "publishing",
   "learning",
+]);
+
+export const brandStatus = pgEnum("brand_status", ["active", "archived"]);
+
+/** The brand-scan workflow's step ids, in order. Mirrors `scanStepIdSchema` in `@social-agent/shared`. */
+export const brandScanSteps = pgEnum("brand_scan_steps", [
+  "discover",
+  "read-pages",
+  "interpret",
+  "report",
 ]);
 
 export const platform = pgEnum("platform", ["instagram", "facebook", "linkedin", "tiktok"]);
@@ -89,44 +89,33 @@ export const socialAccountStatus = pgEnum("social_account_status", ["connected",
 // People and brands
 // ---------------------------------------------------------------------------------------------
 
-/**
- * Our own record of a person. Clerk authenticates them; ownership points here,
- * so replacing Clerk later does not touch ownership data.
- */
+// users --
 export const users = pgTable(
   "users",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    /** Null while the person is only invited. Set on their first sign-in. */
     clerkId: text("clerk_id").unique(),
-    /** Always lowercase. An invited row finds its Clerk account by this, once Clerk has verified it. */
     email: text("email").notNull().unique(),
-    /** Copied from Clerk on each sync, or typed by the admin at invite time. */
     name: text("name"),
     imageUrl: text("image_url"),
-    /** The person's own number. A brand's public phone is in `brands.business`. */
     phone: text("phone"),
     role: userRole("role").notNull().default("client"),
     status: userStatus("status").notNull().default("active"),
-    /** The admin who invited them. Null for people who signed up themselves. */
     invitedBy: uuid("invited_by").references((): AnyPgColumn => users.id),
     createdAt: createdAt(),
-    /** Doubles as "last synced from Clerk". */
     updatedAt: updatedAt(),
   },
   () => [check("users_email_lowercase", sql`"email" = lower("email")`)],
 );
 
-/** One website workspace. */
+// website workspace --
 export const brands = pgTable(
   "brands",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    /** The client who owns it. A client may own any number of brands. */
     ownerId: uuid("owner_id")
       .notNull()
       .references(() => users.id),
-    /** Who set it up: the owner, or an admin on their behalf. */
     createdBy: uuid("created_by")
       .notNull()
       .references(() => users.id),
@@ -134,14 +123,12 @@ export const brands = pgTable(
     url: text("url").notNull(),
     industry: text("industry").notNull(),
     accent: text("accent").notNull(),
-    /** Where the brand sits in the agent loop. This is the progress an admin sees. */
+    status: brandStatus("status").notNull().default("active"),
     stage: loopStage("stage").notNull().default("onboarding"),
     brand: jsonb("brand").$type<BrandKit>().notNull(),
     business: jsonb("business").$type<BusinessInfo>().notNull().default({}),
-    /** Where the strategy plans to post. Whether an account is connected is in `social_accounts`. */
     platforms: text("platforms").array().$type<Platform[]>().notNull(),
     preferences: jsonb("preferences").$type<BrandPreferences>().notNull().default(DEFAULT_PREFERENCES),
-    /** Soft delete: posts, metrics and learnings hang off a brand. */
     archivedAt: timestamp("archived_at", { withTimezone: true }),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
@@ -158,16 +145,14 @@ export const brandScans = pgTable(
   "brand_scans",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    /** Null for the onboarding scan, which runs before the brand exists; set when the brand is created from it. */
     brandId: uuid("brand_id").references(() => brands.id),
     requestedBy: uuid("requested_by")
       .notNull()
       .references(() => users.id),
     url: text("url").notNull(),
     status: scanStatus("status").notNull().default("queued"),
-    currentStep: text("current_step"),
+    currentStep: brandScanSteps("current_step"),
     pages: jsonb("pages").$type<ScanPage[]>().notNull().default([]),
-    /** The proposed brand kit and business info. */
     result: jsonb("result").$type<ScanResult>(),
     error: text("error"),
     startedAt: timestamp("started_at", { withTimezone: true }),
@@ -236,11 +221,9 @@ export const learnings = pgTable(
     brandId: uuid("brand_id")
       .notNull()
       .references(() => brands.id),
-    /** The version that was active when this was learned. */
     observedStrategyId: uuid("observed_strategy_id")
       .notNull()
       .references(() => strategies.id),
-    /** The version that used it. Null means not applied yet. */
     appliedStrategyId: uuid("applied_strategy_id").references(() => strategies.id),
     insight: text("insight").notNull(),
     /** The numbers behind the insight. */
@@ -255,10 +238,6 @@ export const learnings = pgTable(
 // Content
 // ---------------------------------------------------------------------------------------------
 
-/**
- * One post on one platform. The same idea on three platforms is three rows:
- * each has its own caption, time, approval and metrics.
- */
 export const posts = pgTable(
   "posts",
   {
@@ -266,10 +245,8 @@ export const posts = pgTable(
     brandId: uuid("brand_id")
       .notNull()
       .references(() => brands.id),
-    /** The strategy version this came from. Null for a post a person wrote. */
     strategyId: uuid("strategy_id").references(() => strategies.id),
     pillarId: uuid("pillar_id").references(() => contentPillars.id),
-    /** Null means the agent made it. */
     createdBy: uuid("created_by").references(() => users.id),
     platform: platform("platform").notNull(),
     format: postFormat("format").notNull(),
@@ -284,10 +261,10 @@ export const posts = pgTable(
     status: postStatus("status").notNull().default("draft"),
     scheduledFor: timestamp("scheduled_for", { withTimezone: true }),
     publishedAt: timestamp("published_at", { withTimezone: true }),
-    /** The owner, or an admin on their behalf. */
+
     reviewedBy: uuid("reviewed_by").references(() => users.id),
     reviewedAt: timestamp("reviewed_at", { withTimezone: true }),
-    /** Passed back to the agent so the rewrite fixes the actual complaint. */
+
     rejectionReason: text("rejection_reason"),
     /** The post's id on the network. Needed to fetch its metrics. */
     externalPostId: text("external_post_id"),
@@ -313,9 +290,7 @@ export const postMedia = pgTable(
       .notNull()
       .references(() => posts.id, { onDelete: "cascade" }),
     type: mediaType("type").notNull(),
-    /** Public URL the UI shows and the network fetches when publishing. */
     url: text("url").notNull(),
-    /** Path in object storage, to delete or replace the file. */
     storageKey: text("storage_key").notNull(),
     /** Order within a carousel. */
     position: integer("position").notNull().default(0),
@@ -345,7 +320,6 @@ export const socialAccounts = pgTable(
       .notNull()
       .references(() => brands.id),
     platform: platform("platform").notNull(),
-    /** The account's id on the network. */
     externalAccountId: text("external_account_id").notNull(),
     handle: text("handle").notNull(),
     avatarUrl: text("avatar_url"),
@@ -400,7 +374,6 @@ export const accountMetrics = pgTable(
       .notNull()
       .references(() => socialAccounts.id),
     date: date("date", { mode: "string" }).notNull(),
-    /** Total on that day. */
     followers: integer("followers").notNull(),
     reach: integer("reach").notNull().default(0),
     /** Interactions that day. The rate (engagement / reach) is calculated, never stored. */

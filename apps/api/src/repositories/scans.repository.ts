@@ -13,7 +13,6 @@ const inScope = (scope: ScanScope) => (scope === "all" ? undefined : eq(brandSca
 const byId = (id: string, scope: ScanScope) => and(eq(brandScans.id, id), inScope(scope));
 const isActive = () => inArray(brandScans.status, [...ACTIVE_STATUSES]);
 
-/** Database queries for the `brand_scans` table. No business rules here. */
 export class ScansRepository {
     static async create(values: NewBrandScanRow): Promise<BrandScanRow> {
         const [row] = await db.insert(brandScans).values(values).returning();

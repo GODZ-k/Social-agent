@@ -38,7 +38,7 @@ names the file that implements it. Where something is not decided or not built, 
 | Asset                                                                                 | Where                                 |
 | ------------------------------------------------------------------------------------- | ------------------------------------- |
 | **A client's brands**, and later their strategies, posts and analytics                | Postgres, `packages/db/src/schema.ts` |
-| **Social network access tokens** (phase 5, not built yet)                             | `social_accounts.access_token_enc`    |
+| **Social network access tokens** (Instagram since 2026-09-23)                         | `social_accounts.access_token_enc`    |
 | **Our own credentials**: Neon, Clerk, Anthropic, Firecrawl                            | `apps/api/.env`                       |
 | **The server's network position** — it must not become a proxy into a private network | `src/scan`                            |
 | **LLM and Firecrawl spend**                                                           | the scan queue                        |
@@ -260,6 +260,8 @@ retried and never quoted back to the model.
 | **`ANTHROPIC_API_KEY`**                         | `apps/api/.env` | Mastra's model router                      |
 | **`FIRECRAWL_API_KEY`**                         | `apps/api/.env` | `src/scan/firecrawl.ts`                    |
 | **`MASTRA_PLATFORM_ACCESS_TOKEN`** (optional)   | `apps/api/.env` | `@mastra/observability`                    |
+| **`SOCIAL_TOKEN_KEY`** (32 bytes, hex)          | `apps/api/.env` | `src/social/crypto.ts`                     |
+| **`INSTAGRAM_APP_ID`, `INSTAGRAM_APP_SECRET`**  | `apps/api/.env` | `src/social/providers.ts`                  |
 
 - `apps/api/.env` is never committed. No secret value appears in any repository file, in any
   document, or in any agent memory note; only variable names do.
@@ -267,10 +269,17 @@ retried and never quoted back to the model.
   token; the token is never written to a file.
 - `src/config/env.ts` validates the environment at start-up and exits naming what is missing.
   It prints the variable name and the problem, never the value.
-- Social tokens (phase 5) are AES-256-GCM encrypted in `social_accounts.access_token_enc` and
-  `refresh_token_enc`, with the key in the API environment and never in the database. Those
+- Social tokens are AES-256-GCM encrypted in `social_accounts.access_token_enc` and
+  `refresh_token_enc` (`src/social/crypto.ts`), with the key in the API environment and never in
+  the database. `SOCIAL_TOKEN_KEY` is a master key: HKDF derives one key for token encryption
+  and another for signing OAuth `state`, so neither use can stand in for the other. Those
   columns are never selected into a response that goes to a browser; `external_account_id` and
-  `meta` are not returned either.
+  `meta` are not returned either. Meta's error messages are logged; tokens and codes are not.
+- The OAuth callback (`GET /api/v1/oauth/:platform/callback`) is the one route under `/api/v1`
+  without a Bearer token, because a network redirect cannot carry headers. It trusts only the
+  HMAC-signed `state` the API issued (brand, user, platform, nonce, 10-minute expiry) and
+  answers with a redirect, never data. A bad `state` sends the browser to the web app's home
+  with `connect_error=invalid_state`.
 - Mastra's observability pipeline has a `SensitiveDataFilter` span processor
   (`src/mastra/index.ts`) that redacts passwords, tokens and keys from traces.
 
@@ -309,7 +318,7 @@ acceptable to us).
 
 The business contact details are published by the business itself, but they are still personal
 data when the business is one person. There is no deletion endpoint today: brands are archived
-(`archived_at`), never deleted, and `users` rows are only deleted when an invitation email
+(`status = archived`, `archived_at`), never deleted, and `users` rows are only deleted when an invitation email
 fails.
 
 > [!NOTE]
@@ -376,7 +385,9 @@ clients), not a formal rating.
 | **`/admin/clients` has no pagination**                                                                                        | ![low][low]         | Will degrade, not leak                                                                                          |
 | **No automated tests**                                                                                                        | ![medium][medium]   | Owner's decision; verification is recorded real runs. Security-relevant refactors are checked by identical `--facts` output on the four test sites |
 | **Mastra observability writes to a local DuckDB file**                                                                        | ![low][low]         | `apps/api/mastra.duckdb`; not shared, not backed up                                                             |
-| **Social token encryption, OAuth `state` signing, Meta deauthorize and data-deletion callbacks**                              | ![not built][na]    | Designed, not built (phase 5)                                                                                   |
+| **Meta deauthorize and data-deletion callbacks**                                                                              | ![not built][na]    | Needed for app review if Meta asks (task 5-6)                                                                  |
+| **OAuth `state` is not single-use**                                                                                           | ![low][low]         | A replay inside the 10-minute window can only redo the same connect for the same brand and user                |
+| **Disconnect does not revoke the token on Meta's side**                                                                       | ![low][low]         | The person can remove the app from Instagram settings; we only forget the token                                |
 
 <a id="13-checklist-for-a-new-endpoint"></a>
 

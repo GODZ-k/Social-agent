@@ -1,8 +1,7 @@
 import type { Request, Response } from "express";
 import { currentUser } from "@/middlewares/auth.middleware";
 import { BrandsService } from "@/services/brands.service";
-
-const idParam = (req: Request) => String(req.params.id);
+import { idParam } from "@/utils";
 
 export class BrandsController {
     static async list(req: Request, res: Response) {
