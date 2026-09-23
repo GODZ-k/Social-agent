@@ -159,6 +159,14 @@ out of real runs between 2026-09-20 and 2026-09-22.
 
 ## Windows and tooling
 
+- **A throwaway script that imports API code needs `tsx`, a `.mts` name and `file:///` imports.**
+
+  `apps/api` is CommonJS output, so a `.ts` scratch file with top-level `await` fails with
+  "Top-level await is currently not supported". Name it `.mts`, import the API modules by
+  `file:///C:/...` URL (a bare `C:/...` path is read as a URL scheme), and run
+  `node node_modules/tsx/dist/cli.mjs --tsconfig tsconfig.json <file>` from `apps/api` so `@/`
+  resolves and `.env` loads.
+
 - **Git Bash `ln -s` silently copies instead of linking, and git stores `.claude/skills`
   links as file copies.**
 

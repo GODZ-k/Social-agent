@@ -15,6 +15,7 @@ All project documents live in `docs/`. Read `docs/MEMORY.md` first in every sess
 | `apps/api` | Express + Mastra API. Start with `apps/api/AGENTS.md` |
 | `packages/ui` | The shared design system (`@repo/ui`): tokens, components, motion, theme |
 | `packages/db` | Drizzle schema, migrations and the Postgres connection (`@social-agent/db`). Postgres is hosted on Neon; see `apps/api/AGENTS.md` |
+| `packages/social-connect` | Connecting social accounts (`@social-agent/social-connect`): one provider per network with authorize URL, code exchange, refresh and profile. No framework, no storage; meant to be published later. Only `apps/api/src/social` calls it |
 | `packages/shared`, `packages/config/*` | Shared zod schemas, and lint/TypeScript configs |
 
 ## Agent skills

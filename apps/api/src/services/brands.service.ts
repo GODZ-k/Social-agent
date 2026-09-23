@@ -1,6 +1,7 @@
-import type { BrandRow, NewBrandRow } from "@social-agent/db";
+import type { BrandRow, NewBrandRow, SocialAccountRow } from "@social-agent/db";
 import { DEFAULT_ACCENT, type Brand, type BrandKit, type BrandPatch, type NewBrandInput } from "@social-agent/shared";
 import { BrandsRepository, type BrandScope } from "@/repositories/brands.repository";
+import { SocialAccountsRepository } from "@/repositories/social-accounts.repository";
 import { ScansRepository } from "@/repositories/scans.repository";
 import { ScansService } from "@/services/scans.service";
 import type { AuthUser } from "@/services/users.service";
@@ -10,13 +11,13 @@ import { isUuid } from "@/utils/isUuid";
 export class BrandsService {
     static async list(user: AuthUser): Promise<Brand[]> {
         const rows = await BrandsRepository.list(scopeFor(user));
-        return rows.map(toBrand);
+        return withAccounts(rows);
     }
 
     /** Only the brands one person owns. Used for "my brands" (even for an admin) and for an admin looking at a client. */
     static async listOwnedBy(ownerId: string): Promise<Brand[]> {
         const rows = await BrandsRepository.list({ ownerId });
-        return rows.map(toBrand);
+        return withAccounts(rows);
     }
 
     /**
@@ -36,7 +37,7 @@ export class BrandsService {
             accent: accentFor(brand.brand),
         });
         if (scan) await ScansRepository.attachBrand(scan.id, row.id);
-        return toBrand(row);
+        return toBrand(row, []);
     }
 
     static async get(user: AuthUser, id: string): Promise<Brand> {
@@ -44,7 +45,7 @@ export class BrandsService {
 
         const row = await BrandsRepository.findById(id, scopeFor(user));
         if (!row) throw brandNotFound();
-        return toBrand(row);
+        return brandWithAccounts(row);
     }
 
     /** `patch` holds only the fields an owner may change; the zod schema dropped everything else. */
@@ -56,7 +57,7 @@ export class BrandsService {
 
         const row = await BrandsRepository.update(id, scopeFor(user), changes);
         if (!row) throw brandNotFound();
-        return toBrand(row);
+        return brandWithAccounts(row);
     }
 
     static async archive(user: AuthUser, id: string): Promise<void> {
@@ -71,7 +72,7 @@ export class BrandsService {
  * THE OWNERSHIP RULE. An admin reaches every brand; everyone else only the
  * brands they own. Every repository call above takes this scope.
  */
-function scopeFor(user: AuthUser): BrandScope {
+export function scopeFor(user: AuthUser): BrandScope {
     return user.role === "admin" ? "all" : { ownerId: user.id };
 }
 
@@ -95,8 +96,28 @@ const EMPTY_STATS: Brand["stats"] = {
     pendingApprovals: 0,
 };
 
+async function withAccounts(rows: BrandRow[]): Promise<Brand[]> {
+    const accounts = await SocialAccountsRepository.listVisibleByBrands(rows.map((row) => row.id));
+    return rows.map((row) => toBrand(row, accounts.filter((account) => account.brandId === row.id)));
+}
+
+async function brandWithAccounts(row: BrandRow): Promise<Brand> {
+    const [brand] = await withAccounts([row]);
+    return brand as Brand;
+}
+
+// `listVisibleByBrands` already left out disconnected rows.
+function toAccount(row: SocialAccountRow): Brand["accounts"][number] {
+    return {
+        platform: row.platform,
+        handle: row.handle,
+        status: row.status === "expired" ? "expired" : "connected",
+        connectedAt: row.connectedAt.toISOString(),
+    };
+}
+
 /** Database row to the `Brand` shape the web app expects. */
-function toBrand(row: BrandRow): Brand {
+function toBrand(row: BrandRow, accounts: SocialAccountRow[]): Brand {
     return {
         id: row.id,
         ownerId: row.ownerId,
@@ -112,7 +133,7 @@ function toBrand(row: BrandRow): Brand {
         platforms: row.platforms,
         preferences: row.preferences,
         createdAt: row.createdAt.toISOString(),
-        accounts: [],
+        accounts: accounts.map(toAccount),
         stats: EMPTY_STATS,
     };
 }

@@ -18,7 +18,8 @@ export class ScansService {
     }
 
     static async get(user: AuthUser, id: string): Promise<Scan> {
-        return toScan(await findScan(user, id));
+        const scan = await findScan(user, id);
+        return toScan(scan);
     }
 
     /** A finished scan the caller may attach to a brand they are creating. */

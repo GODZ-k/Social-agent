@@ -3,6 +3,7 @@ import { Router } from "express";
 import { z } from "zod";
 import { BrandsController } from "@/controllers/brands.controller";
 import { validateMiddleware } from "@/middlewares/validate.middleware";
+import socialAccountsRoute from "@/routes/social-accounts.route";
 import { asyncHandler } from "@/utils/asyncHandler";
 
 const router = Router();
@@ -15,5 +16,6 @@ router.post("/", validateNewBrand, asyncHandler(BrandsController.create));
 router.get("/:id", asyncHandler(BrandsController.get));
 router.patch("/:id", validateBrandPatch, asyncHandler(BrandsController.update));
 router.delete("/:id", asyncHandler(BrandsController.archive));
+router.use("/:brandId/social-accounts", socialAccountsRoute);
 
 export default router;

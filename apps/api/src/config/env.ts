@@ -12,6 +12,13 @@ const envSchema = z.object({
     ADMIN_EMAILS: commaSeparatedList(""),
     PORT: z.coerce.number().int().positive().default(4000),
     CORS_ORIGINS: commaSeparatedList("http://localhost:3000"),
+    FRONTEND_URL: z.url().default("http://localhost:3000"),
+    /** `openssl rand -hex 32` */
+    SOCIAL_TOKEN_KEY: z.string().regex(/^[0-9a-f]{64}$/i, "must be 64 hex characters").optional(),
+    INSTAGRAM_APP_ID: z.string().min(1).optional(),
+    INSTAGRAM_APP_SECRET: z.string().min(1).optional(),
+    /** Must match the Meta app. Defaults to this API on localhost. */
+    INSTAGRAM_REDIRECT_URI: z.url().optional(),
 });
 
 // Stops the server at start-up with a message naming every missing or invalid variable.

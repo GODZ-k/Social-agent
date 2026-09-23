@@ -60,7 +60,7 @@ of steps finished.
 | **Phase 2B — Strategy**                       | ![0%][pr0]     | ![P1][p1] | Strategist agent spec (2B-1)                             |
 | **Phase 3 — Posts**                           | ![0%][pr0]     | ![P2][p2] | Copywriter, Art Director, Editor agents (3-1)            |
 | **Phase 4 — Chat**                            | ![0%][pr0]     | ![P2][p2] | Account Manager agent (4-1)                              |
-| **Phase 5 — Accounts, publishing, analytics** | ![0%][pr0]     | ![P3][p3] | Social accounts and the OAuth callback (5-1)             |
+| **Phase 5 — Accounts, publishing, analytics** | ![15%][pr15]   | ![P3][p3] | 5-1 built for Instagram (2026-09-23); live check waits on Meta app keys |
 
 <a id="now"></a>
 
@@ -145,7 +145,7 @@ Phases nobody has opened yet, plus the one cross-cutting job that waits for a de
 
 | ID      | Task                                                                        | Priority  | Progress   | Notes                   |
 | ------- | --------------------------------------------------------------------------- | --------- | ---------- | ----------------------- |
-| **5-1** | Social accounts: list, connect, OAuth callback (signed `state`), disconnect | ![P3][p3] | ![0%][pr0] | catalogue §11           |
+| **5-1** | Social accounts: list, connect, OAuth callback (signed `state`), disconnect | ![P3][p3] | ![90%][pr90] | Instagram built 2026-09-23 (`packages/social-connect` + `src/social`, API_SPEC §5.1); 501 for the other three. Left: end-to-end run with a Meta app + tester account, then the web Connect button |
 | **5-2** | Publish a post                                                              | ![P3][p3] | ![0%][pr0] | catalogue §12           |
 | **5-3** | Background jobs: publish due posts, fetch metrics, refresh tokens           | ![P3][p3] | ![0%][pr0] | no endpoints on purpose |
 | **5-4** | Performance Analyst agent + `learning-cycle` workflow                       | ![P3][p3] | ![0%][pr0] | —                       |
@@ -296,6 +296,7 @@ yet; it is a later idea rather than a decision waiting on anyone.
 [p1]: https://img.shields.io/badge/P1-this_phase-orange
 [p2]: https://img.shields.io/badge/P2-next_phase-yellow
 [p3]: https://img.shields.io/badge/P3-later-lightgrey
+[pr15]: https://img.shields.io/badge/%7C%7C-%7C%7C%7C%7C%7C%7C%7C%7C%2015%25-lightgrey?style=flat-square&labelColor=brightgreen
 [pr0]: https://img.shields.io/badge/%20-%7C%7C%7C%7C%7C%7C%7C%7C%7C%7C%200%25-lightgrey?style=flat-square&labelColor=lightgrey
 [pr50]: https://img.shields.io/badge/%7C%7C%7C%7C%7C-%7C%7C%7C%7C%7C%2050%25-lightgrey?style=flat-square&labelColor=brightgreen
 [pr90]: https://img.shields.io/badge/%7C%7C%7C%7C%7C%7C%7C%7C%7C-%7C%2090%25-lightgrey?style=flat-square&labelColor=brightgreen

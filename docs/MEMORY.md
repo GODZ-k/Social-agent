@@ -100,7 +100,7 @@ Fuller rules live in [`AGENTS.md`](../AGENTS.md) and [`apps/api/AGENTS.md`](../a
 | **Shared skills**                  | `.agents/skills/<name>`, linked from `.claude/skills`, recorded in `skills-lock.json`                                              |
 | **API reference**                  | `docs/API_SPEC.md` (hand-maintained until OpenAPI merges); `scripts/dev-token.ts` mints a Clerk token for trying endpoints |
 | **Apps**                           | `apps/web` (product), `apps/landing` (marketing), `apps/api` (Express + Mastra)                                                    |
-| **Packages**                       | `packages/ui`, `packages/db`, `packages/shared`, `packages/config/*`                                                               |
+| **Packages**                       | `packages/ui`, `packages/db`, `packages/shared`, `packages/social-connect` (network OAuth providers, since 2026-09-23), `packages/config/*` |
 | **The agent team and build order** | `apps/api/src/mastra/README.md`                                                                                                    |
 | **Design system**                  | [`DESIGN.md`](./DESIGN.md)                                                                                                         |
 | **Scan test sites**                | fourbarrelcoffee.com, meowmeowtweet.com, donangie.com, tartinebakery.com, with expected values in the `brand-scan-firecrawl` skill |
