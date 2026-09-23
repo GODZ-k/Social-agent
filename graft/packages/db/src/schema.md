@@ -1,0 +1,25 @@
+# packages/db/src/schema.ts
+
+- createdAt · function · L32-L32 — createdAt = ()
+- updatedAt · function · L33-L33 — updatedAt = ()
+- UserRow · type · L404-L404 — type UserRow = typeof users.$inferSelect;
+- NewUserRow · type · L405-L405 — type NewUserRow = typeof users.$inferInsert;
+- BrandRow · type · L406-L406 — type BrandRow = typeof brands.$inferSelect;
+- NewBrandRow · type · L407-L407 — type NewBrandRow = typeof brands.$inferInsert;
+- BrandScanRow · type · L408-L408 — type BrandScanRow = typeof brandScans.$inferSelect;
+- NewBrandScanRow · type · L409-L409 — type NewBrandScanRow = typeof brandScans.$inferInsert;
+- StrategyRow · type · L410-L410 — type StrategyRow = typeof strategies.$inferSelect;
+- NewStrategyRow · type · L411-L411 — type NewStrategyRow = typeof strategies.$inferInsert;
+- ContentPillarRow · type · L412-L412 — type ContentPillarRow = typeof contentPillars.$inferSelect;
+- NewContentPillarRow · type · L413-L413 — type NewContentPillarRow = typeof contentPillars.$inferInsert;
+- LearningRow · type · L414-L414 — type LearningRow = typeof learnings.$inferSelect;
+- NewLearningRow · type · L415-L415 — type NewLearningRow = typeof learnings.$inferInsert;
+- PostRow · type · L416-L416 — type PostRow = typeof posts.$inferSelect;
+- NewPostRow · type · L417-L417 — type NewPostRow = typeof posts.$inferInsert;
+- PostMediaRow · type · L418-L418 — type PostMediaRow = typeof postMedia.$inferSelect;
+- NewPostMediaRow · type · L419-L419 — type NewPostMediaRow = typeof postMedia.$inferInsert;
+- SocialAccountRow · type · L420-L420 — type SocialAccountRow = typeof socialAccounts.$inferSelect;
+- NewSocialAccountRow · type · L421-L421 — type NewSocialAccountRow = typeof socialAccounts.$inferInsert;
+- PostMetricsRow · type · L422-L422 — type PostMetricsRow = typeof postMetrics.$inferSelect;
+- AccountMetricsRow · type · L423-L423 — type AccountMetricsRow = typeof accountMetrics.$inferSelect;
+- AudienceInsightsRow · type · L424-L424 — type AudienceInsightsRow = typeof audienceInsights.$inferSelect;

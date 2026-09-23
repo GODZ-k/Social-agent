@@ -1,0 +1,23 @@
+{
+  "lastQuery": "why cachecomponent - benifit?",
+  "perAgentQuery": {},
+  "graftReads": 0,
+  "sourceReads": 0,
+  "savedTokens": 0,
+  "injectedPointers": [
+    "packages/ui/src/components/social/types.ts",
+    "apps/web/proxy.ts",
+    "apps/api/scripts/scan.ts",
+    "apps/api/src/mastra/config/skills.ts:L15-L19",
+    "apps/api/src/mastra/agents/brand-analyst/agent.ts",
+    "packages/social-connect/src/instagram.ts",
+    "packages/ui/src/lib/motion.ts:L26-L28",
+    "packages/shared/src/schema/me.schema.ts:L22-L22",
+    "apps/api/src/routes/me.route.ts",
+    "apps/api/src/mastra/workflows/brand-scan/steps/interpret.ts"
+  ],
+  "nudges": 2,
+  "inputCostMicros": 16356050,
+  "inputTokensBilled": 13978817,
+  "lastBillingUuid": "5f38c882-9ba9-4cfd-b508-b9ba7248b37e"
+}

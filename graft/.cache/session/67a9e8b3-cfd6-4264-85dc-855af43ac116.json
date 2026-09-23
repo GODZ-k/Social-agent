@@ -1,0 +1,17 @@
+{
+  "lastQuery": "claude plugin install claude-code-setup@claude-plugins-official",
+  "perAgentQuery": {},
+  "graftReads": 3,
+  "sourceReads": 0,
+  "savedTokens": 285804,
+  "injectedPointers": [],
+  "nudges": 2,
+  "turnUsedGraft": false,
+  "host": "claude-code",
+  "inputCostMicros": 3393113,
+  "inputTokensBilled": 2533195,
+  "lastBillingUuid": "a3d6d806-91a9-40ee-a13f-cfe4b38c06fe",
+  "graftTurns": 2,
+  "lastTallyUuid": "bd3b68a3-971b-4777-98f8-b24e2243e8ce",
+  "reportedTurns": 1
+}

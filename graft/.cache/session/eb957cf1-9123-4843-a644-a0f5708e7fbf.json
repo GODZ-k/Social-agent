@@ -1,0 +1,17 @@
+{
+  "lastQuery": "project scope - https://github.com/DeusData/codebase-memory-mcp",
+  "perAgentQuery": {},
+  "graftReads": 0,
+  "sourceReads": 1,
+  "savedTokens": 0,
+  "injectedPointers": [
+    "apps/api/src/scan/extract-style.ts:L62-L83",
+    "apps/api/src/mastra/config/skills.ts:L15-L19",
+    "apps/api/src/mastra/agents/brand-analyst/agent.ts"
+  ],
+  "nudges": 2,
+  "inputCostMicros": 1846758,
+  "inputTokensBilled": 1263556,
+  "lastBillingUuid": "8316b1b5-0af1-4b8d-bef6-06c921ecc0ae",
+  "host": "claude-code"
+}

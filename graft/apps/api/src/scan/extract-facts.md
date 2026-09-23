@@ -1,0 +1,32 @@
+# apps/api/src/scan/extract-facts.ts
+
+- Node · type · L61-L61 — type Node = Record<string, unknown>;
+- countWords · function · L63-L63 — countWords = (text: string)
+- clean · function · L64-L64 — clean = (value: unknown)
+- unique · function · L65-L65 — unique = (values: string[])
+- fieldOrSelf · function · L68-L70 — function fieldOrSelf(value: unknown, field: string): unknown
+- decodeOrSkip · function · L73-L80 — function decodeOrSkip(value: string): string | undefined
+- hrefsWithScheme · function · L83-L85 — function hrefsWithScheme(hrefs: string[], scheme: string): string[]
+- decodeAll · function · L88-L90 — function decodeAll(values: string[]): string[]
+- absolute · function · L92-L100 — function absolute(value: unknown, base: string): string | undefined
+- socialProfile · function · L106-L125 — function socialProfile(href: string, base: string): string | undefined
+- nodeTypes · function · L127-L129 — function nodeTypes(node: Node): string[]
+- isBusinessType · function · L131-L134 — function isBusinessType(node: Node): boolean
+- isPageLevelType · function · L136-L138 — function isPageLevelType(node: Node): boolean
+- sameEntityProperties · function · L141-L145 — function sameEntityProperties(node: Node): string[]
+- collectFrom · function · L148-L164 — function collectFrom(value: unknown, depth: number, found: Node[]): void
+- businessNodes · function · L170-L180 — function businessNodes($: CheerioAPI): Node[]
+- readLocation · function · L182-L193 — function readLocation(address: unknown): BusinessInfo["location"]
+- readHours · function · L196-L213 — function readHours(spec: unknown): BusinessInfo["hours"]
+- linkHrefs · function · L215-L217 — function linkHrefs($: CheerioAPI): string[]
+- pageIdentity · function · L219-L231 — function pageIdentity($: CheerioAPI, url: string)
+- meta · function · L220-L220 — meta = (selector: string)
+- contactDetails · function · L233-L248 — function contactDetails($: CheerioAPI, nodes: Node[]): { phones: string[]; emails: string[] }
+- socialLinksOn · function · L250-L253 — function socialLinksOn($: CheerioAPI, url: string): string[]
+- headingsOn · function · L255-L257 — function headingsOn($: CheerioAPI): string[]
+- imageNamedLogo · function · L260-L268 — function imageNamedLogo($: CheerioAPI): string | undefined
+- logoOn · function · L270-L275 — function logoOn($: CheerioAPI, nodes: Node[], url: string, ogImage?: string): string | undefined
+- removeNoise · function · L278-L288 — function removeNoise($: CheerioAPI): void
+- contentRoot · function · L290-L296 — function contentRoot($: CheerioAPI)
+- mainText · function · L298-L304 — function mainText($: CheerioAPI): string
+- extractPageFacts · function · L307-L326 — function extractPageFacts(url: string, html: string): PageFacts

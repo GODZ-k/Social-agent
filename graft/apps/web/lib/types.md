@@ -1,0 +1,26 @@
+# apps/web/lib/types.ts
+
+- Platform · type · L1-L1 — type Platform = "instagram" | "facebook" | "linkedin" | "tiktok";
+- PostFormat · type · L2-L2 — type PostFormat = "image" | "carousel" | "reel" | "story";
+- PostStatus · type · L3-L9 — type PostStatus = | "draft" | "in_review" | "approved" | "scheduled" | "published" | "rejected";
+- LoopStage · type · L12-L18 — type LoopStage = | "onboarding" | "strategy" | "content" | "approval" | "publishing" | "learning";
+- BrandColor · interface · L20-L23 — interface BrandColor
+- BrandKit · interface · L25-L32 — interface BrandKit
+- SocialAccount · interface · L35-L41 — interface SocialAccount
+- ClientPreferences · interface · L43-L48 — interface ClientPreferences
+- Client · interface · L50-L75 — interface Client
+- ContentPillar · interface · L77-L83 — interface ContentPillar
+- Learning · interface · L85-L90 — interface Learning
+- Strategy · interface · L92-L101 — interface Strategy
+- PostMetrics · interface · L103-L109 — interface PostMetrics
+- Post · interface · L111-L135 — interface Post
+- AnalyticsPoint · interface · L137-L142 — interface AnalyticsPoint
+- Analytics · interface · L144-L149 — interface Analytics
+- BrandScanStep · interface · L151-L155 — interface BrandScanStep
+- NewClientInput · interface · L157-L163 — interface NewClientInput
+- ClientPatch · interface · L166-L172 — interface ClientPatch
+- Role · type · L174-L174 — type Role = "admin" | "client";
+- Viewer · interface · L177-L182 — interface Viewer
+- ScanResult · interface · L184-L188 — interface ScanResult
+- Scan · interface · L191-L198 — interface Scan
+- PostPatch · interface · L200-L208 — interface PostPatch

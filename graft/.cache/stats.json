@@ -1,0 +1,16 @@
+{
+  "nodeCount": 1133,
+  "edgeCount": 2551,
+  "languages": [
+    "javascript",
+    "tsx",
+    "typescript"
+  ],
+  "totalCount": 1133,
+  "readyCount": 0,
+  "staleCount": 0,
+  "dirty": false,
+  "syncing": false,
+  "syncedAt": "2026-09-23T19:02:08.232Z",
+  "lastFile": "cache-components-adoption.md"
+}
