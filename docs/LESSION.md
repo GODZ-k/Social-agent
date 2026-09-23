@@ -37,7 +37,7 @@ out of real runs between 2026-09-20 and 2026-09-22.
 | [**Mastra 1.66**](#mastra-166)                        | ![6][c6] | Method names, structured output, and routes that carry no auth         |
 | [**Windows and tooling**](#windows-and-tooling)       | ![3][c3] | Links, deletes and binaries that behave differently here               |
 | [**Repo, pnpm, Neon**](#repo-pnpm-neon)               | ![7][c7] | Installs, stale `dist` folders, versioning and the git index           |
-| [**Process with AI agents**](#process-with-ai-agents) | ![6][c6] | Stalls, re-reviews, file ownership and where rulings are written       |
+| [**Process with AI agents**](#process-with-ai-agents) | ![7][c7] | Stalls, re-reviews, file ownership and where rulings are written       |
 | [**Code**](#code)                                     | ![12][c12] | Facts the model must not own, and refactors that must prove themselves |
 
 <a id="firecrawl"></a>
@@ -274,6 +274,14 @@ out of real runs between 2026-09-20 and 2026-09-22.
 
   The controller updates [TASKS.md](./TASKS.md) and [MEMORY.md](./MEMORY.md) after every
   task completes, not at the end.
+
+- **Skills piled up for features the code never used**: Clerk orgs, Clerk webhooks, the
+  Clerk CLI, Mastra Factory, cache-components optimizers, and six Caveman Cloud skills.
+
+  Transcripts of 19 sessions showed 13 skills ever invoked out of 47 installed. Pruned on
+  2026-09-23 to 23. Before installing a skill, check the repo uses the feature; every
+  unused skill costs listing tokens on every turn. Global copies under `~/.claude/skills`
+  still show up in the listing and need pruning separately.
 
 <a id="code"></a>
 
