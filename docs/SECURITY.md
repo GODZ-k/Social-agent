@@ -309,7 +309,7 @@ acceptable to us).
 
 The business contact details are published by the business itself, but they are still personal
 data when the business is one person. There is no deletion endpoint today: brands are archived
-(`archived_at`), never deleted, and `users` rows are only deleted when an invitation email
+(`status = archived`, `archived_at`), never deleted, and `users` rows are only deleted when an invitation email
 fails.
 
 > [!NOTE]

@@ -186,6 +186,13 @@ out of real runs between 2026-09-20 and 2026-09-22.
 
 ## Repo, pnpm, Neon
 
+- **`apps/api` type-checks against `packages/shared/dist` and `packages/db/dist`, not their
+  sources.**
+
+  A schema edit that passes `check-types` in the package still fails in the API until the
+  package is rebuilt (`tsc` in `packages/shared`, then `packages/db`). A stale `dist` also
+  shows up as errors about fields the API never touched.
+
 - **One unanswered dependency build script makes every `pnpm run` fail with
   `ERR_PNPM_IGNORED_BUILDS`.**
 

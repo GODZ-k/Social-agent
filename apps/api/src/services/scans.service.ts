@@ -55,7 +55,7 @@ export function toScan(row: BrandScanRow): Scan {
         brandId: row.brandId,
         url: row.url,
         status: row.status,
-        currentStep: row.currentStep as Scan["currentStep"],
+        currentStep: row.currentStep,
         pages: row.pages,
         result: row.result ?? null,
         error: row.error,

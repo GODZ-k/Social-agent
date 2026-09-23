@@ -341,11 +341,13 @@ only invited), lowercase unique `email` (a check constraint enforces the lowerca
 workspace: `owner_id` and `created_by` (both pointing at `users`), `name`, `url`, `industry`,
 `accent`, `stage` (`onboarding`, `strategy`, `content`, `approval`, `publishing`, `learning`),
 the `brand` JSON brand kit, `business` JSON (public phone, email, location, hours),
-`platforms[]`, `preferences`, and `archived_at` for the soft delete.
+`platforms[]`, `preferences`, and the soft delete: `status` (`active`, `archived`) is what every
+query filters on, `archived_at` records when.
 
 **Onboarding and strategy.** `brand_scans` is one row per scan: nullable `brand_id` (the
 onboarding scan runs before the brand exists), `requested_by`, `url`, `status` (`queued`,
-`running`, `done`, `failed`), `current_step`, `pages`, `result`, `error`, `started_at` and
+`running`, `done`, `failed`), `current_step` (the `brand_scan_steps` enum: `discover`,
+`read-pages`, `interpret`, `report`), `pages`, `result`, `error`, `started_at` and
 `finished_at`. `strategies` is one immutable row per version per brand, `status` (`draft`,
 `active`, `superseded`) with a partial unique index allowing one `active` per brand, plus
 `goal`, `cadence` (per platform: `perWeek` and `bestTimes` as `{ day, time }`), `audience`,

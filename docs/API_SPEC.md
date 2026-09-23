@@ -204,7 +204,7 @@ Errors: as `GET /me`.
   "id": "b3c1f1de-5e0a-4f0e-8f65-6d1f4a2c9e77",
   "ownerId": "7d1f0c6e-...", "createdBy": "7d1f0c6e-...",
   "name": "Crumb & Co", "url": "https://crumbandco.com", "industry": "Bakery",
-  "accent": "#3B2F2F", "stage": "onboarding",
+  "accent": "#3B2F2F", "status": "active", "stage": "onboarding",
   "brand": { "tagline": "Small-batch bakes, made before sunrise", "summary": "...", "audience": "...",
              "voice": ["warm", "direct"], "colors": [ { "name": "Espresso", "hex": "#3B2F2F" } ],
              "fonts": { "heading": "Fraunces", "body": "Inter" },
@@ -266,7 +266,7 @@ success the scan's `brand_id` is set (`ScansRepository.attachBrand`).
 `brand`, `business`, `platforms`, `preferences`. Changing `brand` recomputes `accent`. `200`:
 the updated `Brand`. Errors: `400 VALIDATION_ERROR`, `404 BRAND_NOT_FOUND`.
 
-`DELETE` archives the brand (`archived_at`); nothing is deleted. `204`, no body. Errors:
+`DELETE` archives the brand (`status` becomes `archived`, `archived_at` records when); nothing is deleted. `204`, no body. Errors:
 `404 BRAND_NOT_FOUND`, including when it is already archived.
 
 </details>

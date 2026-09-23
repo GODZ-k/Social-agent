@@ -105,6 +105,7 @@ function toBrand(row: BrandRow): Brand {
         url: row.url,
         industry: row.industry,
         accent: row.accent,
+        status: row.status,
         stage: row.stage,
         brand: row.brand,
         business: row.business,
