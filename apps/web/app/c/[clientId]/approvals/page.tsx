@@ -3,6 +3,11 @@ import { PageHeader } from "@repo/ui/components/states";
 import { ApprovalStack } from "@/features/approvals/approval-stack";
 import { getClient, getStrategy, listPosts } from "@/lib/api/server";
 
+
+// TODO: Cache Components adoption. Refactor this route so this opt-out can be removed.
+// See: https://nextjs.org/docs/app/guides/migrating-to-cache-components
+export const instant = false;
+
 export default async function ApprovalsPage({ params }: { params: Promise<{ clientId: string }> }) {
   const { clientId } = await params;
   const [client, posts, strategy] = await Promise.all([getClient(clientId), listPosts(clientId), getStrategy(clientId)]);

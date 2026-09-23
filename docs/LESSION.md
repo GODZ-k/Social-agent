@@ -35,7 +35,7 @@ out of real runs between 2026-09-20 and 2026-09-22.
 | ----------------------------------------------------- | -------- | ---------------------------------------------------------------------- |
 | [**Firecrawl**](#firecrawl)                           | ![7][c7] | Limits, lying status codes, and fields that look useful but are not    |
 | [**Mastra 1.66**](#mastra-166)                        | ![6][c6] | Method names, structured output, and routes that carry no auth         |
-| [**Windows and tooling**](#windows-and-tooling)       | ![3][c3] | Links, deletes and binaries that behave differently here               |
+| [**Windows and tooling**](#windows-and-tooling)       | ![4][c4] | Links, deletes and binaries that behave differently here               |
 | [**Repo, pnpm, Neon**](#repo-pnpm-neon)               | ![7][c7] | Installs, stale `dist` folders, versioning and the git index           |
 | [**Process with AI agents**](#process-with-ai-agents) | ![7][c7] | Stalls, re-reviews, file ownership and where rulings are written       |
 | [**Code**](#code)                                     | ![12][c12] | Facts the model must not own, and refactors that must prove themselves |
@@ -189,6 +189,15 @@ out of real runs between 2026-09-20 and 2026-09-22.
 
   Retry, or bypass turbo with `pnpm --filter <name> run <script>`, which is what the
   plans do anyway.
+
+- **Cache Components on (2026-09-24): the first `next dev` after the flag flip served 404 for every
+  nested `/c/[clientId]/*` route while `/c/[clientId]` itself was 200.
+
+  Stale dev state, not the code: the same files on a cold restart returned 200 everywhere, and
+  so did every bisection. After changing `cacheComponents`, restart `next dev` before trusting
+  a 404. Two more things the flip brings: `next dev` appends an `nextjs-agent-rules` block to
+  `apps/web/AGENTS.md` (commit it, or set `agentRules: false`), and Clerk logs
+  `This operation was aborted` when a prerender abandons `currentUser()` after the shell is done.
 
 <a id="repo-pnpm-neon"></a>
 
@@ -385,6 +394,7 @@ out of real runs between 2026-09-20 and 2026-09-22.
 <!-- Lesson counts per area. -->
 
 [c3]: https://img.shields.io/badge/3-lessons-lightgrey?style=flat-square
+[c4]: https://img.shields.io/badge/4-lessons-lightgrey?style=flat-square
 [c6]: https://img.shields.io/badge/6-lessons-lightgrey?style=flat-square
 [c7]: https://img.shields.io/badge/7-lessons-lightgrey?style=flat-square
 [c12]: https://img.shields.io/badge/12-lessons-lightgrey?style=flat-square

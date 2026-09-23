@@ -32,9 +32,19 @@ Load the `vercel-react-best-practices`, `vercel-composition-patterns` and `web-d
 - Never hardcode colours or the product name. Use the tokens in `packages/ui/src/styles/globals.css` and `APP_NAME` from `lib/utils.ts`.
 - Auth is Clerk. Every route is private unless listed in `proxy.ts`. Admins see all clients; everyone else sees only the clients they own. Access is checked on the server; the browser is never trusted.
 - Read the installed types or bundled docs before using TanStack Table v9, TanStack Charts or TanStack AI. Their APIs differ from older versions.
-- A page file in `app/` may export only its default component (plus `metadata`).
+- A page file in `app/` may export only its default component (plus `metadata`, and `instant` while Cache Components adoption is in progress; each `instant = false` carries a `// TODO: Cache Components adoption` comment until its route is adopted).
 - Comments say why, not what, and only where the code cannot say it.
 
 ## Done means
 
 `pnpm check-types`, `pnpm lint` and `pnpm build` pass, and the change has been looked at in a browser at 1440px and 390px, in light and dark.
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->

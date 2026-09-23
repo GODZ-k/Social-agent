@@ -3,6 +3,11 @@ import { normalizeUrl } from "@/lib/utils";
 import { TopBar } from "@/components/shell/top-bar";
 import { OnboardingFlow } from "@/features/onboarding/onboarding-flow";
 
+
+// TODO: Cache Components adoption. Refactor this route so this opt-out can be removed.
+// See: https://nextjs.org/docs/app/guides/migrating-to-cache-components
+export const instant = false;
+
 export default async function OnboardingPage({ searchParams }: { searchParams: Promise<{ url?: string }> }) {
   const [viewer, { url }] = await Promise.all([getViewer(), searchParams]);
 
