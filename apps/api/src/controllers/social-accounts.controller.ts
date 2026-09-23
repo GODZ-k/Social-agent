@@ -2,7 +2,7 @@ import type { Platform } from "@social-agent/shared";
 import type { Request, Response } from "express";
 import { currentUser } from "@/middlewares/auth.middleware";
 import { SocialAccountsService } from "@/services/social-accounts.service";
-import { pathParam } from "@/utils/idParam";
+import { pathParam } from "@/utils";
 
 export class SocialAccountsController {
     static async list(req: Request, res: Response) {

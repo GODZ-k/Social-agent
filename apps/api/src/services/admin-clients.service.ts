@@ -6,7 +6,7 @@ import { UsersRepository } from "@/repositories/users.repository";
 import { BrandsService } from "@/services/brands.service";
 import type { AuthUser } from "@/services/users.service";
 import { AppError } from "@/utils/AppError";
-import { isUuid } from "@/utils/isUuid";
+import { isUuid } from "@/utils";
 
 /** The admin's view of clients (people). Every route that reaches this is behind `requireAdmin`. */
 export class AdminClientsService {

@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
 import { currentUser } from "@/middlewares/auth.middleware";
 import { AdminClientsService } from "@/services/admin-clients.service";
-import { idParam } from "@/utils/idParam";
+import { idParam } from "@/utils";
 
 export class AdminClientsController {
     static async list(_req: Request, res: Response) {

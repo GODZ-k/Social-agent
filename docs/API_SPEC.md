@@ -42,7 +42,7 @@ with its index; the request and response detail sits in the fold under it.
   development shortcut that also needs a verified primary email
   (`src/services/users.service.ts`).
 - **Ids** are UUID strings. A malformed id answers `404`, not `400` (`isUuid` in
-  `src/utils/isUuid.ts`).
+  `src/utils/index.ts`).
 - **Timestamps** are ISO 8601 UTC strings, for example `"2026-09-22T12:30:00.000Z"`.
 - **Content type** is JSON; the body limit is 1 MB (`src/app.ts`).
 

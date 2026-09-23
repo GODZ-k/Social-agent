@@ -6,7 +6,7 @@ import { ScansRepository } from "@/repositories/scans.repository";
 import { ScansService } from "@/services/scans.service";
 import type { AuthUser } from "@/services/users.service";
 import { AppError } from "@/utils/AppError";
-import { isUuid } from "@/utils/isUuid";
+import { isUuid } from "@/utils";
 
 export class BrandsService {
     static async list(user: AuthUser): Promise<Brand[]> {

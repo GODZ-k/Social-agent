@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 import { SocialAccountsService } from "@/services/social-accounts.service";
-import { pathParam } from "@/utils/idParam";
+import { pathParam } from "@/utils";
 
 const queryText = (value: unknown) => (typeof value === "string" ? value : undefined);
 

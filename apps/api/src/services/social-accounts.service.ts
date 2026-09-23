@@ -12,8 +12,7 @@ import { providerFor } from "@/social/providers";
 import { createState, readState } from "@/social/state";
 import type { OAuthCallbackQuery, OAuthState } from "@/types/social";
 import { AppError } from "@/utils/AppError";
-import { isUniqueViolation } from "@/utils/isUniqueViolation";
-import { isUuid } from "@/utils/isUuid";
+import { isUniqueViolation, isUuid } from "@/utils";
 
 export class SocialAccountsService {
     static async list(user: AuthUser, brandId: string): Promise<SocialAccountDetail[]> {

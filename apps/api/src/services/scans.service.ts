@@ -4,7 +4,7 @@ import { ScansRepository, type ScanScope } from "@/repositories/scans.repository
 import { enqueueScan } from "@/scan-queue";
 import type { AuthUser } from "@/services/users.service";
 import { AppError } from "@/utils/AppError";
-import { isUuid } from "@/utils/isUuid";
+import { isUuid } from "@/utils";
 
 export class ScansService {
     /** Starts a scan, or returns the one this person already has running: a double click must not start two. */

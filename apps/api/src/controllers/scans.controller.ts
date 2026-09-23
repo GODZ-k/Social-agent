@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
 import { currentUser } from "@/middlewares/auth.middleware";
 import { ScansService } from "@/services/scans.service";
-import { idParam } from "@/utils/idParam";
+import { idParam } from "@/utils";
 
 export class ScansController {
     /** 202 when a scan was started; 200 when the caller's running scan was returned instead. */
