@@ -1,5 +1,6 @@
 import { createStep } from "@mastra/core/workflows";
-import { SCAN_BUDGET_MS, discoverSite } from "../../../../scan/index";
+import { config } from "../../../../config/constants";
+import { discoverSite } from "../../../../scan/index";
 import { ScanError } from "../../../../scan/types";
 import { discoverOutputSchema, scanInputSchema } from "../schemas";
 
@@ -9,7 +10,7 @@ export const discoverStep = createStep({
   inputSchema: scanInputSchema,
   outputSchema: discoverOutputSchema,
   execute: async ({ inputData }) => {
-    const deadline = Date.now() + SCAN_BUDGET_MS;
+    const deadline = Date.now() + config.scan.BUDGET_MS;
     try {
       return { deadline, discovery: await discoverSite(inputData.url, deadline) };
     } catch (error) {

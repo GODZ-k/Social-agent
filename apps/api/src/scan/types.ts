@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { config } from "../config/constants";
 import {
   businessInfoSchema,
   scanPageSchema,
@@ -19,21 +20,11 @@ export const scanErrorCodeSchema = z.enum([
 ]);
 export type ScanErrorCode = z.infer<typeof scanErrorCodeSchema>;
 
-/** Shown to the business owner on the onboarding screen, so: plain words. */
-export const SCAN_MESSAGES: Record<ScanErrorCode, string> = {
-  INVALID_URL: "That does not look like a website address. Try something like yourbusiness.com.",
-  BLOCKED_ADDRESS: "We can only read public websites. Check the address and try again.",
-  SITE_UNREACHABLE: "We could not open that website. Check the address, or try again in a minute.",
-  NOT_A_WEBSITE: "That address is a file, not a website. Enter your home page instead.",
-  NO_CONTENT: "We could not find any text to read on that website. You can enter your brand details by hand instead.",
-  INTERPRETATION_FAILED: "We read your website but could not finish the brand draft. Please try again.",
-};
-
 /** Thrown inside src/scan. Never crosses runBrandScan: it is turned into a ScanFailure. */
 export class ScanError extends Error {
   constructor(
     public readonly code: ScanErrorCode,
-    message: string = SCAN_MESSAGES[code],
+    message: string = config.scan.MESSAGES[code],
   ) {
     super(message);
     this.name = "ScanError";

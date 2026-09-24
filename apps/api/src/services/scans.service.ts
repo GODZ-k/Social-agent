@@ -1,6 +1,7 @@
 import type { BrandScanRow } from "@social-agent/db";
 import type { NewScanInput, Scan } from "@social-agent/shared";
-import { ScansRepository, type ScanScope } from "@/repositories/scans.repository";
+import { ScansRepository } from "@/repositories/scans.repository";
+import type { ScanScope } from "@/types/scope";
 import { enqueueScan } from "@/scan-queue";
 import type { AuthUser } from "@/services/users.service";
 import { AppError } from "@/utils/AppError";

@@ -1,10 +1,12 @@
 import type { BrandRow, NewBrandRow, SocialAccountRow } from "@social-agent/db";
 import { DEFAULT_ACCENT, type Brand, type BrandKit, type BrandPatch, type NewBrandInput } from "@social-agent/shared";
-import { BrandsRepository, type BrandScope } from "@/repositories/brands.repository";
+import { config } from "@/config/constants";
+import { BrandsRepository } from "@/repositories/brands.repository";
 import { SocialAccountsRepository } from "@/repositories/social-accounts.repository";
 import { ScansRepository } from "@/repositories/scans.repository";
 import { ScansService } from "@/services/scans.service";
 import type { AuthUser } from "@/services/users.service";
+import type { BrandScope } from "@/types/scope";
 import { AppError } from "@/utils/AppError";
 import { isUuid } from "@/utils";
 
@@ -86,16 +88,6 @@ function accentFor(brand: BrandKit) {
     return brand.colors[0]?.hex ?? DEFAULT_ACCENT;
 }
 
-/** Real values arrive with the social accounts and analytics tables (phases 3 and 5). */
-const EMPTY_STATS: Brand["stats"] = {
-    followers: 0,
-    followersDelta: 0,
-    engagementRate: 0,
-    engagementDelta: 0,
-    scheduled: 0,
-    pendingApprovals: 0,
-};
-
 async function withAccounts(rows: BrandRow[]): Promise<Brand[]> {
     const accounts = await SocialAccountsRepository.listVisibleByBrands(rows.map((row) => row.id));
     return rows.map((row) => toBrand(row, accounts.filter((account) => account.brandId === row.id)));
@@ -134,6 +126,6 @@ function toBrand(row: BrandRow, accounts: SocialAccountRow[]): Brand {
         preferences: row.preferences,
         createdAt: row.createdAt.toISOString(),
         accounts: accounts.map(toAccount),
-        stats: EMPTY_STATS,
+        stats: config.brand.EMPTY_STATS,
     };
 }

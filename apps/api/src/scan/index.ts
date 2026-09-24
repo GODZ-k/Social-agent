@@ -1,4 +1,5 @@
 import type { BusinessInfo } from "@social-agent/shared";
+import { config } from "../config/constants";
 import { pickPages } from "./discover-pages";
 import { extractPageFacts } from "./extract-facts";
 import { buildStyleFacts } from "./extract-style";
@@ -6,9 +7,6 @@ import { fetchPage, type FetchedPage } from "./firecrawl";
 import { ScanError, type Discovery, type PageFacts, type SiteFacts } from "./types";
 
 // The whole scan with no AI in it. Runs without a database: `scan -- <url> --facts`.
-
-export const SCAN_BUDGET_MS = 45_000;
-const MIN_WORDS = 80;
 
 /** Step "discover": the home page, its branding, and the inner pages worth reading. A failure here fails the scan. */
 export async function discoverSite(url: string, deadline: number): Promise<Discovery> {
@@ -88,7 +86,7 @@ export async function readSite(discovery: Discovery, deadline: number): Promise<
   if (unread) warnings.push(unread);
 
   const words = pages.reduce((total, page) => total + page.wordCount, 0);
-  if (words < MIN_WORDS) throw new ScanError("NO_CONTENT");
+  if (words < config.scan.MIN_WORDS_PER_SITE) throw new ScanError("NO_CONTENT");
 
   return {
     facts: {

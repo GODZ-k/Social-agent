@@ -2,7 +2,8 @@ import { MastraError } from "@mastra/core/error";
 import { createStep } from "@mastra/core/workflows";
 import { scanResultSchema, type ScanResult } from "@social-agent/shared";
 import { ZodError } from "zod";
-import { SCAN_MESSAGES, type SiteFacts } from "../../../../scan/types";
+import { config } from "../../../../config/constants";
+import type { SiteFacts } from "../../../../scan/types";
 import { brandAnalyst } from "../../../agents/brand-analyst/agent";
 import { brandAnalysisSchema, type BrandAnalysis } from "../../../agents/brand-analyst/output.schema";
 import { renderSiteFacts } from "../../../agents/brand-analyst/prompt";
@@ -59,7 +60,7 @@ async function analyse(agent: BrandAnalystAgent, prompt: string): Promise<BrandA
 }
 
 function rejectionNote(error: Error): string {
-  return `Your previous answer was rejected: ${error.message.slice(0, 1_000)}\nAnswer again and follow the schema exactly.`;
+  return `Your previous answer was rejected: ${error.message.slice(0, config.brandAnalyst.REJECTION_NOTE_CHARS)}\nAnswer again and follow the schema exactly.`;
 }
 
 /**
@@ -101,7 +102,7 @@ export const interpretStep = createStep({
     } catch (error) {
       if (!isAnswerRejected(error)) throw error;
       logger?.warn(`brand-scan interpret: the model's second answer was rejected too: ${error.message}`);
-      return { failure: { code: "INTERPRETATION_FAILED" as const, message: SCAN_MESSAGES.INTERPRETATION_FAILED }, pages, warnings };
+      return { failure: { code: "INTERPRETATION_FAILED" as const, message: config.scan.MESSAGES.INTERPRETATION_FAILED }, pages, warnings };
     }
   },
 });

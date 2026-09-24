@@ -1,6 +1,6 @@
 import type { RequestHandler } from "express";
-import type { ZodType } from "zod";
-import { AppError } from "@/utils/AppError";
+import type { ZodError, ZodType } from "zod";
+import { AppError, type ErrorDetail } from "@/utils/AppError";
 
 /**
  * Checks the request against a schema shaped `{ body?, query?, params? }`, then replaces
@@ -8,25 +8,24 @@ import { AppError } from "@/utils/AppError";
  */
 export function validateMiddleware(schema: ZodType): RequestHandler {
     return (req, _res, next) => {
-        const result = schema.safeParse({
-            body: req.body,
-            query: req.query,
-            params: req.params,
-        });
+        const result = schema.safeParse({ body: req.body, query: req.query, params: req.params });
 
         if (!result.success) {
-            // The leading "body" is dropped so a field reads "name", not "body.name".
-            const details = result.error.issues.map((issue) => ({
-                path: (issue.path[0] === "body" ? issue.path.slice(1) : issue.path).join("."),
-                message: issue.message,
-            }));
-
-            return next(new AppError("Some fields are invalid.", 400, "VALIDATION_ERROR", details));
+            return next(new AppError("Some fields are invalid.", 400, "VALIDATION_ERROR", toFieldErrors(result.error)));
         }
 
-        const data = result.data as { body?: unknown };
-        if (data.body !== undefined) req.body = data.body;
-
+        const parsed = result.data as { body?: unknown };
+        if (parsed.body !== undefined) req.body = parsed.body;
         next();
     };
+}
+
+function toFieldErrors(error: ZodError): ErrorDetail[] {
+    return error.issues.map((issue) => ({ path: fieldPath(issue.path), message: issue.message }));
+}
+
+// The leading "body" is dropped so a field reads "name", not "body.name".
+function fieldPath(path: PropertyKey[]): string {
+    const withoutBody = path[0] === "body" ? path.slice(1) : path;
+    return withoutBody.join(".");
 }

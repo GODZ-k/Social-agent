@@ -1,8 +1,7 @@
+import { config } from "../../../config/constants";
 import type { SiteFacts } from "../../../scan/types";
 
-// About 7k tokens of page text at ~4 characters per token. The home page gets the largest share.
-const TEXT_BUDGET = 28_000;
-const HOME_SHARE = 8_000;
+const { TEXT_BUDGET_CHARS, HOME_PAGE_CHARS } = config.brandAnalyst;
 
 const INVISIBLE = /[\u00AD\u200B\u200C\u200D\u2060\uFEFF\u202A-\u202E\u2066-\u2069]/g;
 const SITE_TAG = /<\/?\s*site\b[^>]*>/gi;
@@ -31,8 +30,8 @@ function pageBlock(page: SiteFacts["pages"][number], budget: number): string {
 /** The one user message of a scan: the site's facts as compact text, inside a marked block. */
 export function renderSiteFacts(facts: SiteFacts): string {
   const others = Math.max(facts.pages.length - 1, 1);
-  const perPage = Math.min(HOME_SHARE, Math.floor((TEXT_BUDGET - HOME_SHARE) / others));
-  const pages = facts.pages.map((page, index) => pageBlock(page, index === 0 ? HOME_SHARE : perPage)).join("\n");
+  const perPage = Math.min(HOME_PAGE_CHARS, Math.floor((TEXT_BUDGET_CHARS - HOME_PAGE_CHARS) / others));
+  const pages = facts.pages.map((page, index) => pageBlock(page, index === 0 ? HOME_PAGE_CHARS : perPage)).join("\n");
 
   return (
     "Draft the brand kit for this business.\n\n<site>\n" +

@@ -1,12 +1,9 @@
 import type { BrandScanRow } from "@social-agent/db";
+import { config } from "@/config/constants";
 import { runBrandScan } from "@/mastra/workflows/brand-scan/run";
 import { ScansRepository } from "@/repositories/scans.repository";
 
-// One scan at a time: a free Firecrawl key allows 10 requests a minute and a scan is up to 7.
 // The queue lives in this process; a Postgres-backed one can replace it when there are several.
-const SCAN_CONCURRENCY = 1;
-const SERVER_ERROR_MESSAGE = "Something went wrong on our side. Please try again.";
-
 const waiting: string[] = [];
 let running = 0;
 
@@ -21,7 +18,7 @@ export function pendingScanCount(): number {
 }
 
 function startNext(): void {
-    while (running < SCAN_CONCURRENCY && waiting.length > 0) {
+    while (running < config.scan.CONCURRENCY && waiting.length > 0) {
         const id = waiting.shift()!;
         running += 1;
         void runScan(id)
@@ -52,7 +49,7 @@ async function runScan(id: string): Promise<void> {
         else await ScansRepository.markFailed(id, outcome.message);
     } catch (error) {
         console.error(`scan ${id} failed`, error);
-        await ScansRepository.markFailed(id, SERVER_ERROR_MESSAGE).catch((writeError) => {
+        await ScansRepository.markFailed(id, config.scan.SERVER_ERROR_MESSAGE).catch((writeError) => {
             console.error(`scan ${id}: could not record the failure`, writeError);
         });
     }

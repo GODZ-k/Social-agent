@@ -8,7 +8,6 @@ import { asyncHandler } from "@/utils/asyncHandler";
 
 const router = Router();
 
-// Everything below is for admins only. "clients" here are people, not brands.
 router.use(requireAdmin);
 
 const validateInvite = validateMiddleware(z.object({ body: inviteClientSchema }));

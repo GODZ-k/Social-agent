@@ -2,12 +2,9 @@
 // schema.org facts, social links, logo and readable text. No network, no Mastra.
 import { load, type CheerioAPI } from "cheerio";
 import { z } from "zod";
-import { timeSchema, type BusinessInfo, type Weekday } from "@social-agent/shared";
+import { timeSchema, weekdaySchema, type BusinessInfo, type Weekday } from "@social-agent/shared";
+import { config } from "../config/constants";
 import type { PageFacts } from "./types";
-
-const MAX_HEADINGS = 30;
-const MAX_WORDS = 1500;
-const MAX_NODE_DEPTH = 6;
 
 // Page types, and pure value types (address, rating, menu item). "Place" and "ContactPoint" are
 // left out on purpose: either can carry the business's own address, phone or email.
@@ -34,8 +31,6 @@ const BUSINESS_CHILD_PROPS = ["subOrganization", "department", "location"];
 // Descending from a page-level node: what the page is about. Safe only there, because a page-level
 // node has no business identity of its own to leak into the result.
 const PAGE_CHILD_PROPS = ["mainEntity", "about"];
-
-const WEEKDAYS: Weekday[] = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
 
 const SOCIAL_PROFILE_PATHS = [
   "instagram\\.com/[\\w.]+",
@@ -146,7 +141,7 @@ function sameEntityProperties(node: Node): string[] {
 
 /** Depth is capped so a malformed or hostile document cannot make the walk unbounded. */
 function collectFrom(value: unknown, depth: number, found: Node[]): void {
-  if (depth > MAX_NODE_DEPTH) return;
+  if (depth > config.scan.MAX_JSON_LD_DEPTH) return;
   if (Array.isArray(value)) {
     value.forEach((item) => collectFrom(item, depth, found)); // array membership never consumes depth
     return;
@@ -204,7 +199,7 @@ function readHours(spec: unknown): BusinessInfo["hours"] {
     for (const day of [node.dayOfWeek].flat()) {
       // "Monday", "https://schema.org/Monday" and "Mo" all start with the weekday's first letters.
       const key = clean(day).split("/").pop()!.slice(0, 3).toLowerCase() as Weekday;
-      if (!WEEKDAYS.includes(key)) continue;
+      if (!weekdaySchema.options.includes(key)) continue;
       if (hours.some((h) => h.day === key && h.open === open.data && h.close === close.data)) continue;
       hours.push({ day: key, open: open.data, close: close.data });
     }
@@ -253,7 +248,7 @@ function socialLinksOn($: CheerioAPI, url: string): string[] {
 }
 
 function headingsOn($: CheerioAPI): string[] {
-  return unique($("h1, h2, h3").map((_, element) => clean($(element).text())).get()).slice(0, MAX_HEADINGS);
+  return unique($("h1, h2, h3").map((_, element) => clean($(element).text())).get()).slice(0, config.scan.MAX_HEADINGS_PER_PAGE);
 }
 
 /** Document order decides: the header's logo comes before a footer or partner logo. */
@@ -300,7 +295,7 @@ function mainText($: CheerioAPI): string {
   const root = contentRoot($);
   // .text() joins elements with nothing between them: "<h2>Menu</h2><p>Bread</p>" reads "MenuBread".
   root.find(BLOCK_TAGS).append(" ");
-  return root.text().replace(/\s+/g, " ").trim().split(" ").slice(0, MAX_WORDS).join(" ");
+  return root.text().replace(/\s+/g, " ").trim().split(" ").slice(0, config.scan.MAX_WORDS_PER_PAGE).join(" ");
 }
 
 /** The parsed copy is torn down while reading, so it is created here and never escapes. */

@@ -1,5 +1,6 @@
 import { lookup } from "node:dns/promises";
 import { isIP } from "node:net";
+import { config } from "../config/constants";
 import { isBlockedAddress } from "./address-check";
 import { ScanError } from "./types";
 
@@ -7,11 +8,6 @@ import { ScanError } from "./types";
 // server never connects to a user-typed address. Firecrawl does not refuse private addresses
 // (checked 2026-09-22: it fetched 127.0.0.1:8080), so vetAddress runs before every call.
 
-const FIRECRAWL_SCRAPE_URL = "https://api.firecrawl.dev/v2/scrape";
-const RENDER_TIMEOUT_MS = 30_000; // a browser render of one page takes 2-10 s
-const MAX_HTML_CHARS = 2_000_000;
-// A PDF or an image comes back as a stub document around the extracted text, not as a web page.
-const MIN_WEBPAGE_CHARS = 200;
 const NOT_A_WEBPAGE_CODE = "SCRAPE_BRANDING_NOT_SUPPORTED"; // Firecrawl's answer for a PDF or an image
 
 export type Branding = {
@@ -99,11 +95,11 @@ function parseJson(text: string): FirecrawlResponse {
 
 async function postScrape(url: URL, formats: string[], timeoutMs: number): Promise<Response> {
   try {
-    return await fetch(FIRECRAWL_SCRAPE_URL, {
+    return await fetch(config.firecrawl.SCRAPE_URL, {
       method: "POST",
       headers: requestHeaders(),
       body: JSON.stringify({ url: url.href, formats, onlyMainContent: false, timeout: timeoutMs }),
-      signal: AbortSignal.timeout(timeoutMs + 5_000),
+      signal: AbortSignal.timeout(timeoutMs + config.firecrawl.ABORT_GRACE_MS),
     });
   } catch {
     throw new ScanError("SITE_UNREACHABLE"); // network error, or our own timeout fired
@@ -158,7 +154,7 @@ export async function fetchPage(rawUrl: string, options: { deadline: number; wit
 
   const remainingMs = options.deadline - Date.now();
   if (remainingMs <= 0) throw new ScanError("SITE_UNREACHABLE");
-  const timeoutMs = Math.min(RENDER_TIMEOUT_MS, remainingMs);
+  const timeoutMs = Math.min(config.firecrawl.RENDER_TIMEOUT_MS, remainingMs);
 
   const formats = options.withBranding ? ["rawHtml", "links", "branding"] : ["rawHtml", "links"];
   const { data } = await callFirecrawl(url, formats, timeoutMs);
@@ -168,11 +164,11 @@ export async function fetchPage(rawUrl: string, options: { deadline: number; wit
   if (status >= 400) throw new ScanError("SITE_UNREACHABLE");
 
   const html = data.rawHtml ?? "";
-  if (html.length < MIN_WEBPAGE_CHARS) throw new ScanError("NOT_A_WEBSITE");
+  if (html.length < config.firecrawl.MIN_WEBPAGE_CHARS) throw new ScanError("NOT_A_WEBSITE");
 
   return {
     url: finalUrl(data.metadata?.url, url),
-    html: html.slice(0, MAX_HTML_CHARS),
+    html: html.slice(0, config.firecrawl.MAX_HTML_CHARS),
     links: data.links ?? [],
     branding: data.branding,
   };

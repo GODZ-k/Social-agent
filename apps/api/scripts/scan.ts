@@ -3,7 +3,8 @@
 // Both need no database; the full scan needs ANTHROPIC_API_KEY and DATABASE_URL in apps/api/.env.
 import "dotenv/config";
 import { fetchPage } from "../src/scan/firecrawl";
-import { SCAN_BUDGET_MS, discoverSite, readSite } from "../src/scan/index";
+import { config } from "../src/config/constants";
+import { discoverSite, readSite } from "../src/scan/index";
 import { normaliseScanUrl } from "../src/scan/normalise-url";
 import { ScanError } from "../src/scan/types";
 
@@ -14,13 +15,13 @@ const input = args.find((arg) => !arg.startsWith("--"));
 const print = (value: unknown) => console.log(JSON.stringify(value, null, 2));
 
 async function fetchOnly(url: string): Promise<number> {
-  const page = await fetchPage(url, { deadline: Date.now() + SCAN_BUDGET_MS, withBranding: true });
+  const page = await fetchPage(url, { deadline: Date.now() + config.scan.BUDGET_MS, withBranding: true });
   print({ ok: true, url: page.url, htmlChars: page.html.length, links: page.links.length, branding: page.branding });
   return 0;
 }
 
 async function factsOnly(url: string): Promise<number> {
-  const deadline = Date.now() + SCAN_BUDGET_MS;
+  const deadline = Date.now() + config.scan.BUDGET_MS;
   const discovery = await discoverSite(url, deadline);
   console.error(`picked pages:\n${discovery.pageUrls.map((page) => `  ${page}`).join("\n") || "  (none)"}`);
   const { facts, warnings } = await readSite(discovery, deadline);

@@ -1,14 +1,7 @@
 import { brands, users, type UserRow } from "@social-agent/db";
 import { and, count, desc, eq, isNull } from "drizzle-orm";
 import { db } from "@/config/db";
-
-/** The fields we copy from Clerk. */
-export type UserProfile = Pick<UserRow, "email" | "name" | "imageUrl" | "role">;
-
-export interface ClientWithBrandCount {
-    user: UserRow;
-    brandCount: number;
-}
+import type { ClientWithBrandCount, UserProfile } from "@/types/user";
 
 /** Database queries for the `users` table. No business rules here. */
 export class UsersRepository {

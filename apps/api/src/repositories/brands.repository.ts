@@ -1,29 +1,16 @@
 import { brands, type BrandRow, type NewBrandRow } from "@social-agent/db";
 import { and, desc, eq } from "drizzle-orm";
 import { db } from "@/config/db";
-
-/**
- * Which brands a query may touch: all of them (admins) or one owner's.
- * The service decides the scope. Every query below puts it in the WHERE clause,
- * so a user can never read, change or archive a brand that is not theirs.
- */
-export type BrandScope = "all" | { ownerId: string };
-
-const inScope = (scope: BrandScope) => (scope === "all" ? undefined : eq(brands.ownerId, scope.ownerId));
-
-/** Archived brands are invisible to every query here. */
-const live = (scope: BrandScope) => and(eq(brands.status, "active"), inScope(scope));
-
-const byId = (id: string, scope: BrandScope) => and(eq(brands.id, id), live(scope));
+import type { BrandScope } from "@/types/scope";
 
 /** Database queries for the `brands` table. No business rules here. */
 export class BrandsRepository {
     static async list(scope: BrandScope): Promise<BrandRow[]> {
-        return db.select().from(brands).where(live(scope)).orderBy(desc(brands.createdAt));
+        return db.select().from(brands).where(BrandsRepository.live(scope)).orderBy(desc(brands.createdAt));
     }
 
     static async findById(id: string, scope: BrandScope): Promise<BrandRow | undefined> {
-        const [row] = await db.select().from(brands).where(byId(id, scope)).limit(1);
+        const [row] = await db.select().from(brands).where(BrandsRepository.byId(id, scope)).limit(1);
         return row;
     }
 
@@ -38,7 +25,7 @@ export class BrandsRepository {
         const [row] = await db
             .update(brands)
             .set({ ...changes, updatedAt: new Date() })
-            .where(byId(id, scope))
+            .where(BrandsRepository.byId(id, scope))
             .returning();
         return row;
     }
@@ -52,8 +39,18 @@ export class BrandsRepository {
         const archived = await db
             .update(brands)
             .set({ status: "archived", archivedAt: now, updatedAt: now })
-            .where(byId(id, scope))
+            .where(BrandsRepository.byId(id, scope))
             .returning({ id: brands.id });
         return archived.length > 0;
+    }
+
+    /** Every query filters through here, so archived brands and other owners' brands are never touched. */
+    private static live(scope: BrandScope) {
+        const owner = scope === "all" ? undefined : eq(brands.ownerId, scope.ownerId);
+        return and(eq(brands.status, "active"), owner);
+    }
+
+    private static byId(id: string, scope: BrandScope) {
+        return and(eq(brands.id, id), BrandsRepository.live(scope));
     }
 }

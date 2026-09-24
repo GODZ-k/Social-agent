@@ -1,11 +1,12 @@
 import type { UserRow } from "@social-agent/db";
 import type { Role } from "@social-agent/shared";
 import { fetchClerkUser, type ClerkUser } from "@/auth/clerk";
+import { config } from "@/config/constants";
 import { env } from "@/config/env";
-import { UsersRepository, type UserProfile } from "@/repositories/users.repository";
+import { UsersRepository } from "@/repositories/users.repository";
+import type { UserProfile } from "@/types/user";
 import { AppError } from "@/utils/AppError";
 import { isUniqueViolation } from "@/utils";
-import { config } from "@/config/constants";
 
 /** The signed-in user, as the rest of the API sees them. `id` is our own id, not Clerk's. */
 export interface AuthUser {
@@ -18,14 +19,12 @@ export interface AuthUser {
     createdAt: Date;
 }
 
-/** How long our copy of a Clerk user is trusted before we ask Clerk again. */
-const ONE_HOUR_MS = config.time.ONE_HOUR_MS;
-
 export class UsersService {
     static async findOrCreate(clerkId: string): Promise<AuthUser> {
         const existing = await UsersRepository.findByClerkId(clerkId);
 
-        const isFresh = existing && Date.now() - existing.updatedAt.getTime() < ONE_HOUR_MS;
+        // Our copy of a Clerk user is trusted for an hour before we ask Clerk again.
+        const isFresh = existing && Date.now() - existing.updatedAt.getTime() < config.time.ONE_HOUR_MS;
         if (isFresh) return toAuthUser(existing);
 
         const clerkUser = await fetchClerkUser(clerkId);

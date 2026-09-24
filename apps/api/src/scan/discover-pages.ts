@@ -1,4 +1,5 @@
 import { load } from "cheerio";
+import { config } from "../config/constants";
 
 // Which inner pages are worth reading, most useful group first. Plain data, so another
 // language's words ("ueber-uns", "kontakt") can be added without touching the code below.
@@ -10,8 +11,6 @@ const GROUPS: { name: string; words: string[] }[] = [
   { name: "team", words: ["team", "our-team", "people"] },
   { name: "blog", words: ["blog", "news", "journal"] },
 ];
-const MAX_PER_GROUP = 2;
-const MAX_PAGES = 6;
 
 const NON_PAGE_SCHEME = /^(mailto:|tel:|sms:|javascript:|#)/i;
 
@@ -75,7 +74,7 @@ const depth = (link: Link) => link.path.split("/").length;
 const matchesGroup = (link: Link, words: string[]) =>
   words.some((word) => hasWord(link.path, word) || hasWord(link.text, word));
 
-/** GROUPS order is the priority order: an earlier group takes its share of MAX_PAGES first. */
+/** GROUPS order is the priority order: an earlier group takes its share of config.scan.MAX_PAGES first. */
 function pickByGroup(links: Link[]): Link[] {
   const picked: Link[] = [];
   for (const group of GROUPS) {
@@ -83,7 +82,7 @@ function pickByGroup(links: Link[]): Link[] {
       .filter((link) => !picked.includes(link))
       .filter((link) => matchesGroup(link, group.words))
       .sort((a, b) => depth(a) - depth(b) || a.path.length - b.path.length)
-      .slice(0, MAX_PER_GROUP);
+      .slice(0, config.scan.MAX_PAGES_PER_GROUP);
     picked.push(...matches);
   }
   return picked;
@@ -94,6 +93,6 @@ export function pickPages(homeUrl: string, html: string): string[] {
   const homePath = home.pathname.replace(/\/+$/, "") || "/";
   const links = internalLinks(html, home, homePath);
   return pickByGroup([...links.values()])
-    .slice(0, MAX_PAGES)
+    .slice(0, config.scan.MAX_PAGES)
     .map((link) => link.url);
 }

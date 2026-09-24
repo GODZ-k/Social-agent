@@ -1,11 +1,11 @@
 import { load } from "cheerio";
+import { config } from "../config/constants";
 import type { Branding } from "./firecrawl";
 import type { StyleFacts } from "./types";
 
 // Colours and fonts from Firecrawl's branding output, cleaned up to the rules below. Code owns
 // these facts; the model is never asked for a colour value or a font name.
 
-const MAX_COLORS = 5;
 const COLOR_ROLES = ["primary", "secondary", "accent", "link"] as const; // most important first
 const HEX_COLOR = /^#[0-9a-f]{6}$/i;
 
@@ -48,7 +48,7 @@ function brandColors(branding: Branding | undefined): string[] {
     const hex = value.toUpperCase();
     if (!colors.includes(hex)) colors.push(hex);
   }
-  return colors.slice(0, MAX_COLORS);
+  return colors.slice(0, config.scan.MAX_COLORS);
 }
 
 const cleanFamily = (name: string) => name.trim().replace(/^["']|["']$/g, "").trim();

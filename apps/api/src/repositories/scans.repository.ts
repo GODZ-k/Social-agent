@@ -1,18 +1,11 @@
 import { brandScans, type BrandScanRow, type NewBrandScanRow } from "@social-agent/db";
 import type { ScanPage, ScanResult, ScanStepId } from "@social-agent/shared";
 import { and, asc, eq, inArray } from "drizzle-orm";
+import { config } from "@/config/constants";
 import { db } from "@/config/db";
+import type { ScanScope } from "@/types/scope";
 
-/** Which scans a query may touch: all of them (admins) or one requester's. The service decides. */
-export type ScanScope = "all" | { requestedBy: string };
-
-const ACTIVE_STATUSES = ["queued", "running"] as const;
-export const INTERRUPTED_MESSAGE = "The scan was interrupted. Please try again.";
-
-const inScope = (scope: ScanScope) => (scope === "all" ? undefined : eq(brandScans.requestedBy, scope.requestedBy));
-const byId = (id: string, scope: ScanScope) => and(eq(brandScans.id, id), inScope(scope));
-const isActive = () => inArray(brandScans.status, [...ACTIVE_STATUSES]);
-
+/** Database queries for the `brand_scans` table. No business rules here. */
 export class ScansRepository {
     static async create(values: NewBrandScanRow): Promise<BrandScanRow> {
         const [row] = await db.insert(brandScans).values(values).returning();
@@ -21,7 +14,7 @@ export class ScansRepository {
     }
 
     static async findById(id: string, scope: ScanScope): Promise<BrandScanRow | undefined> {
-        const [row] = await db.select().from(brandScans).where(byId(id, scope)).limit(1);
+        const [row] = await db.select().from(brandScans).where(ScansRepository.byId(id, scope)).limit(1);
         return row;
     }
 
@@ -30,7 +23,7 @@ export class ScansRepository {
         const [row] = await db
             .select()
             .from(brandScans)
-            .where(and(eq(brandScans.requestedBy, requestedBy), isActive()))
+            .where(and(eq(brandScans.requestedBy, requestedBy), ScansRepository.isActive()))
             .orderBy(asc(brandScans.createdAt))
             .limit(1);
         return row;
@@ -66,9 +59,18 @@ export class ScansRepository {
     static async failInterrupted(): Promise<number> {
         const rows = await db
             .update(brandScans)
-            .set({ status: "failed", currentStep: null, error: INTERRUPTED_MESSAGE, finishedAt: new Date() })
-            .where(isActive())
+            .set({ status: "failed", currentStep: null, error: config.scan.INTERRUPTED_MESSAGE, finishedAt: new Date() })
+            .where(ScansRepository.isActive())
             .returning({ id: brandScans.id });
         return rows.length;
+    }
+
+    private static byId(id: string, scope: ScanScope) {
+        const requester = scope === "all" ? undefined : eq(brandScans.requestedBy, scope.requestedBy);
+        return and(eq(brandScans.id, id), requester);
+    }
+
+    private static isActive() {
+        return inArray(brandScans.status, [...config.scan.ACTIVE_STATUSES]);
     }
 }

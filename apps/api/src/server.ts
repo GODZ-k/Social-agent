@@ -1,4 +1,5 @@
 import app from "./app";
+import { config } from "./config/constants";
 import { pool } from "./config/db";
 import { env } from "./config/env";
 import { ScansRepository } from "@/repositories/scans.repository";
@@ -37,11 +38,10 @@ async function start() {
         isShuttingDown = true;
         console.log(`${reason} received, shutting down`);
 
-        // An open keep-alive connection can hold server.close() forever.
         setTimeout(() => {
             console.error("Shutdown took too long, forcing exit");
             process.exit(1);
-        }, 10_000).unref();
+        }, config.server.SHUTDOWN_TIMEOUT_MS).unref();
 
         server.close(async () => {
             let code = exitCode;

@@ -1,6 +1,7 @@
 import type { ScanStepId } from "@social-agent/shared";
+import { config } from "../../../config/constants";
 import { normaliseScanUrl } from "../../../scan/normalise-url";
-import { SCAN_MESSAGES, SCAN_STEP_IDS, scanOutcomeSchema, type ScanOutcome } from "../../../scan/types";
+import { SCAN_STEP_IDS, scanOutcomeSchema, type ScanOutcome } from "../../../scan/types";
 import { mastra } from "../../index";
 
 // Lives apart from workflow.ts: this file imports the Mastra instance, and mastra/index.ts
@@ -17,7 +18,7 @@ export type RunBrandScanOptions = {
  */
 export async function runBrandScan(input: string, options: RunBrandScanOptions = {}): Promise<ScanOutcome> {
   const candidate = normaliseScanUrl(input);
-  if (!URL.canParse(candidate)) return { ok: false, code: "INVALID_URL", message: SCAN_MESSAGES.INVALID_URL };
+  if (!URL.canParse(candidate)) return { ok: false, code: "INVALID_URL", message: config.scan.MESSAGES.INVALID_URL };
 
   const run = await mastra.getWorkflow("brandScanWorkflow").createRun();
   const stream = run.stream({ inputData: { url: candidate } });
