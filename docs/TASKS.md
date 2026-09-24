@@ -159,6 +159,8 @@ Cross-cutting, still to do:
 | ID      | Task                                                                                                                        | Priority  | Progress   | Notes               |
 | ------- | --------------------------------------------------------------------------------------------------------------------------- | --------- | ---------- | ------------------- |
 | **X-3** | Deploy story: run `packages/db` migrations before the API starts; `NODE_ENV=production` so Mastra Studio routes never mount | ![P1][p1] | ![0%][pr0] | before first deploy |
+| **X-7** | Scan domain cache: before a new scan, reuse a `done` scan of the same domain (host without `www.`) from the last 24 h, copied into the new row; `ScansRepository.findRecentDone` + an index on domain and `finished_at` (one migration); a "Scan again" option skips it. Postgres only, no Redis | ![P3][p3] | ![0%][pr0] | agreed 2026-09-24 |
+| **X-8** | Request and scan logging with AsyncLocalStorage, for log context only: `src/utils/request-context.ts` (store `{ requestId, userId?, scanId? }`), first middleware runs each request in its own store and sets `x-request-id`, `requireUser` adds `userId`, a `log()` helper stamps the store on every line, `errorMiddleware` logs `requestId` and returns it in the 500 body. Every background scan gets its own store (`requestContext.run({ scanId }, () => runScan(id))`) or it inherits the wrong request. Users and scopes stay explicit arguments, never read from the store | ![P2][p2] | ![0%][pr0] | agreed 2026-09-24; pairs with X-3 |
 
 <a id="done"></a>
 

@@ -4,7 +4,6 @@ import { ScansService } from "@/services/scans.service";
 import { idParam } from "@/utils";
 
 export class ScansController {
-    /** 202 when a scan was started; 200 when the caller's running scan was returned instead. */
     static async start(req: Request, res: Response) {
         const { scan, created } = await ScansService.start(currentUser(req), req.body);
         return res.status(created ? 202 : 200).json({ success: true, data: scan });

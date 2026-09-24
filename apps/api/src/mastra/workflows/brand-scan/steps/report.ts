@@ -1,6 +1,6 @@
 import { createStep } from "@mastra/core/workflows";
-import { config } from "../../../../config/constants";
-import { scanOutcomeSchema, type ScanOutcome } from "../../../../scan/types";
+import { config } from "@/config/constants";
+import { scanOutcomeSchema, type ScanOutcome } from "@/scan/types";
 import { interpretOutputSchema } from "../schemas";
 
 export const reportStep = createStep({

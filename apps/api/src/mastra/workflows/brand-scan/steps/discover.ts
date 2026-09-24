@@ -1,7 +1,7 @@
 import { createStep } from "@mastra/core/workflows";
-import { config } from "../../../../config/constants";
-import { discoverSite } from "../../../../scan/index";
-import { ScanError } from "../../../../scan/types";
+import { config } from "@/config/constants";
+import { discoverSite } from "@/scan/index";
+import { ScanError } from "@/scan/types";
 import { discoverOutputSchema, scanInputSchema } from "../schemas";
 
 export const discoverStep = createStep({

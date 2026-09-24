@@ -1,8 +1,8 @@
 import type { ScanStepId } from "@social-agent/shared";
-import { config } from "../../../config/constants";
-import { normaliseScanUrl } from "../../../scan/normalise-url";
-import { SCAN_STEP_IDS, scanOutcomeSchema, type ScanOutcome } from "../../../scan/types";
-import { mastra } from "../../index";
+import { config } from "@/config/constants";
+import { normaliseScanUrl } from "@/scan/normalise-url";
+import { SCAN_STEP_IDS, scanOutcomeSchema, type ScanOutcome } from "@/scan/types";
+import { mastra } from "@/mastra/index";
 
 // Lives apart from workflow.ts: this file imports the Mastra instance, and mastra/index.ts
 // imports workflow.ts. In one file that is a circular import across a top-level await.

@@ -1,5 +1,5 @@
 import { createWorkflow } from "@mastra/core/workflows";
-import { scanOutcomeSchema } from "../../../scan/types";
+import { scanOutcomeSchema } from "@/scan/types";
 import { scanInputSchema } from "./schemas";
 import { discoverStep } from "./steps/discover";
 import { interpretStep } from "./steps/interpret";

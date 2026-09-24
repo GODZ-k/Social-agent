@@ -2,11 +2,11 @@ import { MastraError } from "@mastra/core/error";
 import { createStep } from "@mastra/core/workflows";
 import { scanResultSchema, type ScanResult } from "@social-agent/shared";
 import { ZodError } from "zod";
-import { config } from "../../../../config/constants";
-import type { SiteFacts } from "../../../../scan/types";
-import { brandAnalyst } from "../../../agents/brand-analyst/agent";
-import { brandAnalysisSchema, type BrandAnalysis } from "../../../agents/brand-analyst/output.schema";
-import { renderSiteFacts } from "../../../agents/brand-analyst/prompt";
+import { config } from "@/config/constants";
+import type { SiteFacts } from "@/scan/types";
+import { brandAnalyst } from "@/mastra/agents/brand-analyst/agent";
+import { brandAnalysisSchema, type BrandAnalysis } from "@/mastra/agents/brand-analyst/output.schema";
+import { renderSiteFacts } from "@/mastra/agents/brand-analyst/prompt";
 import { interpretOutputSchema, readPagesOutputSchema } from "../schemas";
 
 type BrandAnalystAgent = Pick<typeof brandAnalyst, "generate">;

@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { scanPageSchema, scanResultSchema } from "@social-agent/shared";
-import { discoverySchema, scanErrorCodeSchema, siteFactsSchema } from "../../../scan/types";
+import { discoverySchema, scanErrorCodeSchema, siteFactsSchema } from "@/scan/types";
 
 // A step never throws a scan failure: it returns it, and the steps after it pass it along.
 // Step outputs are stored in Postgres, which would reduce a thrown ScanError to a message.
