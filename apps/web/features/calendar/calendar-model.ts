@@ -1,5 +1,6 @@
 import { eachDayOfInterval, endOfMonth, endOfWeek, format, startOfWeek } from "date-fns";
-import type { Post, PostStatus } from "@/lib/types";
+import type { PostStatus } from "@social-agent/shared";
+import type { Post } from "@/lib/types";
 
 export const WEEK = { weekStartsOn: 1 } as const;
 export const dayKey = (d: Date) => format(d, "yyyy-MM-dd");

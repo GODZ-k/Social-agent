@@ -1,13 +1,15 @@
 import { z } from "zod";
 import { brandSchema } from "./brand.schema.js";
 
+export const roleSchema = z.enum(["admin", "client"]);
+
 /** The signed-in person. `id` is our own user id, not Clerk's. */
 export const meSchema = z.object({
   id: z.string(),
   email: z.string(),
   name: z.string().nullable(),
   imageUrl: z.string().nullable(),
-  role: z.enum(["admin", "client"]),
+  role: roleSchema,
   createdAt: z.string(),
 });
 
@@ -18,6 +20,3 @@ export const meOverviewSchema = z.object({
   brands: z.array(brandSchema),
   counts: z.object({ brands: z.number() }),
 });
-
-export type Me = z.infer<typeof meSchema>;
-export type MeOverview = z.infer<typeof meOverviewSchema>;

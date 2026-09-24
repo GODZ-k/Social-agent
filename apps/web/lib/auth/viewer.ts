@@ -2,7 +2,8 @@ import "server-only";
 import { cache } from "react";
 import { currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
-import type { Role, Viewer } from "@/lib/types";
+import type { Role } from "@social-agent/shared";
+import type { Viewer } from "@/lib/types";
 
 const ADMIN_EMAILS = (process.env.NEXT_PUBLIC_ADMIN_EMAILS ?? "")
   .split(",")

@@ -68,7 +68,9 @@
     "type": "command",
     "command": "node \"${CLAUDE_PROJECT_DIR:-.}/.claude/helpers/graft-statusline.cjs\""
   },
-  "footerLinksRegexes": [],
+  "footerLinksRegexes": [
+    "graft/[\\w./-]+\\.md"
+  ],
   "subagentStatusLine": {
     "type": "command",
     "command": "node \"${CLAUDE_PROJECT_DIR:-.}/.claude/helpers/graft-statusline.cjs\""

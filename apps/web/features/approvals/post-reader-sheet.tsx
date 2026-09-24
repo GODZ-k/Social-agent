@@ -1,6 +1,7 @@
 "use client";
 
-import type { BrandKit, Post } from "@/lib/types";
+import type { BrandKit } from "@social-agent/shared";
+import type { Post } from "@/lib/types";
 import { Button } from "@repo/ui/components/button";
 import { Sheet } from "@repo/ui/components/sheet";
 import { PostArt } from "@repo/ui/components/social/post-art";

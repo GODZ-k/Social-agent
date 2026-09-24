@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { format } from "date-fns";
 import { CalendarDays } from "lucide-react";
-import type { BrandKit } from "@/lib/types";
+import type { BrandKit } from "@social-agent/shared";
 import { listPosts } from "@/lib/api/server";
 import { EmptyState, Panel } from "@repo/ui/components/states";
 import { PlatformIcon } from "@repo/ui/components/social/platform";

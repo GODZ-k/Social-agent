@@ -1,6 +1,7 @@
 import "server-only";
 import { BRAND_SCAN_STEPS } from "@/lib/scan-steps";
-import type { BrandKit, Scan } from "@/lib/types";
+import type { BrandKit } from "@social-agent/shared";
+import type { Scan } from "@/lib/types";
 
 /**
  * A mock of the API's scan job. `POST /scans` becomes `start`, `GET /scans/:id`

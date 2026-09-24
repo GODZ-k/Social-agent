@@ -1,5 +1,5 @@
 import { Search } from "lucide-react";
-import type { PostStatus } from "@/lib/types";
+import type { PostStatus } from "@social-agent/shared";
 import { Segmented } from "@repo/ui/components/segmented";
 
 export type StatusFilter = "" | PostStatus;

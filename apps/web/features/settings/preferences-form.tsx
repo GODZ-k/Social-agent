@@ -7,7 +7,7 @@ import { z } from "zod";
 import { LoaderCircle } from "lucide-react";
 import { updateClient } from "@/lib/api/actions";
 import { useServerAction } from "@/lib/api/use-server-action";
-import type { ClientPreferences } from "@/lib/types";
+import type { BrandPreferences } from "@social-agent/shared";
 import { Panel } from "@repo/ui/components/states";
 import { Button } from "@repo/ui/components/button";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@repo/ui/components/form";
@@ -19,7 +19,7 @@ const schema = z.object({
 });
 type Values = z.infer<typeof schema>;
 
-export function PreferencesForm({ clientId, preferences }: { clientId: string; preferences: ClientPreferences }) {
+export function PreferencesForm({ clientId, preferences }: { clientId: string; preferences: BrandPreferences }) {
   const timezones = useMemo(() => {
     const all = Intl.supportedValuesOf("timeZone");
     return all.includes(preferences.timezone) ? all : [preferences.timezone, ...all];

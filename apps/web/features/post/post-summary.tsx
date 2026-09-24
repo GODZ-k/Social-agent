@@ -1,5 +1,6 @@
 import { Maximize2, Sparkles } from "lucide-react";
-import type { BrandKit, Post } from "@/lib/types";
+import type { BrandKit } from "@social-agent/shared";
+import type { Post } from "@/lib/types";
 import { PLATFORM_LABEL, PlatformIcon, StatusBadge } from "@repo/ui/components/social/platform";
 import { PostArt } from "@repo/ui/components/social/post-art";
 

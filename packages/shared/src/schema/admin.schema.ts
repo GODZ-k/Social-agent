@@ -26,7 +26,3 @@ export const adminClientDetailSchema = z.object({
   client: adminClientSchema,
   brands: z.array(brandSchema),
 });
-
-export type InviteClientInput = z.infer<typeof inviteClientSchema>;
-export type AdminClient = z.infer<typeof adminClientSchema>;
-export type AdminClientDetail = z.infer<typeof adminClientDetailSchema>;

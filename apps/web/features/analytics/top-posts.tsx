@@ -1,6 +1,6 @@
 import { format } from "date-fns";
 import { listPosts } from "@/lib/api/server";
-import type { BrandKit } from "@/lib/types";
+import type { BrandKit } from "@social-agent/shared";
 import { formatCompact } from "@/lib/utils";
 import { Panel } from "@repo/ui/components/states";
 import { FORMAT_LABEL, PlatformIcon } from "@repo/ui/components/social/platform";

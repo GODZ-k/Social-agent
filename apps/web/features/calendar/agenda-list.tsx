@@ -1,6 +1,7 @@
 import { format, isSameMonth, isToday } from "date-fns";
 import { CalendarDays } from "lucide-react";
-import type { BrandKit, Post } from "@/lib/types";
+import type { BrandKit } from "@social-agent/shared";
+import type { Post } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { EmptyState } from "@repo/ui/components/states";
 import { PlatformIcon, StatusBadge } from "@repo/ui/components/social/platform";

@@ -1,4 +1,5 @@
-import type { Client, Platform } from "@/lib/types";
+import type { Platform } from "@social-agent/shared";
+import type { Client } from "@/lib/types";
 import { AccountRow } from "@/features/settings/account-row";
 
 const ALL_PLATFORMS: Platform[] = ["instagram", "facebook", "tiktok", "linkedin"];

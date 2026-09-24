@@ -1,4 +1,4 @@
-import type { BrandKit } from "@/lib/types";
+import type { BrandKit } from "@social-agent/shared";
 import { PostArt } from "@repo/ui/components/social/post-art";
 
 /** The sticky aside: a sample post in the kit as it is being edited, then whatever the form puts under it. */

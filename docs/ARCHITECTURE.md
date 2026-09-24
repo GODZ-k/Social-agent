@@ -59,7 +59,7 @@ pnpm 11 workspaces and Turborepo 2, TypeScript 7, Node 24 or newer (`package.jso
 | **`apps/api`**          | `api`                                            | Express 5 and Mastra 1.66 API, bundled by tsup              |
 | **`packages/ui`**       | `@repo/ui`                                       | Design system: tokens, components, motion, theme            |
 | **`packages/db`**       | `@social-agent/db`                               | Drizzle schema, migrations, the Postgres connection factory |
-| **`packages/shared`**   | `@social-agent/shared`                           | Zod schemas and types shared by API, web and db             |
+| **`packages/shared`**   | `@social-agent/shared`                           | Zod schemas (`src/schema`) and their inferred types (`src/types`), shared by API, web and db |
 | **`packages/social-connect`** | `@social-agent/social-connect`             | Network OAuth providers (Instagram built; Facebook, LinkedIn, TikTok planned): authorize URL, exchange, refresh, profile. No framework or storage |
 | **`packages/config/*`** | `@repo/eslint-config`, `@repo/typescript-config` | Lint and TypeScript configs                                 |
 

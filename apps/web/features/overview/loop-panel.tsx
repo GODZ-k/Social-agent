@@ -1,4 +1,4 @@
-import type { LoopStage } from "@/lib/types";
+import type { LoopStage } from "@social-agent/shared";
 import { Panel } from "@repo/ui/components/states";
 import { LoopTrack } from "@repo/ui/components/social/loop-track";
 

@@ -29,6 +29,7 @@ Load the `vercel-react-best-practices`, `vercel-composition-patterns` and `web-d
 - **Compose, don't configure.** No boolean or "variant" props that switch a component's behaviour. Make two explicit components that share the same inner pieces.
 - **One component per file**, named after what it shows. A page composes them; it does not define them inline.
 - **Data:** reads come from `lib/api/server.ts` in server components; writes go through `lib/api/actions.ts` from client components via `useServerAction`. Keep the function signatures stable so the real API can replace the bodies.
+- Types the API also uses (`Platform`, `BrandKit`, `PostStatus`, `Role`, ...) are imported from `@social-agent/shared`, never redefined. `lib/types.ts` holds only what the web adds on top, built from the shared types where the shapes match.
 - Never hardcode colours or the product name. Use the tokens in `packages/ui/src/styles/globals.css` and `APP_NAME` from `lib/utils.ts`.
 - Auth is Clerk. Every route is private unless listed in `proxy.ts`. Admins see all clients; everyone else sees only the clients they own. Access is checked on the server; the browser is never trusted.
 - Read the installed types or bundled docs before using TanStack Table v9, TanStack Charts or TanStack AI. Their APIs differ from older versions.

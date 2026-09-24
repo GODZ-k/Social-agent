@@ -22,9 +22,3 @@ export const audienceSegmentSchema = z.object({
   segment: z.string(),
   note: z.string(),
 });
-
-export type StrategyStatus = z.infer<typeof strategyStatusSchema>;
-export type LearningImpact = z.infer<typeof learningImpactSchema>;
-export type BestTime = z.infer<typeof bestTimeSchema>;
-export type CadenceEntry = z.infer<typeof cadenceEntrySchema>;
-export type AudienceSegment = z.infer<typeof audienceSegmentSchema>;

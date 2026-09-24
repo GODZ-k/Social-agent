@@ -4,13 +4,11 @@
  * populated. Only `lib/api/mock/db.ts` may import this file.
  */
 import { addDays, addHours, startOfDay, subDays } from "date-fns";
+import type { Platform, PostFormat, PostStatus } from "@social-agent/shared";
 import type {
   Analytics,
   Client,
-  Platform,
   Post,
-  PostFormat,
-  PostStatus,
   Strategy,
 } from "@/lib/types";
 

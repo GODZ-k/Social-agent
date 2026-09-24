@@ -3,7 +3,8 @@
 import { format } from "date-fns";
 import type { UseFormReturn } from "react-hook-form";
 import { bestTimesFor } from "@/lib/best-times";
-import type { Platform, Strategy } from "@/lib/types";
+import type { Platform } from "@social-agent/shared";
+import type { Strategy } from "@/lib/types";
 import { DatePicker } from "@repo/ui/components/date-picker";
 import { TimePicker } from "@repo/ui/components/time-picker";
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@repo/ui/components/form";

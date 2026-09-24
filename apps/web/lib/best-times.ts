@@ -1,4 +1,5 @@
-import type { Platform, Strategy } from "@/lib/types";
+import type { Platform } from "@social-agent/shared";
+import type { Strategy } from "@/lib/types";
 
 /**
  * The strategy's best posting times for one network, as picker suggestions.

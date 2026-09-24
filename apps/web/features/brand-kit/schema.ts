@@ -1,5 +1,6 @@
 import { z } from "zod";
-import type { BrandKit, ClientPatch, NewClientInput, Platform, ScanResult } from "@/lib/types";
+import type { BrandKit, Platform } from "@social-agent/shared";
+import type { ClientPatch, NewClientInput, ScanResult } from "@/lib/types";
 import { isValidHex } from "@/lib/utils";
 
 export const PLATFORMS = ["instagram", "facebook", "tiktok", "linkedin"] as const satisfies readonly Platform[];

@@ -2,7 +2,7 @@
 
 import { useWatch, type UseFormReturn } from "react-hook-form";
 import type { Values } from "@/features/brand-kit/schema";
-import type { BrandColor, BrandKit } from "@/lib/types";
+import type { BrandColor, BrandKit } from "@social-agent/shared";
 import { isValidHex } from "@/lib/utils";
 
 /** The preview and the page tint follow the form as it's edited. */

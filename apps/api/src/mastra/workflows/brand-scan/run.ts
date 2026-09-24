@@ -1,5 +1,6 @@
+import type { ScanStepId } from "@social-agent/shared";
 import { normaliseScanUrl } from "../../../scan/normalise-url";
-import { SCAN_MESSAGES, SCAN_STEP_IDS, scanOutcomeSchema, type ScanOutcome, type ScanStepId } from "../../../scan/types";
+import { SCAN_MESSAGES, SCAN_STEP_IDS, scanOutcomeSchema, type ScanOutcome } from "../../../scan/types";
 import { mastra } from "../../index";
 
 // Lives apart from workflow.ts: this file imports the Mastra instance, and mastra/index.ts

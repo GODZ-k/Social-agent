@@ -5,7 +5,7 @@ import { LoaderCircle, TriangleAlert } from "lucide-react";
 import { toast } from "sonner";
 import { connectAccount, disconnectAccount } from "@/lib/api/actions";
 import { useServerAction } from "@/lib/api/use-server-action";
-import type { Platform, SocialAccount } from "@/lib/types";
+import type { Platform, SocialAccount } from "@social-agent/shared";
 import { cn } from "@/lib/utils";
 import { PLATFORM_LABEL, PlatformIcon } from "@repo/ui/components/social/platform";
 import { Badge } from "@repo/ui/components/badge";

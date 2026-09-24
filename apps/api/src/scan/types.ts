@@ -8,7 +8,6 @@ import {
 
 /** Stable ids: the progress screen shows a scan by them. One source of truth: the shared schema. */
 export const SCAN_STEP_IDS = scanStepIdSchema.options;
-export type ScanStepId = (typeof SCAN_STEP_IDS)[number];
 
 export const scanErrorCodeSchema = z.enum([
   "INVALID_URL",

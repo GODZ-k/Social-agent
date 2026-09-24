@@ -1,4 +1,3 @@
-/** Constants used across the API. Values that come from the environment live in `env.ts`. */
 export const config = {
     crypto: {
         ALGORITHM: "aes-256-gcm",
@@ -10,4 +9,8 @@ export const config = {
         STATE_TTL_MS: 10 * 60 * 1000,
         SETTINGS_TAB: "accounts",
     },
+    time:{
+        ONE_HOUR_MS: 60 * 60 * 1000,
+        ONE_DAY_MS: 24 * 60 * 60 * 1000,
+    }
 } as const;

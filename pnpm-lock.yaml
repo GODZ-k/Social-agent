@@ -200,6 +200,9 @@ importers:
       '@repo/ui':
         specifier: workspace:*
         version: link:../../packages/ui
+      '@social-agent/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
       '@tanstack/ai':
         specifier: ^0.55.0
         version: 0.55.0(zod@4.6.1)

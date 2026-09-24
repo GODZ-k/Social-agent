@@ -8,7 +8,6 @@ import scansRoute from "@/routes/scans.route";
 
 const router = Router();
 
-// /api/v1/oauth is the one exception, mounted in app.ts.
 router.use(clerkAuth);
 router.use(requireUser);
 

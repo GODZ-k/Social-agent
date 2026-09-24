@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { format } from "date-fns";
-import type { Post, PostPatch, PostStatus } from "@/lib/types";
+import type { PostStatus } from "@social-agent/shared";
+import type { Post, PostPatch } from "@/lib/types";
 
 export const CAPTION_LIMIT = 2200; // Instagram's caption limit
 export const HASHTAG_LIMIT = 30; // and its hashtag limit

@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { ChartNoAxesCombined } from "lucide-react";
 import { getAnalytics } from "@/lib/api/server";
-import type { BrandKit } from "@/lib/types";
+import type { BrandKit } from "@social-agent/shared";
 import { EmptyState, SkeletonRows } from "@repo/ui/components/states";
 import { PanelBoundary } from "@repo/ui/components/error-boundary";
 import { Button } from "@repo/ui/components/button";

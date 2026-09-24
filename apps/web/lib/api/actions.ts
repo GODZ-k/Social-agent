@@ -6,11 +6,11 @@ import { getDb, recounted, removeClient } from "./mock/db";
 import * as scans from "./mock/scan";
 import { handleFor } from "./mock/seed";
 import { fail, ok, type ActionResult } from "./result";
+import type { Platform } from "@social-agent/shared";
 import type {
   Client,
   ClientPatch,
   NewClientInput,
-  Platform,
   Post,
   PostPatch,
   Scan,

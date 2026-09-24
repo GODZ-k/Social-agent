@@ -14,6 +14,7 @@
     "@clerk/nextjs": "^7.9.4",
     "@hookform/resolvers": "^5.9.1",
     "@repo/ui": "workspace:*",
+    "@social-agent/shared": "workspace:*",
     "@tanstack/ai": "^0.55.0",
     "@tanstack/ai-client": "^0.32.1",
     "@tanstack/ai-react": "^0.27.0",

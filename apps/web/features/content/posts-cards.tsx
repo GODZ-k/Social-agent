@@ -1,5 +1,5 @@
 import { format } from "date-fns";
-import type { BrandKit } from "@/lib/types";
+import type { BrandKit } from "@social-agent/shared";
 import { PlatformIcon, StatusBadge } from "@repo/ui/components/social/platform";
 import { PostArt } from "@repo/ui/components/social/post-art";
 import type { Row } from "./use-post-rows";

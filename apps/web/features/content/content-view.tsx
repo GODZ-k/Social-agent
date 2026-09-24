@@ -3,7 +3,8 @@
 import { useMemo, useState } from "react";
 import { useTable } from "@tanstack/react-table";
 import { LayoutGrid } from "lucide-react";
-import type { BrandKit, Post, PostStatus, Strategy } from "@/lib/types";
+import type { BrandKit, PostStatus } from "@social-agent/shared";
+import type { Post, Strategy } from "@/lib/types";
 import { EmptyState } from "@repo/ui/components/states";
 import { LazyPostSheet } from "@/features/post/lazy-post-sheet";
 import { buildColumns, features } from "./columns";

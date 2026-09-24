@@ -16,7 +16,7 @@ import {
   type ReactTable,
 } from "@tanstack/react-table";
 import { format } from "date-fns";
-import type { BrandKit } from "@/lib/types";
+import type { BrandKit } from "@social-agent/shared";
 import { formatCompact } from "@/lib/utils";
 import { FORMAT_LABEL, PLATFORM_LABEL, PlatformIcon, StatusBadge } from "@repo/ui/components/social/platform";
 import { PostArt } from "@repo/ui/components/social/post-art";

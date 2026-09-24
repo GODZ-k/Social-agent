@@ -28,6 +28,7 @@ if (env.NODE_ENV !== "production") {
 app.use("/health", healthRoute);
 // The OAuth callback has no Bearer token, so it sits outside the v1 auth chain.
 app.use("/api/v1/oauth", oauthRoute);
+
 app.use("/api/v1", v1Route);
 
 app.use(errorMiddleware);

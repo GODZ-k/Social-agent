@@ -3,7 +3,8 @@
 import { useMemo, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { addMonths, format, startOfMonth } from "date-fns";
-import type { BrandKit, Post, Strategy } from "@/lib/types";
+import type { BrandKit } from "@social-agent/shared";
+import type { Post, Strategy } from "@/lib/types";
 import { spring } from "@repo/ui/lib/motion";
 import { PageHeader } from "@repo/ui/components/states";
 import { LazyPostSheet } from "@/features/post/lazy-post-sheet";

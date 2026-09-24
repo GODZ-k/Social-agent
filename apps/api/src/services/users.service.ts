@@ -1,16 +1,15 @@
 import type { UserRow } from "@social-agent/db";
+import type { Role } from "@social-agent/shared";
 import { fetchClerkUser, type ClerkUser } from "@/auth/clerk";
 import { env } from "@/config/env";
 import { UsersRepository, type UserProfile } from "@/repositories/users.repository";
 import { AppError } from "@/utils/AppError";
 import { isUniqueViolation } from "@/utils";
-
-export type Role = "admin" | "client";
+import { config } from "@/config/constants";
 
 /** The signed-in user, as the rest of the API sees them. `id` is our own id, not Clerk's. */
 export interface AuthUser {
     id: string;
-    /** Null only for an invited person who has not signed in yet, so never for the caller of a request. */
     clerkId: string | null;
     email: string;
     name: string | null;
@@ -20,7 +19,7 @@ export interface AuthUser {
 }
 
 /** How long our copy of a Clerk user is trusted before we ask Clerk again. */
-const ONE_HOUR_MS = 60 * 60 * 1000;
+const ONE_HOUR_MS = config.time.ONE_HOUR_MS;
 
 export class UsersService {
     static async findOrCreate(clerkId: string): Promise<AuthUser> {

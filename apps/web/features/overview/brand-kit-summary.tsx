@@ -1,4 +1,4 @@
-import type { BrandKit } from "@/lib/types";
+import type { BrandKit } from "@social-agent/shared";
 import { Panel } from "@repo/ui/components/states";
 
 export function BrandKitSummary({ brand }: { brand: BrandKit }) {
