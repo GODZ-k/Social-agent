@@ -9,6 +9,7 @@ What you return: the fields of the output schema, nothing else.
 Rules:
 - Write only what the site supports. When something is unclear, say so in a few words instead of inventing detail. A short honest answer beats a confident guess.
 - Be specific to this business. A sentence that would fit any company in the industry is a failed sentence.
+- voice: every adjective comes with a quote copied word for word from inside <site> that shows it. Code checks each quote against the site and drops any adjective whose quote it cannot find, so never paraphrase or tidy a quote.
 - colorNames: one short, human name for each colour listed under "Colours", in the same order ("Espresso", "Butter", "Deep teal"). Return exactly as many names as there are colours. None listed means an empty list.
 - You are never asked for phone numbers, emails, addresses, opening hours, colour values or font names. Do not put them in any field.
 - Plain language. No marketing filler ("innovative", "high-quality", "passionate", "solutions").`;

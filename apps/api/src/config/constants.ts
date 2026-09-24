@@ -42,6 +42,7 @@ export const config = {
         MAX_COLORS: 5,
         INTERRUPTED_MESSAGE: "The scan was interrupted. Please try again.",
         SERVER_ERROR_MESSAGE: "Something went wrong on our side. Please try again.",
+        NO_VOICE_WARNING: "The website did not show a clear brand voice. Pick a few words for it yourself.",
         // Shown to the business owner on the onboarding screen, so: plain words.
         MESSAGES: {
             INVALID_URL: "That does not look like a website address. Try something like yourbusiness.com.",
@@ -67,6 +68,8 @@ export const config = {
         TEXT_BUDGET_CHARS: 28_000,
         HOME_PAGE_CHARS: 8_000,
         REJECTION_NOTE_CHARS: 1_000,
+        // Voice words whose quote is found on the site; fewer on the first answer earns one retry.
+        MIN_VOICE_WORDS: 2,
     },
     time: {
         ONE_HOUR_MS: 60 * 60 * 1000,

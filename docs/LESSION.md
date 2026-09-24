@@ -111,6 +111,19 @@ out of real runs between 2026-09-20 and 2026-09-22.
 
 ## Mastra 1.66
 
+- **A skill rule and the output schema must agree, or every scan that follows the skill pays for a retry.**
+
+  `brand-voice` said "give 2 words for generic copy" while the schema demanded 3; Don Angie followed the skill, was rejected, retried (44 s instead of 27 s, two model calls) and the retry invented adjectives. Fixed 2026-09-24: schema allows 2-5, each voice word carries a site quote that code checks.
+
+  ```diff
+  - voice: z.array(z.string()).min(3)          # skill allows 2
+  + voice: z.array({ adjective, quote }).min(2)  # quote checked against the site
+  ```
+
+- **`skills: [...]` on an Agent (inline or path) loads on demand through `skill`/`skill_read` tools, so it costs extra model calls and the model may skip it.**
+
+  One-call agents (Brand Analyst) inline the skill with `loadSkill()`; chat or multi-skill agents use `skills:` with absolute paths from `config/skills.ts`.
+
 - **`getWorkflows()` and `getAgents()` do not exist; the methods are `listWorkflows()`
   and `listAgents()`.**
 

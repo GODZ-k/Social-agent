@@ -23,6 +23,8 @@
 
 `BrandAnalysis` (`output.schema.ts`): judgement only. It has no field for contact details, colour values or fonts, so the model cannot write them. The `interpret` step assembles the `ScanResult` from this and the extracted facts.
 
+Each voice adjective comes with a quote from the site. `interpret` checks every quote against the site text and keeps only the adjectives it finds; a first answer with fewer than `config.brandAnalyst.MIN_VOICE_WORDS` found gets one retry, and a scan left with none adds a warning asking the owner to pick the words.
+
 ## Skills
 
 - `skills/brand-voice`

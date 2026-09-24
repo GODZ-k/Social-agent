@@ -36,9 +36,9 @@ Ignore legal pages, cookie text and anything that reads like a template the plat
 
 - Give 3 to 5. Fewer than 3 is too thin to write from; more than 5 stops being a voice.
 - Each adjective must be one a writer can act on. "Warm", "direct", "dry-humoured", "precise", "unhurried" are usable. "Professional", "high-quality", "engaging", "innovative", "friendly" are not: every brand claims them and none of them changes a sentence.
-- Each must be supported by something you can point to in the text. If you cannot quote a phrase that shows it, drop it.
-- Prefer contrast that defines the brand: "expert but plain-spoken", "playful, never silly". Put the pair in as two adjectives.
-- Never describe the voice the industry usually has. If the site's copy is generic or too short to show a voice, say so in the fewest words ("plain", "informational") instead of inventing a personality.
+- Each comes with its proof: a phrase of at most 15 words copied word for word from the site that shows it. "Unhurried" with "we bake until it is ready, not until the clock says so". If you cannot quote a phrase that shows it, drop the adjective. The quote is checked against the site, so never paraphrase, shorten inside, or fix its spelling.
+- Prefer contrast that defines the brand: "expert but plain-spoken", "playful, never silly". Put the pair in as two adjectives, each with its own quote.
+- Never describe the voice the industry usually has. If the site's copy is generic or too short to show a voice, give exactly 2: "plain" and "informational", each with a typical sentence from the site, instead of inventing a personality.
 
 ### Tagline
 

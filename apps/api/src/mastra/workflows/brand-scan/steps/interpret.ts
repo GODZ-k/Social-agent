@@ -10,9 +10,50 @@ import { renderSiteFacts } from "@/mastra/agents/brand-analyst/prompt";
 import { interpretOutputSchema, readPagesOutputSchema } from "../schemas";
 
 type BrandAnalystAgent = Pick<typeof brandAnalyst, "generate">;
+type VoiceWord = BrandAnalysis["voice"][number];
+
+/** Thrown when too few voice quotes are on the site, so the first answer gets one retry. */
+class UnsupportedVoiceError extends Error {
+  override name = "UnsupportedVoiceError";
+}
+
+// Curly quotes, long dashes and runs of spaces differ between the page and the model's copy.
+function normalise(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/[‘’]/g, "'")
+    .replace(/[“”]/g, '"')
+    .replace(/[–—]/g, "-")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+/** Everything the model was shown from the site, as one searchable string. */
+function siteWords(facts: SiteFacts): string {
+  const parts = facts.pages.flatMap((page) => [page.title, page.description ?? "", page.og.description ?? "", ...page.headings, page.text]);
+  return normalise(parts.join(" "));
+}
+
+function isOnSite(quote: string, words: string): boolean {
+  const phrase = normalise(quote).replace(/^["'\s]+|["'.,!?;:\s]+$/g, "");
+  return phrase.length > 0 && words.includes(phrase);
+}
+
+function splitVoice(voice: VoiceWord[], words: string): { supported: VoiceWord[]; unsupported: VoiceWord[] } {
+  const supported = voice.filter((word) => isOnSite(word.quote, words));
+  return { supported, unsupported: voice.filter((word) => !supported.includes(word)) };
+}
+
+/** The first answer must prove enough of its voice; the retry is kept either way and filtered by the step. */
+function requireSupportedVoice(analysis: BrandAnalysis, words: string): BrandAnalysis {
+  const { supported, unsupported } = splitVoice(analysis.voice, words);
+  if (supported.length >= config.brandAnalyst.MIN_VOICE_WORDS) return analysis;
+  const missing = unsupported.map((word) => `"${word.quote}" (${word.adjective})`).join(", ");
+  throw new UnsupportedVoiceError(`These voice quotes are not on the site: ${missing}. Copy each quote word for word from inside <site>.`);
+}
 
 /** The model's judgement plus the facts code extracted. The model never supplies a fact. */
-function assemble(analysis: BrandAnalysis, facts: SiteFacts): ScanResult {
+function assemble(analysis: BrandAnalysis, facts: SiteFacts, voice: VoiceWord[]): ScanResult {
   return scanResultSchema.parse({
     name: analysis.name.trim() || facts.nameCandidates[0],
     industry: analysis.industry.trim() || undefined,
@@ -20,7 +61,7 @@ function assemble(analysis: BrandAnalysis, facts: SiteFacts): ScanResult {
       tagline: analysis.tagline,
       summary: analysis.summary,
       audience: analysis.audience,
-      voice: analysis.voice,
+      voice: voice.map((word) => word.adjective.trim()),
       // Hex values and their order come from the CSS. A missing name falls back to the hex.
       colors: facts.style.colors.map((hex, index) => ({ name: analysis.colorNames[index]?.trim() || hex, hex })),
       fonts: facts.style.fonts,
@@ -46,7 +87,7 @@ const AI_SDK_FORMAT_ERROR_NAMES = ["AI_JSONParseError", "AI_NoObjectGeneratedErr
  * retried or quoted back to the model.
  */
 function isAnswerRejected(error: unknown): error is Error {
-  if (error instanceof ZodError) return true;
+  if (error instanceof ZodError || error instanceof UnsupportedVoiceError) return true;
   if (error instanceof MastraError) return STRUCTURED_OUTPUT_FAILURE_IDS.includes(error.id);
   return error instanceof Error && AI_SDK_FORMAT_ERROR_NAMES.includes(error.name);
 }
@@ -64,16 +105,17 @@ function rejectionNote(error: Error): string {
 }
 
 /**
- * One call per scan. A second happens only when the first answer failed validation, with the
- * rejection quoted back to the model; every other failure is rethrown, so the workflow fails.
+ * One call per scan. A second happens only when the first answer failed validation or proved too
+ * little of its voice, with the rejection quoted back to the model; every other failure is rethrown.
  */
 async function analyseWithOneRetry(
   agent: BrandAnalystAgent,
   prompt: string,
+  words: string,
   onRejected: (message: string) => void,
 ): Promise<BrandAnalysis> {
   try {
-    return await analyse(agent, prompt);
+    return requireSupportedVoice(await analyse(agent, prompt), words);
   } catch (error) {
     if (!isAnswerRejected(error)) throw error;
     onRejected(error.message);
@@ -93,12 +135,18 @@ export const interpretStep = createStep({
     const pages = facts.pages.map((page) => ({ url: page.url, title: page.title }));
     const agent = mastra?.getAgent("brandAnalyst") ?? brandAnalyst;
     const logger = mastra?.getLogger();
+    const words = siteWords(facts);
 
     try {
-      const analysis = await analyseWithOneRetry(agent, renderSiteFacts(facts), (message) => {
+      const analysis = await analyseWithOneRetry(agent, renderSiteFacts(facts), words, (message) => {
         logger?.warn(`brand-scan interpret: the model's answer was rejected, asking once more: ${message}`);
       });
-      return { result: assemble(analysis, facts), pages, warnings };
+      const { supported, unsupported } = splitVoice(analysis.voice, words);
+      if (unsupported.length > 0) {
+        logger?.warn(`brand-scan interpret: dropped voice words with no quote on the site: ${unsupported.map((word) => word.adjective).join(", ")}`);
+      }
+      const voiceWarnings = supported.length === 0 ? [config.scan.NO_VOICE_WARNING] : [];
+      return { result: assemble(analysis, facts, supported), pages, warnings: [...warnings, ...voiceWarnings] };
     } catch (error) {
       if (!isAnswerRejected(error)) throw error;
       logger?.warn(`brand-scan interpret: the model's second answer was rejected too: ${error.message}`);
