@@ -60,6 +60,7 @@ pnpm 11 workspaces and Turborepo 2, TypeScript 7, Node 24 or newer (`package.jso
 | **`packages/ui`**       | `@repo/ui`                                       | Design system: tokens, components, motion, theme            |
 | **`packages/db`**       | `@social-agent/db`                               | Drizzle schema, migrations, the Postgres connection factory |
 | **`packages/shared`**   | `@social-agent/shared`                           | Zod schemas (`src/schema`) and their inferred types (`src/types`), shared by API, web and db |
+| **`packages/agents`**   | `@social-agent/agents`                           | The agents' skills (and, one by one, the agents), kept free of app code for reuse in other projects |
 | **`packages/social-connect`** | `@social-agent/social-connect`             | Network OAuth providers (Instagram built; Facebook, LinkedIn, TikTok planned): authorize URL, exchange, refresh, profile. No framework or storage |
 | **`packages/config/*`** | `@repo/eslint-config`, `@repo/typescript-config` | Lint and TypeScript configs                                 |
 
@@ -171,8 +172,8 @@ Rules that shape the code:
   (`src/mastra/agents/brand-analyst/output.schema.ts`) has no field for a phone, email,
   address, hours, colour value or font, so the model cannot write one. `assemble()` in
   `steps/interpret.ts` splices the model's judgement onto the extracted facts.
-- **Skills are inlined, not tools.** `loadSkill()` (`src/mastra/config/skills.ts`) reads
-  `src/mastra/skills/<name>/SKILL.md`, strips the front matter and puts the body straight into
+- **Skills are inlined, not tools.** `loadSkill()` (`@social-agent/agents`) reads
+  `packages/agents/skills/<name>/SKILL.md`, strips the front matter and puts the body straight into
   the agent's instructions; `skills:` would add tool calls, and this agent must answer in one
   call. The build copies the folder to `dist/skills` (`scripts/copy-skills.mjs`, wired as
   tsup's `onSuccess`).
@@ -456,7 +457,7 @@ Today: **one always-on Node process** for the API.
 - The tsup bundle does not run migrations: a deploy step must run
   `pnpm --filter @social-agent/db exec tsx src/cli-migrate.ts` with `DATABASE_URL` set, before
   the API starts.
-- `src/mastra/skills` must sit next to `dist` as `dist/skills`; the build's `onSuccess` hook
+- `packages/agents/skills` must sit next to `dist` as `dist/skills`; the build's `onSuccess` hook
   does this, and `loadSkill` throws if the folder is missing.
 - `SIGINT` and `SIGTERM` stop new requests, let running ones finish, fail any pending scans and
   close the pool, with a 10 s forced-exit timer (`src/server.ts`).

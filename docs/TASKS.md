@@ -138,6 +138,14 @@ Phases nobody has opened yet, plus the one cross-cutting job that waits for a de
 | **4-2** | `POST /brands/:brandId/chat` as SSE; Mastra memory threads tagged by brand | ![P2][p2] | ![0%][pr0] | catalogue §10 |
 | **4-3** | List threads, list messages (`limit` + `cursor`)                           | ![P2][p2] | ![0%][pr0] | catalogue §10 |
 
+Phase 4 design notes (agreed 2026-09-24, to discuss when the phase opens):
+
+- **Account Manager is a Mastra supervisor**: `agents: { brandAnalyst, strategist, copywriter, ... }`; Mastra picks a specialist from each one's `description`. Use `onDelegationStart` to cap or refuse delegations, and `requestContext` to pass the brand id (from the API, never from model output) into every delegation.
+- **Client can pick a specialist directly**: the chat endpoint (4-2) takes an optional `agentId`; without it the message goes to the Account Manager. Same agents either way, one memory thread per brand and agent.
+- **Skills stay with their specialists**: the Account Manager gets only its own skills (intake, explaining results, handoff), never the whole `packages/agents/skills` folder. All skills would make it do specialists' work itself, cost context every turn and blur who is responsible. No shared workspace skills folder either; each agent lists its own `skills: [...]`.
+- **Actions go through workflows, not free delegation**: chat and advice may be delegated; anything that changes data (generate strategy, create posts, publish) is a tool that starts the workflow, so code-owned facts, voice checks and "never publish without human approval" can never be skipped in conversation.
+- **Two modes per specialist**: one-call structured output inside workflows (skills inlined with `loadSkill()`), free text with memory in chat (`skills: [...]` loaded on demand). Instructions can be a function of `requestContext` to switch mode.
+
 </details>
 
 <details>

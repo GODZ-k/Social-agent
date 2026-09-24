@@ -120,10 +120,6 @@ out of real runs between 2026-09-20 and 2026-09-22.
   + voice: z.array({ adjective, quote }).min(2)  # quote checked against the site
   ```
 
-- **`skills: [...]` on an Agent (inline or path) loads on demand through `skill`/`skill_read` tools, so it costs extra model calls and the model may skip it.**
-
-  One-call agents (Brand Analyst) inline the skill with `loadSkill()`; chat or multi-skill agents use `skills:` with absolute paths from `config/skills.ts`.
-
 - **`getWorkflows()` and `getAgents()` do not exist; the methods are `listWorkflows()`
   and `listAgents()`.**
 
@@ -159,9 +155,11 @@ out of real runs between 2026-09-20 and 2026-09-22.
 
 - **`skills:` on an agent adds tool calls, which breaks "exactly one model call".**
 
-  An agent that must answer in one call gets its skill text through `loadSkill()`
-  (`src/mastra/config/skills.ts`). The build copies `src/mastra/skills` to `dist/skills`,
-  because tsup does not bundle files read at run time.
+  `skills:` (inline `createSkill()` or a folder path) loads a skill on demand through the
+  `skill`/`skill_read` tools, and the model may skip it. An agent that must answer in one call
+  gets its skill text through `loadSkill()` from `@social-agent/agents`; chat or multi-skill
+  agents may use `skills:` with absolute paths. Skills live in `packages/agents/skills`, and the
+  API build copies them to `dist/skills` because tsup does not bundle files read at run time.
 
 - **Mastra's own HTTP routes, the ones Studio talks to, have no authentication.**
 

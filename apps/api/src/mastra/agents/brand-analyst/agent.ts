@@ -1,6 +1,6 @@
 import { Agent } from "@mastra/core/agent";
-import { AGENT_MODELS } from "../../config/models";
-import { loadSkill } from "../../config/skills";
+import { loadSkill } from "@social-agent/agents";
+import { AGENT_MODELS } from "@/mastra/config/models";
 import { BRAND_ANALYST_INSTRUCTIONS } from "./instructions";
 
 // No memory and no tools: every scan is independent and is answered in one model call.

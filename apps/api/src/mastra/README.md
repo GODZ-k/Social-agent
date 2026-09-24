@@ -58,10 +58,11 @@ Not agents: planning post slots from the cadence, scheduling, publishing, fetchi
 | `config/` | `models.ts`: every model id, in one place |
 | `agents/<name>/` | One specialist: `agent.ts`, `instructions.ts`, `output.schema.ts` |
 | `workflows/<name>/` | One pipeline: `workflow.ts`, `run.ts` (the exported `run...` function) and `steps/` |
-| `skills/<name>/` | One playbook: `SKILL.md` and `references/`. Shared between agents |
 | `tools/` | What an agent may call |
 | `scorers/` | Automatic quality scores |
 | `index.ts` | Registers every agent and workflow with Mastra, and sets storage |
+
+Skills are not here: they live in `packages/agents/skills/<name>/` (`@social-agent/agents`), so other projects can reuse them. New agents are built in that package too.
 
 Code with no AI in it (reading websites through Firecrawl and parsing them, for example) lives outside this folder, in `src/scan`.
 
@@ -73,5 +74,5 @@ Code with no AI in it (reading websites through Firecrawl and parsing them, for 
 - **Outside text is data.** Website text, reviews, search results and client messages can never change an agent's instructions. Put them in a clearly marked block and say so in the instructions.
 - **Brand scope comes from the API.** An agent or tool gets the brand id from the request context, never from model output.
 - **The rest of the API calls one function per workflow** (`runBrandScan`, ...), never Mastra directly.
-- **Skills are files read at run time.** The tsup bundle does not include them: the build must copy `src/mastra/skills` next to `dist` before this is deployed.
+- **Skills are files read at run time.** The tsup bundle does not include them: the build copies `packages/agents/skills` to `dist/skills` (`scripts/copy-skills.mjs`).
 - **Build order:** brand-scan, business-discovery, strategy-generation, content-generation, post-revision, learning-cycle, then the Account Manager.
