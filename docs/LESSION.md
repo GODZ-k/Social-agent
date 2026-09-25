@@ -303,6 +303,20 @@ out of real runs between 2026-09-20 and 2026-09-22.
   unused skill costs listing tokens on every turn. Global copies under `~/.claude/skills`
   still show up in the listing and need pruning separately.
 
+- **A session can end without warning** (the usage limit, 2026-09-22 night). Two agents had
+  finished their files but not their ledger reports, and the next session rebuilt the state
+  from `git status`.
+
+  An agent writes its report and ticks its checkbox before it says done, and the lead
+  ticks the ledger the moment a report lands, not when the wave ends.
+
+- **The auto permission mode blocks `db:migrate` and Clerk token minting** (2026-09-23),
+  so an agent cannot apply a migration or mint a dev token on its own.
+
+  The owner runs those two commands themselves (`! pnpm --filter @social-agent/db run
+  db:migrate`, `! pnpm --filter api run dev-token -- <email>`); the agent prepares
+  everything else and hands over the exact commands.
+
 <a id="code"></a>
 
 ## Code
@@ -357,6 +371,13 @@ out of real runs between 2026-09-20 and 2026-09-22.
   own `typescript@6` so pnpm links the parser against TS 6. Run `eslint` from inside the
   app (`./node_modules/.bin/eslint --max-warnings 0 .`) when piping `-f json`.
 
+- **`loadSkill` inlines `SKILL.md` only; a skill's `references/*.md` never reach the model.**
+
+  The research agents have no file tool, so every "see `references/x.md`" in a skill is
+  invisible at run time (found in the 2026-09-23 skill review). Each `SKILL.md` step must be
+  self-sufficient inline; references are for people, until skills are mounted through
+  Mastra's `skills:` with a file tool.
+
 - **Server components need the data on the server.**
 
   The mock lived in the browser (localStorage), so nothing could render server-side. It
@@ -408,4 +429,6 @@ out of real runs between 2026-09-20 and 2026-09-22.
 [c4]: https://img.shields.io/badge/4-lessons-lightgrey?style=flat-square
 [c6]: https://img.shields.io/badge/6-lessons-lightgrey?style=flat-square
 [c7]: https://img.shields.io/badge/7-lessons-lightgrey?style=flat-square
+[c8]: https://img.shields.io/badge/8-lessons-lightgrey?style=flat-square
 [c12]: https://img.shields.io/badge/12-lessons-lightgrey?style=flat-square
+[c13]: https://img.shields.io/badge/13-lessons-lightgrey?style=flat-square

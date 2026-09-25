@@ -1,11 +1,15 @@
 import { z } from "zod";
 import { config } from "../config/constants";
 import {
-  businessInfoSchema,
+  pageFactsSchema,
   scanPageSchema,
   scanResultSchema,
   scanStepIdSchema,
+  styleFactsSchema,
 } from "@social-agent/shared";
+
+// The site facts live in @social-agent/shared so the agents package can read them; re-exported for src/scan.
+export { pageFactsSchema, siteFactsSchema, styleFactsSchema, type PageFacts, type SiteFacts, type StyleFacts } from "@social-agent/shared";
 
 /** Stable ids: the progress screen shows a scan by them. One source of truth: the shared schema. */
 export const SCAN_STEP_IDS = scanStepIdSchema.options;
@@ -48,48 +52,6 @@ export const scanOutcomeSchema = z.discriminatedUnion("ok", [scanSuccessSchema, 
 export type ScanFailure = z.infer<typeof scanFailureSchema>;
 export type ScanSuccess = z.infer<typeof scanSuccessSchema>;
 export type ScanOutcome = z.infer<typeof scanOutcomeSchema>;
-
-export const pageFactsSchema = z.object({
-  url: z.string(),
-  title: z.string(),
-  description: z.string().optional(),
-  og: z.object({
-    siteName: z.string().optional(),
-    title: z.string().optional(),
-    description: z.string().optional(),
-    image: z.string().optional(),
-  }),
-  /** Names from schema.org business nodes on the page. */
-  schemaNames: z.array(z.string()),
-  headings: z.array(z.string()),
-  text: z.string(),
-  wordCount: z.number(),
-  logo: z.string().optional(),
-  phones: z.array(z.string()),
-  emails: z.array(z.string()),
-  location: businessInfoSchema.shape.location,
-  hours: businessInfoSchema.shape.hours,
-  socialLinks: z.array(z.string()),
-});
-export type PageFacts = z.infer<typeof pageFactsSchema>;
-
-export const styleFactsSchema = z.object({
-  /** 6-digit upper-case hex, most important first, at most 5. */
-  colors: z.array(z.string()),
-  fonts: z.object({ heading: z.string(), body: z.string() }),
-});
-export type StyleFacts = z.infer<typeof styleFactsSchema>;
-
-export const siteFactsSchema = z.object({
-  url: z.string(),
-  nameCandidates: z.array(z.string()),
-  pages: z.array(pageFactsSchema),
-  style: styleFactsSchema,
-  business: businessInfoSchema.optional(),
-  socialLinks: z.array(z.string()),
-  logo: z.string().optional(),
-});
-export type SiteFacts = z.infer<typeof siteFactsSchema>;
 
 export const discoverySchema = z.object({
   /** The home page's address after redirects. */

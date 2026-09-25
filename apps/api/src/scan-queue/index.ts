@@ -2,32 +2,18 @@ import type { BrandScanRow } from "@social-agent/db";
 import { config } from "@/config/constants";
 import { runBrandScan } from "@/mastra/workflows/brand-scan/run";
 import { ScansRepository } from "@/repositories/scans.repository";
+import { createSerialQueue } from "@/utils/queue";
 
 // The queue lives in this process; a Postgres-backed one can replace it when there are several.
-const waiting: string[] = [];
-let running = 0;
+const queue = createSerialQueue("scan", runScan);
 
 export function enqueueScan(id: string): void {
-    waiting.push(id);
-    startNext();
+    queue.enqueue(id);
 }
 
 /** Scans not yet finished: the shutdown log prints it. */
 export function pendingScanCount(): number {
-    return waiting.length + running;
-}
-
-function startNext(): void {
-    while (running < config.scan.CONCURRENCY && waiting.length > 0) {
-        const id = waiting.shift()!;
-        running += 1;
-        void runScan(id)
-            .catch((error) => console.error(`scan ${id} could not be run`, error))
-            .finally(() => {
-                running -= 1;
-                startNext();
-            });
-    }
+    return queue.pendingCount();
 }
 
 /** Claims a still-queued row for this run, or nothing if the start-up sweep got there first. */
@@ -49,7 +35,7 @@ async function runScan(id: string): Promise<void> {
         else await ScansRepository.markFailed(id, outcome.message);
     } catch (error) {
         console.error(`scan ${id} failed`, error);
-        await ScansRepository.markFailed(id, config.scan.SERVER_ERROR_MESSAGE).catch((writeError) => {
+        await ScansRepository.markFailed(id, config.jobs.SERVER_ERROR_MESSAGE).catch((writeError) => {
             console.error(`scan ${id}: could not record the failure`, writeError);
         });
     }

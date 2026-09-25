@@ -1,13 +1,17 @@
 import { lookup } from "node:dns/promises";
 import { isIP } from "node:net";
+import { load } from "cheerio";
 import { config } from "../config/constants";
 import { isBlockedAddress } from "./address-check";
+import { extractPageFacts } from "./extract-facts";
 import { ScanError } from "./types";
 
 // The only file that reads a website: Firecrawl renders the page on its own servers, so our
 // server never connects to a user-typed address. Firecrawl does not refuse private addresses
 // (checked 2026-09-22: it fetched 127.0.0.1:8080), so vetAddress runs before every call.
 
+const NOT_READABLE_TAGS = "script, style, noscript, svg, template, iframe";
+const BLOCK_TAGS = "p, div, li, br, h1, h2, h3, h4, h5, h6, td, th, section, article, nav, header, footer";
 const NOT_A_WEBPAGE_CODE = "SCRAPE_BRANDING_NOT_SUPPORTED"; // Firecrawl's answer for a PDF or an image
 
 export type Branding = {
@@ -23,6 +27,17 @@ export type FetchedPage = {
   branding?: Branding;
 };
 
+/** One web search result as Firecrawl ranks it. Nothing here has been vetted or read. */
+export type SearchHit = { url: string; title: string; description: string };
+
+export type MainText = {
+  /** The address after redirects. */
+  url: string;
+  title: string;
+  /** Readable text of the page, at most config.firecrawl.MAX_MAIN_TEXT_CHARS, cut on a word boundary. */
+  text: string;
+};
+
 type FirecrawlResponse = {
   success?: boolean;
   error?: string;
@@ -32,6 +47,8 @@ type FirecrawlResponse = {
     links?: string[];
     branding?: Branding;
     metadata?: { url?: string; statusCode?: number };
+    /** Search only: v2 groups results by kind; we ask for web pages alone. */
+    web?: Partial<SearchHit>[];
   };
 };
 
@@ -93,12 +110,12 @@ function parseJson(text: string): FirecrawlResponse {
   }
 }
 
-async function postScrape(url: URL, formats: string[], timeoutMs: number): Promise<Response> {
+async function postFirecrawl(endpoint: string, payload: Record<string, unknown>, timeoutMs: number): Promise<Response> {
   try {
-    return await fetch(config.firecrawl.SCRAPE_URL, {
+    return await fetch(endpoint, {
       method: "POST",
       headers: requestHeaders(),
-      body: JSON.stringify({ url: url.href, formats, onlyMainContent: false, timeout: timeoutMs }),
+      body: JSON.stringify({ ...payload, timeout: timeoutMs }),
       signal: AbortSignal.timeout(timeoutMs + config.firecrawl.ABORT_GRACE_MS),
     });
   } catch {
@@ -131,8 +148,8 @@ function classifyResponse(status: number, body: FirecrawlResponse, text: string)
   return body;
 }
 
-async function callFirecrawl(url: URL, formats: string[], timeoutMs: number): Promise<FirecrawlResponse> {
-  const response = await postScrape(url, formats, timeoutMs);
+async function callFirecrawl(endpoint: string, payload: Record<string, unknown>, timeoutMs: number): Promise<FirecrawlResponse> {
+  const response = await postFirecrawl(endpoint, payload, timeoutMs);
   const text = await readBody(response);
   const outcome = classifyResponse(response.status, parseJson(text), text);
   if (outcome instanceof Error) throw outcome;
@@ -145,19 +162,24 @@ function finalUrl(reported: string | undefined, requested: URL): string {
   return requested.href;
 }
 
+/** The time we may still spend, capped at the ceiling. Throws once the deadline has passed. */
+function remainingMs(deadline: number, ceilingMs: number): number {
+  const remaining = deadline - Date.now();
+  if (remaining <= 0) throw new ScanError("SITE_UNREACHABLE");
+  return Math.min(ceilingMs, remaining);
+}
+
 /**
  * One rendered page; branding is only needed for the home page. A ScanError means the website or
  * the address is at fault, a plain Error means our Firecrawl account or a Firecrawl outage.
  */
 export async function fetchPage(rawUrl: string, options: { deadline: number; withBranding?: boolean }): Promise<FetchedPage> {
   const url = await vetAddress(rawUrl);
-
-  const remainingMs = options.deadline - Date.now();
-  if (remainingMs <= 0) throw new ScanError("SITE_UNREACHABLE");
-  const timeoutMs = Math.min(config.firecrawl.RENDER_TIMEOUT_MS, remainingMs);
+  const timeoutMs = remainingMs(options.deadline, config.firecrawl.RENDER_TIMEOUT_MS);
 
   const formats = options.withBranding ? ["rawHtml", "links", "branding"] : ["rawHtml", "links"];
-  const { data } = await callFirecrawl(url, formats, timeoutMs);
+  const payload = { url: url.href, formats, onlyMainContent: false };
+  const { data } = await callFirecrawl(config.firecrawl.SCRAPE_URL, payload, timeoutMs);
   if (!data) throw new ScanError("SITE_UNREACHABLE");
 
   const status = data.metadata?.statusCode ?? 200;
@@ -172,4 +194,56 @@ export async function fetchPage(rawUrl: string, options: { deadline: number; wit
     links: data.links ?? [],
     branding: data.branding,
   };
+}
+
+function clampLimit(limit: number): number {
+  return Math.min(config.firecrawl.MAX_SEARCH_HITS, Math.max(1, Math.floor(limit)));
+}
+
+/** Only a hit whose address parses is kept: the read-page tool resolves it later. */
+function toSearchHit(hit: Partial<SearchHit>): SearchHit | null {
+  if (typeof hit.url !== "string" || !URL.canParse(hit.url)) return null;
+  return { url: hit.url, title: hit.title ?? "", description: hit.description ?? "" };
+}
+
+/**
+ * Web search through Firecrawl. Results are not vetted here: nothing is fetched until a page is
+ * read with fetchPage, which runs vetAddress. Errors follow fetchPage's rule: ScanError for a
+ * failed search, a plain Error for our account or a Firecrawl outage.
+ */
+export async function searchWeb(query: string, options: { limit: number; deadline: number }): Promise<SearchHit[]> {
+  const timeoutMs = remainingMs(options.deadline, config.firecrawl.SEARCH_TIMEOUT_MS);
+  const payload = { query: query.trim(), limit: clampLimit(options.limit), sources: ["web"] };
+  const { data } = await callFirecrawl(config.firecrawl.SEARCH_URL, payload, timeoutMs);
+  return (data?.web ?? []).map(toSearchHit).filter((hit) => hit !== null);
+}
+
+function cutOnWordBoundary(text: string, maxChars: number): string {
+  if (text.length <= maxChars) return text;
+  const cut = text.slice(0, maxChars);
+  const lastSpace = cut.lastIndexOf(" ");
+  return lastSpace > 0 ? cut.slice(0, lastSpace) : cut;
+}
+
+/**
+ * Everything a visitor can read on the page, menus and footer included: the fallback when the
+ * extractor left nothing. On an image-led home page the menu is the offer structure.
+ */
+function plainText(html: string): string {
+  const $ = load(html);
+  $(NOT_READABLE_TAGS).remove();
+  const body = $("body");
+  body.find(BLOCK_TAGS).append(" ");
+  return body.text().replace(/\s+/g, " ").trim();
+}
+
+/**
+ * One vetted page as title plus readable text: the scan's own extractor first, the plainer read of
+ * the same HTML when the extractor left too little. No second Firecrawl request either way.
+ */
+export async function readMainText(rawUrl: string, deadline: number): Promise<MainText> {
+  const page = await fetchPage(rawUrl, { deadline });
+  const facts = extractPageFacts(page.url, page.html);
+  const text = facts.text.length >= config.firecrawl.MIN_USEFUL_TEXT_CHARS ? facts.text : plainText(page.html);
+  return { url: page.url, title: facts.title, text: cutOnWordBoundary(text, config.firecrawl.MAX_MAIN_TEXT_CHARS) };
 }

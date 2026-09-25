@@ -2,9 +2,9 @@
 
 ![read](https://img.shields.io/badge/read-first_every_session-red)
 ![branch](https://img.shields.io/badge/branch-backend-blue)
-![phase](https://img.shields.io/badge/phase-2B_strategy_next-orange)
+![phase](https://img.shields.io/badge/phase-2B_discovery_built-orange)
 ![decisions in force](https://img.shields.io/badge/decisions_in_force-15-blue)
-![updated](https://img.shields.io/badge/updated-2026--09--22-lightgrey)
+![updated](https://img.shields.io/badge/updated-2026--09--23-lightgrey)
 
 *The short brief that gets an agent or a new session up to speed. Load it before anything else.*
 
@@ -54,7 +54,7 @@ Fifteen rulings every session inherits. Reopen one only on evidence, and record 
 | **Shared skills live at the repo root** `.agents/skills`                                                                | ![2026-09-22][d22] | `npx skills add` only from the root, or a shared skill lands in one app                                           |
 | **"Brand" not "client" for a workspace**                                                                                | ![2026-09-20][d20] | A client is a person (`users.role`), a brand is a website workspace                                               |
 | **Multiple brands per client, no limit**                                                                                | ![2026-09-20][d20] | No cap in the database or the service                                                                             |
-| **A draft strategy auto-activates 15 minutes after it is drafted**                                                      | ![2026-09-20][d20] | `approved_by` stays null, which is how automatic is told from human                                               |
+| **A draft strategy auto-activates 30 minutes after it is drafted** (was 15 until 2026-09-25)                                                      | ![2026-09-20][d20] | `approved_by` stays null, which is how automatic is told from human                                               |
 | **A post is never published without a human approval**                                                                  | ![2026-09-20][d20] | The one hard rule of the product                                                                                  |
 | **Billing comes later and stays provider-agnostic**                                                                     | ![2026-09-20][d20] | Razorpay, Stripe, Polar; not Clerk Billing; no tables yet                                                         |
 | **Scan step ids are the workflow's**: `discover \| read-pages \| interpret \| report`                                   | ![2026-09-22][d22] | One source of truth in `scanStepIdSchema`                                                                         |
@@ -98,9 +98,9 @@ Fuller rules live in [`AGENTS.md`](../AGENTS.md) and [`apps/api/AGENTS.md`](../a
 | **Specs and plans**                | `docs/superpowers/specs/` and `docs/superpowers/plans/`, versioned since 2026-09-22                                                |
 | **Ledgers**                        | `.superpowers/sdd/<date>-<name>/progress.md` holds progress, briefs, reports and reviews                                           |
 | **Shared skills**                  | `.agents/skills/<name>`, linked from `.claude/skills`, recorded in `skills-lock.json`                                              |
-| **API reference**                  | `docs/API_SPEC.md` (hand-maintained until OpenAPI merges); `scripts/dev-token.ts` mints a Clerk token for trying endpoints |
+| **API reference**                  | `docs/API_SPEC.md` (hand-maintained until OpenAPI merges); `apps/api/testing/dev-token.ts` mints a Clerk token for trying endpoints |
 | **Apps**                           | `apps/web` (product), `apps/landing` (marketing), `apps/api` (Express + Mastra)                                                    |
-| **Packages**                       | `packages/ui`, `packages/db`, `packages/shared`, `packages/agents` (agent skills, reusable outside Cadence, since 2026-09-24), `packages/social-connect` (network OAuth providers, since 2026-09-23), `packages/config/*` |
+| **Packages**                       | `packages/ui`, `packages/db`, `packages/shared`, `packages/agents` (every built agent and its skills, reusable outside Cadence; since 2026-09-24, all agents since 2026-09-25), `packages/social-connect` (network OAuth providers, since 2026-09-23), `packages/config/*` |
 | **The agent team and build order** | `apps/api/src/mastra/README.md`                                                                                                    |
 | **Design system**                  | [`DESIGN.md`](./DESIGN.md)                                                                                                         |
 | **Scan test sites**                | fourbarrelcoffee.com, meowmeowtweet.com, donangie.com, tartinebakery.com, with expected values in the `brand-scan-firecrawl` skill |
@@ -109,17 +109,20 @@ Fuller rules live in [`AGENTS.md`](../AGENTS.md) and [`apps/api/AGENTS.md`](../a
 
 ## 5. Current state
 
-As of 2026-09-22. Phase 1 foundation ![100%][pr100] and phase 2A brand scan ![100%][pr100] are
-complete; phase 2B strategy ![0%][pr0] has not started.
+As of 2026-09-23. Phase 1 foundation ![100%][pr100] and phase 2A brand scan ![100%][pr100] are
+complete; phase 2B strategy has started with business discovery (2B-1), built and awaiting its
+live HTTP verification.
 
 | What               | Where it stands                                                                                                                                                                                                                                               |
 | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Branch**         | `backend`. Last commit `e019e6c "done scan"` carries phase 1 foundation, brands and admin endpoints, the brand scan on Firecrawl, and the scan clean-up pass                                                                                                  |
 | **Uncommitted**    | The scan endpoints (`scans.controller.ts`, `scans.repository.ts`, `scans.route.ts`, `scans.service.ts`, `src/scan-queue/`), the edits to `v1.route.ts`, `server.ts`, `brands.service.ts`, `scan/types.ts` and the two shared schemas, and the eight root docs |
 | **Phase 2A**       | Built and verified: all five tasks done and reviewed, 8 of 8 live HTTP checks passed, 15 routes live. Nothing is committed, because the owner commits. Ledger: `.superpowers/sdd/2026-09-22-scan-endpoints/progress.md`           |
-| **Live endpoints** | `/health`, `/me`, `/me/overview`, `/brands` (5), `/admin/clients*` (4), `/scans` (2). Planned total is 39                                                                                                                                                     |
+| **Phase 2B-1**     | Business discovery, built 2026-09-22 night and integrated 2026-09-23: `Intake` on brands, tables `research_runs` + `brand_research` (migration `0005`, renumbered on 2026-09-24 after the stash merge; not yet applied to Neon), Firecrawl search + `web-search`/`read-page` tools, Growth Consultant + Audience Researcher agents, `business-discovery` workflow, research queue, `POST|GET /brands/:brandId/research`, nine skills written for real. Agent probe on Four Barrel passed; the HTTP runs wait for the owner to apply `0004` and mint a dev token. Ledger: `.superpowers/sdd/2026-09-22-business-discovery/progress.md` |
+| **Live endpoints** | `/health`, `/me`, `/me/overview`, `/brands` (5), `/admin/clients*` (4), `/scans` (2), `/brands/:brandId/research` (2), `/brands/:brandId/social-accounts*` (3), `/oauth/:platform/callback`. Planned total is 41                                                                                                                       |
 | **`apps/web`**     | Restructured 2026-09-22 onto server components: `app/` route files, `features/<area>/` pieces, reads in `lib/api/server.ts`, Server Actions in `lib/api/actions.ts`, mock on the server. Still on the mock seam; it comes off for onboarding in phase 2B and for the rest in phase 3. Cache Components on since 2026-09-24: build passes, every route `◐`, all 13 pages and layouts carry `instant = false` with a `// TODO: Cache Components adoption` comment; adopt route by route with `next-cache-components-adoption`, root layout first. Spec `docs/superpowers/specs/2026-09-22-web-server-components.md` |
-| **Next**           | The Strategist agent spec (2B-1), then the strategy endpoints                                                                                                                                                                                                 |
+| **Phase 2B-7**     | Guided intake built and verified live 2026-09-25: the Account Manager (`packages/agents`) writes tailored questions in English, Hindi or Hinglish, reviews the answers, and its approval starts research; migrations `0006` and `0007` applied; endpoints `/brands/:brandId/intake` (4). Uncommitted |
+| **Next**           | Migrations `0004`-`0007` applied and live checks passed 2026-09-25; the owner commits 2B-1 and 2B-7; then the Strategist agent spec (2B-2), then the strategy endpoints. Open: idempotency key on `POST /scans`, job runner choice (pg-boss / BullMQ / Inngest / Trigger.dev) |
 | **Docs**           | `CLAUDE.md` now auto-loads this file, since 2026-09-22; Postman was removed in favour of OpenAPI + Scalar (branch `feature/openapi`, not merged)                                                                                                                                            |
 
 <a id="6-before-you-start"></a>

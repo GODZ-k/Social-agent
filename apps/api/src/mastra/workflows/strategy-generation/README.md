@@ -19,7 +19,7 @@ Step ids are stable: the UI shows progress by them.
 
 ## Result
 
-A `draft` row in `strategies` plus `content_pillars`. The owner has 15 minutes to approve; after that a background job activates it.
+A `draft` row in `strategies` plus `content_pillars`. The owner has 30 minutes to approve; after that a background job activates it.
 
 ## Files when built
 

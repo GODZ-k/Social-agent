@@ -56,6 +56,8 @@ export class BrandsService {
 
         const changes: Partial<NewBrandRow> = { ...patch };
         if (patch.brand) changes.accent = accentFor(patch.brand);
+        // An edited intake needs the Account Manager's approval again before research re-runs.
+        if (patch.intake) changes.intakeApprovedAt = null;
 
         const row = await BrandsRepository.update(id, scopeFor(user), changes);
         if (!row) throw brandNotFound();
@@ -79,7 +81,7 @@ export function scopeFor(user: AuthUser): BrandScope {
 }
 
 /** "Missing", "archived" and "not yours" get the same answer, so nobody can probe for ids. */
-function brandNotFound() {
+export function brandNotFound() {
     return new AppError("This brand doesn't exist, or you don't have access to it.", 404, "BRAND_NOT_FOUND");
 }
 
@@ -124,6 +126,8 @@ function toBrand(row: BrandRow, accounts: SocialAccountRow[]): Brand {
         business: row.business,
         platforms: row.platforms,
         preferences: row.preferences,
+        intake: row.intake ?? null,
+        intakeApprovedAt: row.intakeApprovedAt?.toISOString() ?? null,
         createdAt: row.createdAt.toISOString(),
         accounts: accounts.map(toAccount),
         stats: config.brand.EMPTY_STATS,

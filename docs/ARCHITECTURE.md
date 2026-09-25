@@ -169,7 +169,7 @@ Rules that shape the code:
   colours, fonts, phone and email; the model only interprets. One LLM call per scan keeps cost
   and time predictable, and each step id maps onto `brand_scans.current_step`.
 - **Code owns every fact.** `brandAnalysisSchema`
-  (`src/mastra/agents/brand-analyst/output.schema.ts`) has no field for a phone, email,
+  (`packages/agents/src/brand-analyst/output.schema.ts`) has no field for a phone, email,
   address, hours, colour value or font, so the model cannot write one. `assemble()` in
   `steps/interpret.ts` splices the model's judgement onto the extracted facts.
 - **Skills are inlined, not tools.** `loadSkill()` (`@social-agent/agents`) reads
@@ -221,7 +221,7 @@ flowchart TD
     end
 
     subgraph s3["3. interpret"]
-        c1["renderSiteFacts, one site block<br/>agents/brand-analyst/prompt.ts"]
+        c1["renderSiteFacts, one site block<br/>packages/agents/src/brand-analyst/prompt.ts"]
         c2["brandAnalyst.generate with structuredOutput brandAnalysisSchema<br/>steps/interpret.ts"]
         c3["one retry, only when the ANSWER was rejected"]
         c4["assemble: model judgement plus extracted colours, fonts, business"]
@@ -259,6 +259,23 @@ Designed in
 built in `apps/api/src/scan-queue/index.ts`, `src/services/scans.service.ts`,
 `src/repositories/scans.repository.ts`, `src/controllers/scans.controller.ts` and
 `src/routes/scans.route.ts`, and verified over HTTP on 2026-09-22.
+
+Since 2026-09-23 the FIFO itself is `createSerialQueue(label, run)` in `src/utils/queue.ts`,
+shared with the research queue (`src/research-queue/index.ts`), which runs business discovery
+(`src/mastra/workflows/business-discovery/run.ts`) behind `POST /brands/:brandId/research` the
+same way: one run at a time, one active run per brand, a start-up sweep
+(`ResearchRepository.failInterrupted()`), results versioned in `brand_research`. Spec
+[`2026-09-22-business-discovery-design.md`](./superpowers/specs/2026-09-22-business-discovery-design.md).
+
+Since 2026-09-25 research starts only from the Account Manager's approved intake. The owner picks a
+chat language (English, Hindi, Hinglish); the Account Manager (`createAccountManager` in
+`packages/agents`, instance in `src/mastra/agents/team.ts`) writes 5-8 questions
+tailored to what the Brand Analyst found, code checks them (`checkIntakeQuestions`), the owner
+answers, and a second Account Manager call reviews the answers and reads the facts out of them.
+Approval saves `brands.intake`, sets `brands.intake_approved_at` and queues research; both calls run
+inside the request through `generateStructured`. Endpoints `/brands/:brandId/intake` (4), service
+`src/services/intake.service.ts`, columns `intake_session` and `intake_approved_at` (migration
+`0006`). Spec [`2026-09-25-guided-intake-design.md`](./superpowers/specs/2026-09-25-guided-intake-design.md).
 
 ```mermaid
 flowchart TD
@@ -381,9 +398,9 @@ stores each network's `active_hours` and `demographics` as JSON.
 Mastra adds its own tables to the same database through `PostgresStore`; we do not model chat.
 
 > [!NOTE]
-> Tables 1 to 3 exist and are used. Phases 2 to 5 fill the rest. `brand_research`,
-> `brands.intake` and the two `strategies` research columns are designed but **not** in the
-> schema or a migration yet (schema spec §13).
+> Tables 1 to 3 exist and are used. Phases 2 to 5 fill the rest. `brands.intake`,
+> `research_runs` and `brand_research` are in the schema and migration `0004_wild_whistler.sql`
+> (2026-09-22); the owner applies it. The two `strategies` research columns wait for 2B-2.
 
 <a id="8-environment-and-configuration"></a>
 
@@ -407,7 +424,7 @@ naming every missing or invalid variable. Validated there:
 
 Read directly from the environment, **not** through `env.ts`: `FIRECRAWL_API_KEY`
 (`src/scan/firecrawl.ts`; absent means keyless, which is fine in development and must be set in
-production), `ANTHROPIC_API_KEY` (the Mastra model router; `scripts/scan.ts` checks for it),
+production), `ANTHROPIC_API_KEY` (the Mastra model router; `apps/api/testing/scan.ts` checks for it),
 `DATABASE_URL` again in `src/mastra/index.ts`, and the optional
 `MASTRA_PLATFORM_ACCESS_TOKEN`. Values live in `apps/api/.env`, which is never committed. No
 value appears in this repo's documentation.
@@ -485,7 +502,7 @@ limit nobody has started sits at zero.
 | **Admin role changes lag up to 1 hour**                    | ![deferred][def] | ![0%][pr0]     | `ONE_HOUR_MS` in `src/services/users.service.ts`. The Clerk profile is trusted an hour |
 | **Mastra observability on local DuckDB**                   | ![deferred][def] | ![0%][pr0]     | `src/mastra/index.ts`. `apps/api/mastra.duckdb` is a local file, not shared            |
 | **No rate limiting beyond one-active-scan**                | ![deferred][def] | ![0%][pr0]     | Nothing else throttles a caller                                                        |
-| **`brand_research`, `brands.intake`**                      | ![planned][plan] | ![0%][pr0]     | Schema spec §13. Designed, no migration yet                                            |
+| **Business discovery and the research queue**              | ![done][done]    | ![100%][pr100] | `src/research-queue`, `src/mastra/workflows/business-discovery`, `src/{routes,controllers,services,repositories}/research.*`. Migrations `0004`-`0007` applied 2026-09-25, verified live; not committed yet |
 | **Strategy, posts, chat, accounts, publishing, analytics** | ![planned][plan] | ![0%][pr0]     | Catalogue phases 2 to 5. Not started                                                   |
 | **Billing**                                                | ![later][later]  | ![0%][pr0]     | Schema spec, "Left out on purpose". Provider-agnostic, not Clerk Billing               |
 

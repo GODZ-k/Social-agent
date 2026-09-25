@@ -1,6 +1,6 @@
 import { brandScans, type BrandScanRow, type NewBrandScanRow } from "@social-agent/db";
 import type { ScanPage, ScanResult, ScanStepId } from "@social-agent/shared";
-import { and, asc, eq, inArray } from "drizzle-orm";
+import { and,desc, asc, eq, inArray } from "drizzle-orm";
 import { config } from "@/config/constants";
 import { db } from "@/config/db";
 import type { ScanScope } from "@/types/scope";
@@ -25,6 +25,17 @@ export class ScansRepository {
             .from(brandScans)
             .where(and(eq(brandScans.requestedBy, requestedBy), ScansRepository.isActive()))
             .orderBy(asc(brandScans.createdAt))
+            .limit(1);
+        return row;
+    }
+
+    /** The newest finished scan linked to a brand: business discovery reads its result as site facts. */
+    static async findLatestDoneForBrand(brandId: string): Promise<BrandScanRow | undefined> {
+        const [row] = await db
+            .select()
+            .from(brandScans)
+            .where(and(eq(brandScans.brandId, brandId), eq(brandScans.status, "done")))
+            .orderBy(desc(brandScans.createdAt))
             .limit(1);
         return row;
     }

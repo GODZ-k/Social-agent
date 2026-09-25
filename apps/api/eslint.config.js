@@ -1,0 +1,13 @@
+import globals from "globals";
+import { config as baseConfig } from "@repo/eslint-config/base";
+
+/** @type {import("eslint").Linter.Config[]} */
+export default [
+  ...baseConfig,
+  { ignores: ["dist/**", "scripts/copy-skills.mjs", "testing/temp/**"] },
+  {
+    languageOptions: {
+      globals: globals.node,
+    },
+  },
+];

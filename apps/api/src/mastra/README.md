@@ -8,15 +8,15 @@ Domain words: a **client** is a person (a business owner). A **brand** is one we
 
 | Agent | Field | Produces |
 |---|---|---|
-| [Brand Analyst](agents/brand-analyst) | The business as its website shows it | Brand kit |
-| [Growth Consultant](agents/growth-consultant) | What the business needs and how social media can grow it | Growth brief |
-| [Audience Researcher](agents/audience-researcher) | Who the customers are and what moves them | Audience profile |
+| [Brand Analyst](../../../../packages/agents/src/brand-analyst) | The business as its website shows it | Brand kit |
+| [Growth Consultant](../../../../packages/agents/src/growth-consultant) | What the business needs and how social media can grow it | Growth brief |
+| [Audience Researcher](../../../../packages/agents/src/audience-researcher) | Who the customers are and what moves them | Audience profile |
 | [Strategist](agents/strategist) | Social media strategy | Goal, pillars, cadence, platforms |
 | [Copywriter](agents/copywriter) | Platform-native writing | Hook, caption, hashtags, call to action |
 | [Art Director](agents/art-director) | What a post looks like | Visual concept, slide plan or script, image brief |
 | [Editor](agents/editor) | Quality control | Pass, or notes for a rewrite |
 | [Performance Analyst](agents/performance-analyst) | Reading results | Learnings with evidence |
-| [Account Manager](agents/account-manager) | Talking with the client | The chat; runs the intake; starts workflows |
+| [Account Manager](../../../../packages/agents/src/account-manager) | Talking with the client | The intake (built, in `packages/agents`); later the chat, which starts workflows |
 
 The chain:
 
@@ -29,7 +29,7 @@ Copywriter + Art Director, gated by the Editor               posts
 Performance Analyst  did it move the business numbers        learnings, then the next strategy
 ```
 
-Not agents: planning post slots from the cadence, scheduling, publishing, fetching metrics, refreshing tokens, activating a strategy after the 15 minute approval window. They need no judgement, so they are plain code and background jobs.
+Not agents: planning post slots from the cadence, scheduling, publishing, fetching metrics, refreshing tokens, activating a strategy after the 30 minute approval window. They need no judgement, so they are plain code and background jobs.
 
 ## Workflows
 
@@ -49,7 +49,7 @@ Not agents: planning post slots from the cadence, scheduling, publishing, fetchi
 3. **Business first.** Strategy is written from the growth brief and the audience profile, not from website copy. Both need the owner's intake answers.
 4. **Facts come from data.** Phones, emails, prices, hours, colours and fonts are taken from the brand's data by code and checked again by the Editor. A model never invents them.
 5. **Measured.** Scorers rate every generation, so a quality drop after a change shows up.
-6. **A person approves every post.** Only a strategy may go ahead by itself, 15 minutes after it was drafted.
+6. **A person approves every post.** Only a strategy may go ahead by itself, 30 minutes after it was drafted.
 
 ## Folders
 

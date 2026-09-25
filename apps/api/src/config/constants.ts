@@ -26,11 +26,13 @@ export const config = {
             pendingApprovals: 0,
         },
     },
+    jobs: {
+        // Stored on a scan or research run that threw; the details stay in the server log.
+        SERVER_ERROR_MESSAGE: "Something went wrong on our side. Please try again.",
+    },
     scan: {
         // Covers fetching only; the model call comes after.
         BUDGET_MS: 45_000,
-        // A free Firecrawl key allows 10 requests a minute and a scan is up to 7.
-        CONCURRENCY: 1,
         ACTIVE_STATUSES: ["queued", "running"],
         MAX_PAGES: 6,
         MAX_PAGES_PER_GROUP: 2,
@@ -41,7 +43,6 @@ export const config = {
         MAX_JSON_LD_DEPTH: 6,
         MAX_COLORS: 5,
         INTERRUPTED_MESSAGE: "The scan was interrupted. Please try again.",
-        SERVER_ERROR_MESSAGE: "Something went wrong on our side. Please try again.",
         NO_VOICE_WARNING: "The website did not show a clear brand voice. Pick a few words for it yourself.",
         // Shown to the business owner on the onboarding screen, so: plain words.
         MESSAGES: {
@@ -62,14 +63,33 @@ export const config = {
         MAX_HTML_CHARS: 2_000_000,
         // A PDF or an image comes back as a stub document shorter than this.
         MIN_WEBPAGE_CHARS: 200,
+        SEARCH_URL: "https://api.firecrawl.dev/v2/search",
+        // A search answered in 2-4 s when probed.
+        SEARCH_TIMEOUT_MS: 15_000,
+        // Per the discovery spec; the API itself accepts far more.
+        MAX_SEARCH_HITS: 5,
+        // Enough of a page for a research agent to judge it; a full page would crowd the model's context.
+        MAX_MAIN_TEXT_CHARS: 6_000,
+        // Below this the scan's extractor stripped the page bare (a Shopify slideshow with "banner" classes left 8 characters), so it is read more plainly.
+        MIN_USEFUL_TEXT_CHARS: 300,
     },
-    brandAnalyst: {
-        // About 7k tokens of page text at ~4 characters per token. The home page gets the largest share.
-        TEXT_BUDGET_CHARS: 28_000,
-        HOME_PAGE_CHARS: 8_000,
-        REJECTION_NOTE_CHARS: 1_000,
-        // Voice words whose quote is found on the site; fewer on the first answer earns one retry.
-        MIN_VOICE_WORDS: 2,
+    research: {
+        ACTIVE_STATUSES: ["queued", "running"],
+        INTERRUPTED_MESSAGE: "The research was interrupted. Please try again.",
+        // One discovery run's budget, shared by both agents (the discovery spec).
+        SEARCHES_PER_RUN: 8,
+        READS_PER_RUN: 12,
+        RUN_BUDGET_MS: 6 * 60_000,
+        RESULTS_PER_SEARCH: 5,
+        // Model calls one agent may make in its tool loop.
+        MAX_AGENT_STEPS: 12,
+        // Told to the model when a tool call fails, so it carries on instead of stopping.
+        COULD_NOT_READ_NOTE: "Could not read this page.",
+        SEARCH_FAILED_NOTE: "The search did not answer. Try different words, or conclude from what you have.",
+    },
+    intake: {
+        QUESTIONS_FAILED: "We could not prepare your questions. Please try again.",
+        REVIEW_FAILED: "We could not check your answers. Please try again.",
     },
     time: {
         ONE_HOUR_MS: 60 * 60 * 1000,

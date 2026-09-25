@@ -15,7 +15,7 @@ All project documents live in `docs/`. Read `docs/MEMORY.md` first in every sess
 | `apps/api` | Express + Mastra API. Start with `apps/api/AGENTS.md` |
 | `packages/ui` | The shared design system (`@repo/ui`): tokens, components, motion, theme |
 | `packages/db` | Drizzle schema, migrations and the Postgres connection (`@social-agent/db`). Postgres is hosted on Neon; see `apps/api/AGENTS.md` |
-| `packages/agents` | The product agents' know-how (`@social-agent/agents`): skills in `skills/<name>/SKILL.md` and `loadSkill()`; agents move in one by one. Reused outside Cadence (client SEO work), so it never imports app code. Not the same as `.agents/skills`, which are Claude Code skills for building the repo |
+| `packages/agents` | The product agents' know-how (`@social-agent/agents`): every built agent as a factory (the app passes the model and tools), the skills in `skills/<name>/SKILL.md`, `generateStructured`; agents take the shared `BrandContext` as input. Reused outside Cadence (client SEO work), so it never imports app code. Not the same as `.agents/skills`, which are Claude Code skills for building the repo |
 | `packages/social-connect` | Connecting social accounts (`@social-agent/social-connect`): one provider per network with authorize URL, code exchange, refresh and profile. No framework, no storage; meant to be published later. Only `apps/api/src/social` calls it |
 | `packages/shared`, `packages/config/*` | Shared zod schemas, and lint/TypeScript configs |
 

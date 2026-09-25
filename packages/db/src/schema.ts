@@ -18,11 +18,15 @@ import {
   DEFAULT_PREFERENCES,
   type ActiveHours,
   type AudienceDemographics,
+  type AudienceProfile,
   type AudienceSegment,
   type BrandKit,
   type BrandPreferences,
   type BusinessInfo,
   type CadenceEntry,
+  type GrowthBrief,
+  type Intake,
+  type IntakeSession,
   type Platform,
   type PostArt,
   type ScanPage,
@@ -63,6 +67,10 @@ export const brandScanSteps = pgEnum("brand_scan_steps", [
 export const platform = pgEnum("platform", ["instagram", "facebook", "linkedin", "tiktok"]);
 
 export const scanStatus = pgEnum("scan_status", ["queued", "running", "done", "failed"]);
+
+export const researchStatus = pgEnum("research_status", ["queued", "running", "done", "failed"]);
+
+export const researchKind = pgEnum("research_kind", ["growth_brief", "audience_profile"]);
 
 export const strategyStatus = pgEnum("strategy_status", ["draft", "active", "superseded"]);
 
@@ -129,6 +137,13 @@ export const brands = pgTable(
     business: jsonb("business").$type<BusinessInfo>().notNull().default({}),
     platforms: text("platforms").array().$type<Platform[]>().notNull(),
     preferences: jsonb("preferences").$type<BrandPreferences>().notNull().default(DEFAULT_PREFERENCES),
+    /** The owner's intake answers. Null until asked; discovery needs them. */
+    intake: jsonb("intake").$type<Intake>(),
+    /** The intake in progress: the Account Manager's questions and the answers so far. */
+    intakeSession: jsonb("intake_session").$type<IntakeSession>(),
+    /** When the Account Manager approved the intake. Research needs it. */
+    intakeApprovedAt: timestamp("intake_approved_at", { withTimezone: true }),
+    /** Soft delete: posts, metrics and learnings hang off a brand. */
     archivedAt: timestamp("archived_at", { withTimezone: true }),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
@@ -160,6 +175,52 @@ export const brandScans = pgTable(
     createdAt: createdAt(),
   },
   (table) => [index("brand_scans_brand_id_idx").on(table.brandId)],
+);
+
+/** One run of business discovery for a brand. The UI polls `status` and `current_step`. */
+export const researchRuns = pgTable(
+  "research_runs",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    brandId: uuid("brand_id")
+      .notNull()
+      .references(() => brands.id),
+    requestedBy: uuid("requested_by")
+      .notNull()
+      .references(() => users.id),
+    status: researchStatus("status").notNull().default("queued"),
+    currentStep: text("current_step"),
+    error: text("error"),
+    startedAt: timestamp("started_at", { withTimezone: true }),
+    finishedAt: timestamp("finished_at", { withTimezone: true }),
+    createdAt: createdAt(),
+  },
+  (table) => [
+    index("research_runs_brand_id_idx").on(table.brandId),
+    // One active run per brand, enforced by the database: two approvals at once cannot start two runs.
+    uniqueIndex("research_runs_one_active_idx").on(table.brandId).where(sql`${table.status} in ('queued', 'running')`),
+  ],
+);
+
+/**
+ * A growth brief or an audience profile. One row per version per brand and kind; a version is
+ * never edited, a re-run writes the next one. The Strategist reads the latest of each kind.
+ */
+export const brandResearch = pgTable(
+  "brand_research",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    brandId: uuid("brand_id")
+      .notNull()
+      .references(() => brands.id),
+    kind: researchKind("kind").notNull(),
+    version: integer("version").notNull(),
+    content: jsonb("content").$type<GrowthBrief | AudienceProfile>().notNull(),
+    /** The URLs the agent read, for the owner to check. */
+    sources: jsonb("sources").$type<string[]>().notNull().default([]),
+    createdAt: createdAt(),
+  },
+  (table) => [uniqueIndex("brand_research_brand_kind_version_idx").on(table.brandId, table.kind, table.version)],
 );
 
 /**
@@ -407,6 +468,10 @@ export type BrandRow = typeof brands.$inferSelect;
 export type NewBrandRow = typeof brands.$inferInsert;
 export type BrandScanRow = typeof brandScans.$inferSelect;
 export type NewBrandScanRow = typeof brandScans.$inferInsert;
+export type ResearchRunRow = typeof researchRuns.$inferSelect;
+export type NewResearchRunRow = typeof researchRuns.$inferInsert;
+export type BrandResearchRow = typeof brandResearch.$inferSelect;
+export type NewBrandResearchRow = typeof brandResearch.$inferInsert;
 export type StrategyRow = typeof strategies.$inferSelect;
 export type NewStrategyRow = typeof strategies.$inferInsert;
 export type ContentPillarRow = typeof contentPillars.$inferSelect;

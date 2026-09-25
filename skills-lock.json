@@ -31,6 +31,12 @@
       "skillPath": "skills/eraser-diagrams/SKILL.md",
       "computedHash": "91b1d3f574d293b3ebef11a7612c55e6382c264047653be35b2773245e1d234c"
     },
+    "firecrawl-build-search": {
+      "source": "firecrawl/skills",
+      "sourceType": "github",
+      "skillPath": "skills/build/firecrawl-build-search/SKILL.md",
+      "computedHash": "b228991bad43079fd68d1b9c9b087c0cb54a031387205a4691a99c6234dc6766"
+    },
     "investigate-first": {
       "source": "JuliusBrussee/caveman",
       "sourceType": "github",

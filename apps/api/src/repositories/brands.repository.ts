@@ -1,5 +1,6 @@
 import { brands, type BrandRow, type NewBrandRow } from "@social-agent/db";
-import { and, desc, eq } from "drizzle-orm";
+import type { Intake, IntakeSession } from "@social-agent/shared";
+import { and, desc, eq, isNull, sql } from "drizzle-orm";
 import { db } from "@/config/db";
 import type { BrandScope } from "@/types/scope";
 
@@ -26,6 +27,38 @@ export class BrandsRepository {
             .update(brands)
             .set({ ...changes, updatedAt: new Date() })
             .where(BrandsRepository.byId(id, scope))
+            .returning();
+        return row;
+    }
+
+    /** Approves an intake nobody approved yet. Of two approvals at once only one gets a row back. */
+    static async approveIntake(id: string, scope: BrandScope, intake: Intake): Promise<BrandRow | undefined> {
+        const now = new Date();
+        const [row] = await db
+            .update(brands)
+            .set({ intake, intakeApprovedAt: now, updatedAt: now })
+            .where(and(BrandsRepository.byId(id, scope), isNull(brands.intakeApprovedAt)))
+            .returning();
+        return row;
+    }
+
+    /**
+     * Writes a session only while the stored one is still `expectedSessionId` (null: no session yet)
+     * and the intake is not approved, so a slow request never overwrites a newer session.
+     */
+    static async replaceIntakeSession(
+        id: string,
+        scope: BrandScope,
+        expectedSessionId: string | null,
+        changes: { intakeSession: IntakeSession; preferences?: NewBrandRow["preferences"] },
+    ): Promise<BrandRow | undefined> {
+        const sameSession = expectedSessionId === null
+            ? isNull(brands.intakeSession)
+            : sql`${brands.intakeSession}->>'sessionId' = ${expectedSessionId}`;
+        const [row] = await db
+            .update(brands)
+            .set({ ...changes, updatedAt: new Date() })
+            .where(and(BrandsRepository.byId(id, scope), isNull(brands.intakeApprovedAt), sameSession))
             .returning();
         return row;
     }

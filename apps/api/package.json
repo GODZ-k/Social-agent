@@ -8,9 +8,13 @@
     "build": "tsup",
     "start": "node dist/server.js",
     "check-types": "tsc --noEmit",
-    "scan": "tsx scripts/scan.ts",
+    "scan": "tsx testing/scan.ts",
+    "discovery": "tsx testing/discovery.ts",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev-token": "tsx scripts/dev-token.ts"
+    "dev-token": "tsx testing/dev-token.ts",
+    "discovery-probe": "tsx testing/discovery-probe.ts",
+    "research-tools": "tsx testing/research-tools.ts",
+    "lint": "eslint --max-warnings 0 ."
   },
   "tsup": {
     "entry": [
@@ -55,11 +59,14 @@
     "zod": "^4.6.1"
   },
   "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/node": "26.4.1",
     "@types/pg": "^8.23.1",
+    "eslint": "10.9.1",
+    "globals": "17.12.0",
     "tsup": "^8.5.1",
     "tsx": "^4.23.13",
     "typescript": "7.0.2"

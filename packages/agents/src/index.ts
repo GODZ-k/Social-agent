@@ -1,12 +1,7 @@
-import { existsSync, readFileSync } from "node:fs";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
-
-const here = dirname(fileURLToPath(import.meta.url));
-const SKILLS_DIR = [join(here, "../skills"), join(here, "skills")].find((dir) => existsSync(dir));
-
-export function loadSkill(name: string): string {
-  if (!SKILLS_DIR) throw new Error("Skills folder not found. A bundling app must copy packages/agents/skills next to its build.");
-  const file = readFileSync(join(SKILLS_DIR, name, "SKILL.md"), "utf8");
-  return file.replace(/^---[\s\S]*?---\s*/, "").trim();
-}
+export { loadSkill } from "./skills.js";
+export { asDataBlock, cleanText, type DataTag } from "./prompt-text.js";
+export * from "./structured.js";
+export * from "./account-manager/index.js";
+export * from "./audience-researcher/index.js";
+export * from "./brand-analyst/index.js";
+export * from "./growth-consultant/index.js";

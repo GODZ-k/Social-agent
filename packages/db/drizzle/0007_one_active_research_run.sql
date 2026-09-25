@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX "research_runs_one_active_idx" ON "research_runs" USING btree ("brand_id") WHERE "research_runs"."status" in ('queued', 'running');

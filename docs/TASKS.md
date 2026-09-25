@@ -2,10 +2,10 @@
 
 ![phase 1](https://img.shields.io/badge/phase_1-done-brightgreen)
 ![phase 2A](https://img.shields.io/badge/phase_2A-done-brightgreen)
-![phase 2B](https://img.shields.io/badge/phase_2B-next-orange)
+![phase 2B](https://img.shields.io/badge/phase_2B-in_progress-orange)
 ![open decisions](https://img.shields.io/badge/open_decisions-8-blue)
 ![known gaps](https://img.shields.io/badge/known_gaps-13-lightgrey)
-![updated](https://img.shields.io/badge/updated-2026--09--22-lightgrey)
+![updated](https://img.shields.io/badge/updated-2026--09--23-lightgrey)
 
 *What is in flight now, what comes next, what waits, and everything already landed.*
 
@@ -57,7 +57,7 @@ of steps finished.
 | --------------------------------------------- | -------------- | ---------- | -------------------------------------------------------- |
 | **Phase 1 — Foundation**                      | ![100%][pr100] | ![P0][p0] | Remove `GET /health/test-error` before production (1-13) |
 | **Phase 2A — Brand scan**                     | ![100%][pr100] | ![P0][p0] | The owner's commit, then phase 2B (2B-1)                 |
-| **Phase 2B — Strategy**                       | ![0%][pr0]     | ![P1][p1] | Strategist agent spec (2B-1)                             |
+| **Phase 2B — Strategy**                       | ![50%][pr50]   | ![P1][p1] | Live verification of business discovery (2B-1), then the Strategist (2B-2) |
 | **Phase 3 — Posts**                           | ![0%][pr0]     | ![P2][p2] | Copywriter, Art Director, Editor agents (3-1)            |
 | **Phase 4 — Chat**                            | ![0%][pr0]     | ![P2][p2] | Account Manager agent (4-1)                              |
 | **Phase 5 — Accounts, publishing, analytics** | ![15%][pr15]   | ![P3][p3] | 5-1 built for Instagram (2026-09-23); live check waits on Meta app keys |
@@ -89,23 +89,39 @@ Next up, in order.
 
 | Order | Task                                                                     | Priority  | Progress     | Pointer                                                                  |
 | ----- | ------------------------------------------------------------------------ | --------- | ------------ | ------------------------------------------------------------------------ |
-| **1** | Finish 2A (above)                                                        | ![P0][p0] | ![90%][pr90] | Five tasks done; the owner's commit is left                              |
+| **1** | Finish 2B-1: commit the resolved stash merge (migrations `0004` and `0005` applied and live checks passed 2026-09-25) | ![P0][p0] | ![95%][pr95] | Left: the owner stages, commits and drops the stash |
 | **2** | Strategist agent spec (design conversation like the brand scan)          | ![P1][p1] | ![0%][pr0]   | `apps/api/src/mastra/agents/strategist`, `workflows/strategy-generation` |
 | **3** | Strategy endpoints (5)                                                   | ![P1][p1] | ![0%][pr0]   | catalogue §8                                                             |
 | **4** | Onboarding screens in `apps/web` wired to real scan + strategy endpoints | ![P1][p1] | ![0%][pr0]   | [`DESIGN.md`](./DESIGN.md)                                               |
 | **5** | Phase 3 — posts                                                          | ![P2][p2] | ![0%][pr0]   | catalogue §9                                                             |
 
 <details>
-<summary>Phase 2B — strategy, 6 tasks (part of phase 2, 7 endpoints with 2A)</summary>
+<summary>Phase 2B — strategy, 7 tasks (part of phase 2, 7 endpoints with 2A)</summary>
 
 | ID       | Task                                                                                     | Priority  | Progress   | Notes                                          |
 | -------- | ---------------------------------------------------------------------------------------- | --------- | ---------- | ---------------------------------------------- |
-| **2B-1** | Strategist agent: instructions, output schema, skills                                    | ![P1][p1] | ![0%][pr0] | `apps/api/src/mastra/agents/strategist`        |
-| **2B-2** | `business-discovery` workflow (Growth Consultant → Audience Researcher)                  | ![P1][p1] | ![0%][pr0] | build order in `apps/api/src/mastra/README.md` |
+| **2B-1** | Business discovery: intake, `research_runs` + `brand_research`, Firecrawl search tools, Growth Consultant + Audience Researcher, `business-discovery` workflow, research queue, `POST\|GET /brands/:brandId/research`, nine skills | ![P1][p1] | ![95%][pr95] | Built 2026-09-22, integrated and reviewed 2026-09-23. Live 2026-09-25 on fourbarrelcoffee.com: 409 INTAKE_REQUIRED without intake, 202 start, 409 RESEARCH_RUNNING on a second start, run done in 4 min 52 s with a growth brief and an audience profile (5 sources each). Left: commit. Ledger `.superpowers/sdd/2026-09-22-business-discovery/progress.md` |
+| **2B-2** | Strategist agent: instructions, output schema, skills                                    | ![P1][p1] | ![0%][pr0] | `packages/agents/src/strategist` as `createStrategist({ model })`; takes `BrandContext` (latest growth brief and audience profile included) |
 | **2B-3** | `strategy-generation` workflow (Strategist, Editor-reviewed)                             | ![P1][p1] | ![0%][pr0] | —                                              |
 | **2B-4** | Strategy endpoints (5): current, versions, get version, generate, approve/activate       | ![P1][p1] | ![0%][pr0] | catalogue §8                                   |
-| **2B-5** | Background job: auto-activate a `draft` strategy after 15 min (`approved_by` stays null) | ![P1][p1] | ![0%][pr0] | owner's rule 2026-09-20                        |
+| **2B-5** | Background job: auto-activate a `draft` strategy after 30 min (`approved_by` stays null) | ![P1][p1] | ![0%][pr0] | owner's rule 2026-09-20                        |
 | **2B-6** | Onboarding screens in `apps/web`: URL → poll scan → edit kit → intake → strategy         | ![P1][p1] | ![0%][pr0] | after 2A-f and 2B-4                            |
+| **2B-7** | Guided intake by the Account Manager (see the notes below)                                | ![P1][p1] | ![95%][pr95] | Built and verified live 2026-09-25 (plan `docs/superpowers/plans/2026-09-25-guided-intake.md`, ledger `.superpowers/sdd/2026-09-25-guided-intake/progress.md`): migration 0006, 4 endpoints, the Account Manager in `packages/agents`. Left: the owner's commit; the onboarding screens are 2B-6 |
+| **2B-8** | Move every built agent into `packages/agents` as factories; shared `BrandContext` + `BrandContextService.load` | ![P1][p1] | ![95%][pr95] | Done 2026-09-25: Brand Analyst, Growth Consultant, Audience Researcher, Account Manager and `generateStructured` in the package; Cadence wires models and tools in `apps/api/src/mastra/agents/team.ts`. Verified: instructions, schemas, prompts and tools identical before and after (11 of 11), `--facts` identical, live scan of tartinebakery.com ok in 26.8 s, check-types, lint and build pass. Eraser diagram 7 "Where the code lives" added. Left: commit |
+
+Intake design notes (agreed 2026-09-24):
+
+- **Runs after the owner saves the brand kit, before any research.** The Account Manager reads the brand kit and asks only what the website could not tell; what the scan found is confirmed, not asked again ("Your website says you sell cakes and bread. Is that right?").
+- **Language first**: the chat language (what the owner reads comfortably) and, separately, the post language (what their customers speak). Both stored; the post language on the brand.
+- **Languages supported first (owner, 2026-09-25)**: Hindi, English and Hinglish (Hindi written in English letters). Others later. The simple-wording rules are written for all three.
+- **Very simple wording**: one question at a time, under about 12 words, an everyday example with each, buttons wherever possible (goals as chips, money as ranges), a progress count ("3 of 7"), 6-8 questions, about 3 minutes.
+- **Required, no "Not sure"**: confirm what they sell; product, service or both (`businessType`); main goal; post language; ideal customer in their own words. **Optional, with "Not sure"**: best sellers, slow periods, order value (ranges), competitors, things never to say. "Not sure" is a valid answer; the Growth Consultant turns it into an open question.
+- **Enforced three times**: the screen (no skip on required), `intakeSchema` (required fields not optional; add `businessType` and `postLanguage`), and discovery refuses to start without them (`INTAKE_REQUIRED`).
+- **The Account Manager approves before research (owner, 2026-09-25)**: business discovery never starts without the Account Manager's approval that the intake is complete (every required answer present and confirmed with the owner). No approval, no research.
+- **Every brand gets its own questions (owner, 2026-09-25)**: the Account Manager writes them from what the Brand Analyst found; only the five required facts are fixed, and code rejects a question list that misses one. Chat language on the brand; admins may type answers but the Account Manager still reviews; money ranges written for the business in its currency. Spec: `docs/superpowers/specs/2026-09-25-guided-intake-design.md`.
+- **Ends in data, not a transcript**: a validated `intake` saved on the brand, then discovery starts through a workflow tool.
+- **Two steps**: now a guided intake (one Account Manager call writes the questions as structured output in the chosen language; the onboarding screen asks them one by one); in phase 4 the same agent asks them conversationally, with follow-ups.
+- **Product images for product businesses**: parked, to discuss; `businessType` is recorded now so content generation can use it later.
 
 </details>
 
@@ -145,6 +161,11 @@ Phase 4 design notes (agreed 2026-09-24, to discuss when the phase opens):
 - **Skills stay with their specialists**: the Account Manager gets only its own skills (intake, explaining results, handoff), never the whole `packages/agents/skills` folder. All skills would make it do specialists' work itself, cost context every turn and blur who is responsible. No shared workspace skills folder either; each agent lists its own `skills: [...]`.
 - **Actions go through workflows, not free delegation**: chat and advice may be delegated; anything that changes data (generate strategy, create posts, publish) is a tool that starts the workflow, so code-owned facts, voice checks and "never publish without human approval" can never be skipped in conversation.
 - **Two modes per specialist**: one-call structured output inside workflows (skills inlined with `loadSkill()`), free text with memory in chat (`skills: [...]` loaded on demand). Instructions can be a function of `requestContext` to switch mode.
+- **Memory, three layers, no vector database yet**:
+  1. Business facts live in our Postgres tables (brand kit, intake, growth brief, audience profile, strategy, learnings) and are loaded into the Account Manager's context when a chat opens. This is the main memory; every agent reads the same facts.
+  2. Conversation memory is Mastra Memory on the same Postgres (`@mastra/pg`): message history, working memory keyed by the **brand id** (a client can own several brands), and observational memory to condense long chats.
+  3. Semantic recall (vector search over old messages) only once there are months of chat history; then pgvector on Neon through `@mastra/pg`, no new service.
+- **Write-back rule**: a business change the owner mentions in chat ("we started catering") is saved to the intake or brand kit through a tool after the owner confirms, because workflows read the database, never the chat.
 
 </details>
 
@@ -169,6 +190,7 @@ Cross-cutting, still to do:
 | **X-3** | Deploy story: run `packages/db` migrations before the API starts; `NODE_ENV=production` so Mastra Studio routes never mount | ![P1][p1] | ![0%][pr0] | before first deploy |
 | **X-7** | Scan domain cache: before a new scan, reuse a `done` scan of the same domain (host without `www.`) from the last 24 h, copied into the new row; `ScansRepository.findRecentDone` + an index on domain and `finished_at` (one migration); a "Scan again" option skips it. Postgres only, no Redis | ![P3][p3] | ![0%][pr0] | agreed 2026-09-24 |
 | **X-8** | Request and scan logging with AsyncLocalStorage, for log context only: `src/utils/request-context.ts` (store `{ requestId, userId?, scanId? }`), first middleware runs each request in its own store and sets `x-request-id`, `requireUser` adds `userId`, a `log()` helper stamps the store on every line, `errorMiddleware` logs `requestId` and returns it in the 500 body. Every background scan gets its own store (`requestContext.run({ scanId }, () => runScan(id))`) or it inherits the wrong request. Users and scopes stay explicit arguments, never read from the store | ![P2][p2] | ![0%][pr0] | agreed 2026-09-24; pairs with X-3 |
+| **X-9** | Cut the cost and time of discovery (and later agents), measured: baseline run on 2-3 brands first; cheap model for the research loop, expert only for the final brief/profile; page notes instead of whole pages in the loop (and 6,000 to ~3,000 chars); save the scan's page text so discovery never re-reads the client's site; competitors from the intake read directly; cache competitor pages and searches across brands for 7-30 days; prompt caching for instructions + skills (check Mastra support); tighter budgets after measuring; discovery runs once per brand. Evaluate non-Claude models for the loop (Gemini Flash / Flash-Lite, GPT mini / nano, DeepSeek Flash, Grok non-reasoning) on the same brands: tool calling, structured output, Hindi/Hinglish, injection resistance, data policy, price | ![P2][p2] | ![0%][pr0] | agreed 2026-09-25; after migrations 0004/0005 |
 
 <a id="done"></a>
 
@@ -277,7 +299,7 @@ Nine on the list; eight are open, and D-9 is parked rather than undecided.
 
 | ID      | Decision                                                                                              | Priority  | Status                |
 | ------- | ----------------------------------------------------------------------------------------------------- | --------- | --------------------- |
-| **D-1** | May content generation start on a *draft* strategy? (auto-activation after 15 min answers most of it) | ![P1][p1] | ![open][open]         |
+| **D-1** | May content generation start on a *draft* strategy? (auto-activation after 30 min answers most of it) | ![P1][p1] | ![open][open]         |
 | **D-2** | Long agent work (strategy, posts): one long request or 202 + polling like the scan                    | ![P1][p1] | ![open][open] Q2      |
 | **D-3** | Media storage provider and upload path                                                                | ![P2][p2] | ![open][open] Q3      |
 | **D-4** | Reject vs request-changes semantics; is a reason required                                             | ![P2][p2] | ![open][open] Q4      |
@@ -312,6 +334,7 @@ yet; it is a later idea rather than a decision waiting on anyone.
 [pr0]: https://img.shields.io/badge/%20-%7C%7C%7C%7C%7C%7C%7C%7C%7C%7C%200%25-lightgrey?style=flat-square&labelColor=lightgrey
 [pr50]: https://img.shields.io/badge/%7C%7C%7C%7C%7C-%7C%7C%7C%7C%7C%2050%25-lightgrey?style=flat-square&labelColor=brightgreen
 [pr90]: https://img.shields.io/badge/%7C%7C%7C%7C%7C%7C%7C%7C%7C-%7C%2090%25-lightgrey?style=flat-square&labelColor=brightgreen
+[pr95]: https://img.shields.io/badge/%7C%7C%7C%7C%7C%7C%7C%7C%7C-%7C%2095%25-lightgrey?style=flat-square&labelColor=brightgreen
 [pr100]: https://img.shields.io/badge/%7C%7C%7C%7C%7C%7C%7C%7C%7C%7C-100%25-brightgreen?style=flat-square&labelColor=brightgreen
 [deferred]: https://img.shields.io/badge/deferred-lightgrey
 [open]: https://img.shields.io/badge/open-blue

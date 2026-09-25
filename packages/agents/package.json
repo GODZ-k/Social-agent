@@ -22,6 +22,11 @@
     "dev": "tsc --watch --preserveWatchOutput",
     "check-types": "tsc --noEmit"
   },
+  "dependencies": {
+    "@mastra/core": "^1.66.0",
+    "@social-agent/shared": "workspace:*",
+    "zod": "^4.6.1"
+  },
   "devDependencies": {
     "@repo/typescript-config": "workspace:*",
     "@types/node": "26.4.1",

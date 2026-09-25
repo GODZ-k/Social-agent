@@ -15,7 +15,7 @@ Load `firecrawl-build-scrape` for the general API. This skill holds what is spec
 
 | What | Where |
 |---|---|
-| The only file that sends a user-typed address anywhere | `apps/api/src/scan/firecrawl.ts` (`vetAddress` then one POST to `/v2/scrape`) |
+| The only file that sends a user-typed address anywhere | `apps/api/src/scan/firecrawl.ts` (`vetAddress` then one POST to `/v2/scrape`; also the only caller of `/v2/search`, see "Search") |
 | Page picking, fact extraction (JSON-LD, tel/mailto, socials, logo) | `apps/api/src/scan/discover-pages.ts`, `extract-facts.ts` — run on Firecrawl's `rawHtml`, no Firecrawl knowledge inside |
 | Colours and fonts from Firecrawl's `branding` | `apps/api/src/scan/extract-style.ts` |
 | The one LLM call | `apps/api/src/mastra/workflows/brand-scan/steps/interpret.ts` (Brand Analyst agent) |
@@ -36,6 +36,19 @@ Request we send: `formats: ["rawHtml", "links"]` for every page, plus `"branding
 - Firecrawl **reuses recently indexed content** unless `maxAge` is set; `metadata.cacheState`/`cachedAt` say what you got. We do not set `maxAge` today; a brand scan tolerates a copy a day or two old.
 - Rendering takes 2–10 s per page; a whole scan lands at 20–50 s (fetch ≈ 15–30 s in parallel, model ≈ 7–18 s). `SCAN_BUDGET_MS` (45 s) covers fetching only.
 - Also returned and unused today: `branding.images.logo/favicon/ogImage`, `personality`, button styles, `brandName`.
+
+## Search (`/v2/search`, probed 2026-09-22)
+
+Used by the research tools (`apps/api/src/mastra/tools/web-search.ts`) through `searchWeb` in `firecrawl.ts`. We send `{ query, limit, sources: ["web"], timeout }` with the same headers as scrape.
+
+- **Success shape** (HTTP 200): `{"success":true,"data":{"web":[{"url","title","description","position"}]},"creditsUsed":2,"id":"<uuid>"}`. v2 groups results by source; with `sources: ["web"]` only `data.web` is present. `limit: 3` gave 3 hits, `limit: 5` gave 5.
+- **Cost:** `creditsUsed: 2` per search whatever the `limit` (3 and 5 both cost 2). The 10 requests/minute cap on the free key counts searches too.
+- **Bad body** (HTTP 400): `{"success":false,"error":"Invalid request body","details":[{"code":"invalid_type","path":["query"],"message":"Invalid input: expected string, received undefined"}]}`. `limit: 0` is refused the same way (`too_small`); `limit: 99` is accepted, so we clamp 1–5 ourselves.
+- **Keyless** (HTTP 403): `{"success":false,"error":"Unfortunately, your IP address looks suspicious, so Firecrawl can't be used without an API key from here. ..."}` from this network; search is not usable keyless here.
+- Results are ranked pages from the open web (Reddit, Yelp, Instagram, Wikipedia, the business's own site). **Nothing in a result is vetted or fetched**; a page is only read through `readMainText` → `fetchPage` → `vetAddress`, and its text is data for the model, never instructions.
+- `classifyResponse` is shared with scrape: 401/402/429/5xx become a plain `Error` (our account or an outage), anything else that is not `success: true` is a `ScanError("SITE_UNREACHABLE")`, which the tool turns into a note.
+- **Reading a search hit is not guaranteed.** `m.yelp.com/biz/...` (hit #2 for "four barrel coffee reviews") answers Firecrawl with an inner status of 400+ → `SITE_UNREACHABLE` → `read-page` says "Could not read this page." and spends the read. Reddit, Condé Nast Traveler and the business's own site read fine.
+- **`readMainText` falls back** to the whole readable body (scripts, styles, svg, iframes removed; menus and footer kept) when the scan's extractor leaves under 300 characters: fourbarrelcoffee.com's home page is image-led and its `<main>` holds 88 characters ("shop all coffee … 1 / of 5"); the body gives 2,299 characters of menu and footer, which is the offer structure. No second Firecrawl request.
 
 ## Test sites and expected results
 

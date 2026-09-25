@@ -1,21 +1,20 @@
-import { MastraError } from "@mastra/core/error";
 import { createStep } from "@mastra/core/workflows";
 import { scanResultSchema, type ScanResult } from "@social-agent/shared";
-import { ZodError } from "zod";
 import { config } from "@/config/constants";
 import type { SiteFacts } from "@/scan/types";
-import { brandAnalyst } from "@/mastra/agents/brand-analyst/agent";
-import { brandAnalysisSchema, type BrandAnalysis } from "@/mastra/agents/brand-analyst/output.schema";
-import { renderSiteFacts } from "@/mastra/agents/brand-analyst/prompt";
+import {
+  AnswerRejectedError,
+  BRAND_ANALYST_LIMITS,
+  brandAnalysisSchema,
+  generateStructured,
+  isAnswerRejected,
+  renderSiteFacts,
+  type BrandAnalysis,
+} from "@social-agent/agents";
+import { brandAnalyst } from "@/mastra/agents/team";
 import { interpretOutputSchema, readPagesOutputSchema } from "../schemas";
 
-type BrandAnalystAgent = Pick<typeof brandAnalyst, "generate">;
 type VoiceWord = BrandAnalysis["voice"][number];
-
-/** Thrown when too few voice quotes are on the site, so the first answer gets one retry. */
-class UnsupportedVoiceError extends Error {
-  override name = "UnsupportedVoiceError";
-}
 
 // Curly quotes, long dashes and runs of spaces differ between the page and the model's copy.
 function normalise(text: string): string {
@@ -45,11 +44,11 @@ function splitVoice(voice: VoiceWord[], words: string): { supported: VoiceWord[]
 }
 
 /** The first answer must prove enough of its voice; the retry is kept either way and filtered by the step. */
-function requireSupportedVoice(analysis: BrandAnalysis, words: string): BrandAnalysis {
+function requireSupportedVoice(analysis: BrandAnalysis, words: string): void {
   const { supported, unsupported } = splitVoice(analysis.voice, words);
-  if (supported.length >= config.brandAnalyst.MIN_VOICE_WORDS) return analysis;
+  if (supported.length >= BRAND_ANALYST_LIMITS.MIN_VOICE_WORDS) return;
   const missing = unsupported.map((word) => `"${word.quote}" (${word.adjective})`).join(", ");
-  throw new UnsupportedVoiceError(`These voice quotes are not on the site: ${missing}. Copy each quote word for word from inside <site>.`);
+  throw new AnswerRejectedError(`These voice quotes are not on the site: ${missing}. Copy each quote word for word from inside <site>.`);
 }
 
 /** The model's judgement plus the facts code extracted. The model never supplies a fact. */
@@ -72,57 +71,6 @@ function assemble(analysis: BrandAnalysis, facts: SiteFacts, voice: VoiceWord[])
   });
 }
 
-/** What Mastra's strict structured-output strategy throws when the answer does not fit the schema. */
-const STRUCTURED_OUTPUT_FAILURE_IDS = ["STRUCTURED_OUTPUT_SCHEMA_VALIDATION_FAILED", "STRUCTURED_OUTPUT_OBJECT_UNDEFINED"];
-
-/**
- * The AI SDK's parse errors, which Mastra passes through untouched. Matched by name because `ai` is
- * not a dependency here — the same three Mastra's own `isStructuredOutputFormatError` checks.
- */
-const AI_SDK_FORMAT_ERROR_NAMES = ["AI_JSONParseError", "AI_NoObjectGeneratedError", "AI_TypeValidationError"];
-
-/**
- * True only when the model's answer was the problem: our zod parse, Mastra's strict structured-output
- * error, or an AI SDK parse error. Anything else — 401, rate limit, socket — is rethrown, never
- * retried or quoted back to the model.
- */
-function isAnswerRejected(error: unknown): error is Error {
-  if (error instanceof ZodError || error instanceof UnsupportedVoiceError) return true;
-  if (error instanceof MastraError) return STRUCTURED_OUTPUT_FAILURE_IDS.includes(error.id);
-  return error instanceof Error && AI_SDK_FORMAT_ERROR_NAMES.includes(error.name);
-}
-
-/** One model call, validated. Throws a rejection for a bad answer and anything else untouched. */
-async function analyse(agent: BrandAnalystAgent, prompt: string): Promise<BrandAnalysis> {
-  const response = await agent.generate(prompt, {
-    structuredOutput: { schema: brandAnalysisSchema, errorStrategy: "strict" },
-  });
-  return brandAnalysisSchema.parse(response.object);
-}
-
-function rejectionNote(error: Error): string {
-  return `Your previous answer was rejected: ${error.message.slice(0, config.brandAnalyst.REJECTION_NOTE_CHARS)}\nAnswer again and follow the schema exactly.`;
-}
-
-/**
- * One call per scan. A second happens only when the first answer failed validation or proved too
- * little of its voice, with the rejection quoted back to the model; every other failure is rethrown.
- */
-async function analyseWithOneRetry(
-  agent: BrandAnalystAgent,
-  prompt: string,
-  words: string,
-  onRejected: (message: string) => void,
-): Promise<BrandAnalysis> {
-  try {
-    return requireSupportedVoice(await analyse(agent, prompt), words);
-  } catch (error) {
-    if (!isAnswerRejected(error)) throw error;
-    onRejected(error.message);
-    return analyse(agent, `${prompt}\n\n${rejectionNote(error)}`);
-  }
-}
-
 export const interpretStep = createStep({
   id: "interpret",
   description: "The Brand Analyst turns the facts into a brand kit. Code then adds the contact details, colour values and fonts it extracted.",
@@ -138,8 +86,13 @@ export const interpretStep = createStep({
     const words = siteWords(facts);
 
     try {
-      const analysis = await analyseWithOneRetry(agent, renderSiteFacts(facts), words, (message) => {
-        logger?.warn(`brand-scan interpret: the model's answer was rejected, asking once more: ${message}`);
+      const analysis = await generateStructured(agent, renderSiteFacts(facts), brandAnalysisSchema, {
+        // No tools here, so the schema goes through the provider's native structured output, as before.
+        jsonPromptInjection: false,
+        checkFirstAnswer: (answer) => requireSupportedVoice(answer, words),
+        onRejected: (message) => {
+          logger?.warn(`brand-scan interpret: the model's answer was rejected, asking once more: ${message}`);
+        },
       });
       const { supported, unsupported } = splitVoice(analysis.voice, words);
       if (unsupported.length > 0) {

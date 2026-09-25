@@ -5,9 +5,20 @@ The product's agent know-how, kept apart from any one app so it can be reused in
 | Path | What |
 |---|---|
 | `skills/<name>/SKILL.md` | One playbook per field (brand voice, content pillars, hashtags, ...), in the portable Agent Skills format |
-| `src/index.ts` | `loadSkill(name)`: a skill's body, to inline into an agent's instructions |
+| `src/skills.ts` | `loadSkill(name)`: a skill's body, to inline into an agent's instructions |
+| `src/prompt-text.ts` | `asDataBlock`, `cleanText`: outside text goes to a model only inside a data block |
+| `src/structured.ts` | `generateStructured`: one structured-output call per agent, retried once only for a bad answer |
+| `src/brand-analyst/` | `createBrandAnalyst({ model })`: the brand kit from a website's facts |
+| `src/growth-consultant/` | `createGrowthConsultant({ model, tools })`: the growth brief |
+| `src/audience-researcher/` | `createAudienceResearcher({ model, tools })`: the audience profile |
+| `src/account-manager/` | `createAccountManager({ model })`: the intake questions and their review, `checkIntakeQuestions`, `INTAKE_LIMITS` |
 
-New agents are built here; existing ones, starting with the Brand Analyst, move in once they no longer import app code.
+Every built agent lives here since 2026-09-25; the rest (Strategist, Copywriter, Art Director, Editor, Performance Analyst) are built here too. Each is a factory: **the app passes the model and, for research agents, the tools**, so another project picks its own models and its own search. An agent's input is data the app loads, usually the shared `BrandContext` (`packages/shared`): brand kit, approved intake, site facts, latest research. No agent reads a database.
+
+```ts
+// apps/api/src/mastra/agents/team.ts: Cadence's wiring
+export const growthConsultant = createGrowthConsultant({ model: AGENT_MODELS["growth-consultant"], tools: { webSearch, readPage } });
+```
 
 ## Rules
 

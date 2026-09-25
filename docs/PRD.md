@@ -66,7 +66,7 @@ Nothing is published without a human approval.
 ```mermaid
 flowchart TD
     onboard["onboard<br/>URL → brand scan → proposed brand kit → owner edits → brand"]
-    strategy["strategy<br/>goal, content pillars, cadence, best times<br/>a draft auto-activates after 15 minutes"]
+    strategy["strategy<br/>goal, content pillars, cadence, best times<br/>a draft auto-activates after 30 minutes"]
     content["content<br/>posts drafted by the agents, every one waits for a human"]
     approve["approve<br/>approve, request changes or reject"]
     publish["publish<br/>scheduled posts go out on their slot"]
@@ -124,14 +124,14 @@ where a brand sits in this loop; the admin's list and the `LoopTrack` component 
 - The owner always edits the proposal before it becomes a brand. A scan that found
   nothing still lets them fill the brand kit by hand.
 
-### 3.4 Strategy, with the 15-minute window
+### 3.4 Strategy, with the 30-minute window
 
 - `POST /api/v1/brands/:brandId/strategies` writes the next version as `draft`
   (`STRATEGY_DRAFT_EXISTS` if one is already waiting, unless `replaceDraft: true`).
 - A version is never edited. To change the strategy, the agent writes a new version; the
   old one becomes `superseded`.
 - The owner or the admin approves it with `POST .../strategies/:strategyId/activate`. If
-  nobody does within 15 minutes of `createdAt`, a background job activates it and the
+  nobody does within 30 minutes of `createdAt`, a background job activates it and the
   agent continues (`approved_by` stays null, which is how an automatic activation is
   told apart from a human one). `approvalDeadline` rides on the draft so the screen can
   count down. Activating after the job answers `409 STRATEGY_NOT_DRAFT`.
@@ -186,7 +186,7 @@ Status as of 2026-09-22. The 39 endpoints are catalogued in
 | ------ | ---------------------------------------------------------------------------------------------------------------------- | --------- | -------------- | ------------------- |
 | **1**  | Foundation: `/health`, `/me`, `/me/overview`, brands CRUD and archive, admin clients (list, get, invite, create brand) | 12        | ![100%][pr100] | ![done][done]       |
 | **2A** | Brand scan: the workflow, `POST /scans`, `GET /scans/:scanId`, `scanId` on brand creation                              | 2         | ![100%][pr100] | ![done][done]       |
-| **2B** | Strategy: current, history, one version, generate, activate, plus the 15-minute job                                    | 5         | ![0%][pr0]     | ![planned][planned] |
+| **2B** | Strategy: current, history, one version, generate, activate, plus the 30-minute job                                    | 5         | ![0%][pr0]     | ![planned][planned] |
 | **3**  | Posts: list, generate, get, patch, approve, reject, request-changes, reopen, media upload, media delete                | 10        | ![0%][pr0]     | ![planned][planned] |
 | **4**  | Chat: `POST /chat` as an SSE stream, threads, thread messages                                                          | 3         | ![0%][pr0]     | ![planned][planned] |
 | **5**  | Social accounts (4), publishing (1), analytics (2), plus the background jobs                                           | 7         | ![0%][pr0]     | ![planned][planned] |

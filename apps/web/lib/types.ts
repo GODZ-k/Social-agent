@@ -15,7 +15,7 @@ import type {
 // Types the API shares live in @social-agent/shared. This file holds only what the web adds on top.
 
 /** A brand workspace as the mock serves it: the API's Brand without the fields the UI does not read yet. */
-export type Client = Omit<Brand, "createdBy" | "status" | "business">;
+export type Client = Omit<Brand, "createdBy" | "status" | "business" | "intake" | "intakeApprovedAt">;
 
 export interface ContentPillar {
   id: string;
