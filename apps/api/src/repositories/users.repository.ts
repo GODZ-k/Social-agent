@@ -6,8 +6,7 @@ import type { ClientWithBrandCount, UserProfile } from "@/types/user";
 /** Database queries for the `users` table. No business rules here. */
 export class UsersRepository {
     static async findByClerkId(clerkId: string): Promise<UserRow | undefined> {
-        const [row] = await db.select().from(users).where(eq(users.clerkId, clerkId)).limit(1);
-        return row;
+        return db.query.users.findFirst({ where: eq(users.clerkId, clerkId) });
     }
 
     static async update(id: string, profile: Partial<UserProfile>): Promise<UserRow | undefined> {
@@ -21,12 +20,10 @@ export class UsersRepository {
 
     /** An admin created this row; nobody has signed in as it yet. */
     static async findInvitedByEmail(email: string): Promise<UserRow | undefined> {
-        const [row] = await db
-            .select()
-            .from(users)
-            .where(and(eq(users.email, email), eq(users.status, "invited"), isNull(users.clerkId)))
-            .limit(1);
-        return row;
+        const userFilter = and(eq(users.email, email), eq(users.status, "invited"), isNull(users.clerkId));
+        return db.query.users.findFirst({
+            where: userFilter,
+        });
     }
 
     /**
@@ -34,10 +31,11 @@ export class UsersRepository {
      * simultaneous request a no-op instead of overwriting the link.
      */
     static async linkInvited(id: string, clerkId: string, profile: UserProfile): Promise<void> {
+        const userFilter = and(eq(users.id, id), isNull(users.clerkId));
         await db
             .update(users)
             .set({ ...profile, clerkId, status: "active", updatedAt: new Date() })
-            .where(and(eq(users.id, id), isNull(users.clerkId)));
+            .where(userFilter);
     }
 
     /**
@@ -52,26 +50,22 @@ export class UsersRepository {
     }
 
     static async findByEmail(email: string): Promise<UserRow | undefined> {
-        const [row] = await db.select().from(users).where(eq(users.email, email)).limit(1);
-        return row;
+        return db.query.users.findFirst({ where: eq(users.email, email) });
     }
 
     /** Admins are not clients, so they are left out. */
     static async findClientById(id: string): Promise<UserRow | undefined> {
-        const [row] = await db
-            .select()
-            .from(users)
-            .where(and(eq(users.id, id), eq(users.role, "client")))
-            .limit(1);
-        return row;
+        const userFilter = and(eq(users.id, id), eq(users.role, "client"));
+        return db.query.users.findFirst({ where: userFilter });
     }
 
     /** Every client, newest first, with how many live brands they own. */
     static async listClients(): Promise<ClientWithBrandCount[]> {
+        const joinFilter = and(eq(brands.ownerId, users.id), isNull(brands.archivedAt));
         return db
             .select({ user: users, brandCount: count(brands.id) })
             .from(users)
-            .leftJoin(brands, and(eq(brands.ownerId, users.id), isNull(brands.archivedAt)))
+            .leftJoin(brands, joinFilter)
             .where(eq(users.role, "client"))
             .groupBy(users.id)
             .orderBy(desc(users.createdAt));
@@ -94,6 +88,7 @@ export class UsersRepository {
 
     /** Undo for an invitation whose email could not be sent. Never touches a person who has signed in. */
     static async deleteInvited(id: string): Promise<void> {
-        await db.delete(users).where(and(eq(users.id, id), eq(users.status, "invited"), isNull(users.clerkId)));
+        const userFilter = and(eq(users.id, id), eq(users.status, "invited"), isNull(users.clerkId));
+        await db.delete(users).where(userFilter);
     }
 }

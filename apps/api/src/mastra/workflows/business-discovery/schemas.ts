@@ -4,12 +4,12 @@ import { audienceProfileSchema, brandContextSchema, growthBriefSchema, researchS
 /** Stable ids: the strategy screen shows progress by them. One source of truth: the shared schema. */
 export const RESEARCH_STEP_IDS = researchStepIdSchema.options;
 
-export const researchErrorCodeSchema = z.enum(["INTAKE_REQUIRED", "RESEARCH_FAILED"]);
+export const researchErrorCodeSchema = z.enum(["QUESTIONNAIRE_REQUIRED", "RESEARCH_FAILED"]);
 export type ResearchErrorCode = z.infer<typeof researchErrorCodeSchema>;
 
 /** Shown to the business owner on the strategy screen, so: plain words. */
 export const RESEARCH_MESSAGES: Record<ResearchErrorCode, string> = {
-  INTAKE_REQUIRED: "Answer the intake questions before research can start.",
+  QUESTIONNAIRE_REQUIRED: "Answer the questionnaire before research can start.",
   RESEARCH_FAILED: "We could not finish researching your business. Please try again.",
 };
 

@@ -6,11 +6,13 @@ const queryText = (value: unknown) => (typeof value === "string" ? value : undef
 
 export class OAuthController {
     static async callback(req: Request, res: Response) {
-        const target = await SocialAccountsService.completeConnection(pathParam(req, "platform"), {
+        const platform = pathParam(req, "platform");
+        const query = {
             code: queryText(req.query.code),
             state: queryText(req.query.state),
             error: queryText(req.query.error),
-        });
+        };
+        const target = await SocialAccountsService.completeConnection(platform, query);
         return res.redirect(302, target);
     }
 }

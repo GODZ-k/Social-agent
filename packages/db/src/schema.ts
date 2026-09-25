@@ -26,8 +26,8 @@ import {
   type BusinessInfo,
   type CadenceEntry,
   type GrowthBrief,
-  type Intake,
-  type IntakeSession,
+  type Questionnaire,
+  type QuestionnaireSession,
   type Platform,
   type PostArt,
   type ScanPage,
@@ -141,12 +141,12 @@ export const brands = pgTable(
     business: jsonb("business").$type<BusinessInfo>().notNull().default({}),
     platforms: text("platforms").array().$type<Platform[]>().notNull(),
     preferences: jsonb("preferences").$type<BrandPreferences>().notNull().default(DEFAULT_PREFERENCES),
-    /** The owner's intake answers. Null until asked; discovery needs them. */
-    intake: jsonb("intake").$type<Intake>(),
-    /** The intake in progress: the Account Manager's questions and the answers so far. */
-    intakeSession: jsonb("intake_session").$type<IntakeSession>(),
-    /** When the Account Manager approved the intake. Research needs it. */
-    intakeApprovedAt: timestamp("intake_approved_at", { withTimezone: true }),
+    /** The owner's questionnaire answers. Null until asked; discovery needs them. */
+    questionnaire: jsonb("questionnaire").$type<Questionnaire>(),
+    /** The questionnaire in progress: the Account Manager's questions and the answers so far. */
+    questionnaireSession: jsonb("questionnaire_session").$type<QuestionnaireSession>(),
+    /** When the Account Manager approved the questionnaire. Research needs it. */
+    questionnaireApprovedAt: timestamp("questionnaire_approved_at", { withTimezone: true }),
     /** Soft delete: posts, metrics and learnings hang off a brand. */
     archivedAt: timestamp("archived_at", { withTimezone: true }),
     createdAt: createdAt(),

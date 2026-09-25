@@ -13,7 +13,7 @@ export function createAudienceResearcher({ model, tools }: { model: string; tool
   return new Agent({
     id: "audience-researcher",
     name: "Audience Researcher",
-    description: "Builds the customer segments of a business from its brief, intake, reviews and competitor pages, in the customers' own words.",
+    description: "Builds the customer segments of a business from its brief, questionnaire, reviews and competitor pages, in the customers' own words.",
     instructions: [AUDIENCE_RESEARCHER_INSTRUCTIONS, ...SKILLS.map((name) => `# Craft notes: ${name}\n\n${loadSkill(name)}`)],
     model,
     tools,

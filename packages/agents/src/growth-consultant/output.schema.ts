@@ -20,7 +20,7 @@ export const growthBriefOutputSchema = z.object({
     ),
     why: z
       .string()
-      .describe("2-3 sentences of evidence for choosing this stage over the other four, citing the intake, the site or what was read."),
+      .describe("2-3 sentences of evidence for choosing this stage over the other four, citing the questionnaire, the site or what was read."),
   }),
   growthLever: z
     .string()
@@ -40,7 +40,7 @@ export const growthBriefOutputSchema = z.object({
         name: z
           .string()
           .describe('A business result, not a vanity metric: "bookings per week", "repeat orders", "walk-ins mentioning Instagram".'),
-        target: z.string().optional().describe("A number and a period only when the intake supports one; otherwise omit."),
+        target: z.string().optional().describe("A number and a period only when the questionnaire supports one; otherwise omit."),
         why: z.string().describe("How this measure proves the growth lever is working."),
       }),
     )
@@ -62,13 +62,13 @@ export const growthBriefOutputSchema = z.object({
     .describe("2-4 sentences: where this brand can win against those competitors, specific to this business, not to its industry."),
   constraints: z
     .array(z.string())
-    .describe("What the strategy must respect: the owner's constraints from the intake, capacity limits, seasonality, legal or platform limits found in research."),
+    .describe("What the strategy must respect: the owner's constraints from the questionnaire, capacity limits, seasonality, legal or platform limits found in research."),
   openQuestions: z
     .array(z.string())
     .describe("Questions the owner must still answer because the answer cannot be researched: margins, capacity, order value, seasonality, budget. Every guess you were tempted to make becomes a question here."),
   confidence: z.object({
     level: confidenceLevelSchema.describe(
-      '"high": intake was full and research confirmed it. "medium": some gaps or unverified claims. "low": thin intake, little found, or site facts missing.',
+      '"high": questionnaire was full and research confirmed it. "medium": some gaps or unverified claims. "low": thin questionnaire, little found, or site facts missing.',
     ),
     why: z.string().describe("One or two sentences on what would raise the confidence."),
   }),

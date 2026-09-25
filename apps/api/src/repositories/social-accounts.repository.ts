@@ -2,6 +2,7 @@ import { socialAccounts, type NewSocialAccountRow, type SocialAccountRow } from 
 import type { Platform } from "@social-agent/shared";
 import { and, asc, eq, inArray } from "drizzle-orm";
 import { db } from "@/config/db";
+import { insertedRow } from "@/utils";
 
 // The service checks the brand against the caller before calling anything here.
 export class SocialAccountsRepository {
@@ -12,41 +13,37 @@ export class SocialAccountsRepository {
     /** For `Brand.accounts`: one query for many brands, disconnected rows left out. */
     static async listVisibleByBrands(brandIds: string[]): Promise<SocialAccountRow[]> {
         if (brandIds.length === 0) return [];
+        const accountFilter = and(inArray(socialAccounts.brandId, brandIds), inArray(socialAccounts.status, ["connected", "expired"]));
         return db
             .select()
             .from(socialAccounts)
-            .where(and(inArray(socialAccounts.brandId, brandIds), inArray(socialAccounts.status, ["connected", "expired"])))
+            .where(accountFilter)
             .orderBy(asc(socialAccounts.platform));
     }
 
     static async findByBrandPlatform(brandId: string, platform: Platform): Promise<SocialAccountRow | undefined> {
-        const [row] = await db
-            .select()
-            .from(socialAccounts)
-            .where(and(eq(socialAccounts.brandId, brandId), eq(socialAccounts.platform, platform)))
-            .limit(1);
-        return row;
+        const accountFilter = and(eq(socialAccounts.brandId, brandId), eq(socialAccounts.platform, platform));
+        return db.query.socialAccounts.findFirst({
+            where: accountFilter,
+        });
     }
 
     static async findByExternalAccount(platform: Platform, externalAccountId: string): Promise<SocialAccountRow | undefined> {
-        const [row] = await db
-            .select()
-            .from(socialAccounts)
-            .where(and(eq(socialAccounts.platform, platform), eq(socialAccounts.externalAccountId, externalAccountId)))
-            .limit(1);
-        return row;
+        const accountFilter = and(eq(socialAccounts.platform, platform), eq(socialAccounts.externalAccountId, externalAccountId));
+        return db.query.socialAccounts.findFirst({
+            where: accountFilter,
+        });
     }
 
     /** A reconnect overwrites the row. */
     static async upsertConnected(values: NewSocialAccountRow): Promise<SocialAccountRow> {
         const connected = { ...values, status: "connected" as const, connectedAt: new Date(), updatedAt: new Date() };
-        const [row] = await db
+        const rows = await db
             .insert(socialAccounts)
             .values(connected)
             .onConflictDoUpdate({ target: [socialAccounts.brandId, socialAccounts.platform], set: connected })
             .returning();
-        if (!row) throw new Error("Upsert into social_accounts returned no row");
-        return row;
+        return insertedRow(rows, "social_accounts");
     }
 
     // The row stays: metrics history hangs off it.

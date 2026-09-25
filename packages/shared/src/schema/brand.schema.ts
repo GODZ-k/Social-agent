@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { intakeSchema, languageSchema } from "./intake.schema.js";
+import { questionnaireSchema, languageSchema } from "./questionnaire.schema.js";
 
 export const DEFAULT_ACCENT = "#4B3FE4";
 
@@ -65,7 +65,7 @@ export const brandPreferencesSchema = z.object({
   /** IANA name, e.g. "Asia/Kolkata". */
   timezone: z.string().min(1),
   approvalEmails: z.boolean(),
-  /** The language the Account Manager talks in; set by the intake. */
+  /** The language the Account Manager talks in; set by the questionnaire. */
   chatLanguage: languageSchema.optional(),
 });
 
@@ -127,7 +127,7 @@ export const newBrandSchema = z.object({
   business: businessInfoSchema.optional(),
   /** The onboarding scan this brand came from. Phase 2: links the scan to the brand. */
   scanId: z.uuid().optional(),
-  intake: intakeSchema.optional(),
+  questionnaire: questionnaireSchema.optional(),
 });
 
 /** The parts of a brand its owner can change in Settings. Unknown keys are dropped. */
@@ -138,7 +138,7 @@ export const brandPatchSchema = z.object({
   business: businessInfoSchema.optional(),
   platforms: z.array(platformSchema).optional(),
   preferences: brandPreferencesSchema.optional(),
-  intake: intakeSchema.optional(),
+  questionnaire: questionnaireSchema.optional(),
 });
 
 export const brandSchema = z.object({
@@ -157,10 +157,10 @@ export const brandSchema = z.object({
   platforms: z.array(platformSchema),
   accounts: z.array(socialAccountSchema),
   preferences: brandPreferencesSchema,
-  /** Null until the owner has answered the intake questions. */
-  intake: intakeSchema.nullable(),
-  /** Set when the Account Manager approved the intake; research needs it. Cleared by an intake edit. */
-  intakeApprovedAt: z.string().nullable(),
+  /** Null until the owner has answered the questionnaire. */
+  questionnaire: questionnaireSchema.nullable(),
+  /** Set when the Account Manager approved the questionnaire; research needs it. Cleared by a questionnaire edit. */
+  questionnaireApprovedAt: z.string().nullable(),
   createdAt: z.string(),
   stats: brandStatsSchema,
 });

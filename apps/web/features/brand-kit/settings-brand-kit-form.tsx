@@ -26,7 +26,10 @@ export function SettingsBrandKitForm({ client }: { client: Client }) {
     success: "Changes saved",
     failure: "Couldn't save those changes.",
     // The saved values become the new baseline, so the button sleeps again until the next edit.
-    onSuccess: (saved) => form.reset(toValues(saved, saved.platforms)),
+    onSuccess: (saved) => {
+      const values = toValues(saved, saved.platforms);
+      form.reset(values);
+    },
   });
 
   return (

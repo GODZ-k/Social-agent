@@ -1,7 +1,7 @@
 import { createStep } from "@mastra/core/workflows";
 import { readSite } from "@/scan/index";
 import { ScanError } from "@/scan/types";
-import { discoverOutputSchema, readPagesOutputSchema } from "../schemas";
+import { discoverOutputSchema, readPagesOutputSchema } from "@/mastra/workflows/brand-scan/schemas";
 
 export const readPagesStep = createStep({
   id: "read-pages",

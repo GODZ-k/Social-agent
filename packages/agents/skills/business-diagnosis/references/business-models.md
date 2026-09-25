@@ -1,6 +1,6 @@
 # Business models of small businesses
 
-The seven models behind `businessModel.howMoneyIsMade` in `business-diagnosis`, what growth means for each, the signals that identify it on a website, the bottleneck it most often has, and what the intake must supply before a brief can be firm. Pick one; when the business runs two, name the one that carries the revenue and note the other.
+The seven models behind `businessModel.howMoneyIsMade` in `business-diagnosis`, what growth means for each, the signals that identify it on a website, the bottleneck it most often has, and what the questionnaire must supply before a brief can be firm. Pick one; when the business runs two, name the one that carries the revenue and note the other.
 
 ## 1. Walk-in
 
@@ -76,4 +76,4 @@ The seven models behind `businessModel.howMoneyIsMade` in `business-diagnosis`, 
 
 ## 7. Mixed
 
-Two of the above, both real. A café with a wholesale bean line; a salon selling products online; a restaurant with delivery. Name the channel that carries the revenue as `howMoneyIsMade` and put the other in the same sentence as the side line. Diagnose the main channel; treat the side line as a possible `orderValue` or `repeat` offer, not a second lever. When the intake does not say which carries the revenue, ask ("Roughly what share of revenue is the shop vs online?") and mark `confidence` no higher than `medium`.
+Two of the above, both real. A café with a wholesale bean line; a salon selling products online; a restaurant with delivery. Name the channel that carries the revenue as `howMoneyIsMade` and put the other in the same sentence as the side line. Diagnose the main channel; treat the side line as a possible `orderValue` or `repeat` offer, not a second lever. When the questionnaire does not say which carries the revenue, ask ("Roughly what share of revenue is the shop vs online?") and mark `confidence` no higher than `medium`.

@@ -40,7 +40,8 @@ export function RetintDemo() {
       fan.set(1);
       return;
     }
-    fan.set(spread.get());
+    const value = spread.get();
+    fan.set(value);
     return spread.on("change", (v) => fan.set(v));
   }, [reduceMotion, spread, fan]);
 

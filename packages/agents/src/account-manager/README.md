@@ -2,12 +2,12 @@
 
 **Field:** Talking with the client.
 
-**Status:** the intake is built (2026-09-25): `createAccountManager` in `packages/agents/src/account-manager` (reusable, no app imports), the app's instance in `apps/api/src/mastra/agents/team.ts`, the skill `packages/agents/skills/intake-interview`, the glue in `src/services/intake.service.ts`. The chat (phase 4) is not built; the rest of this file is its brief.
+**Status:** the questionnaire is built (2026-09-25): `createAccountManager` in `packages/agents/src/account-manager` (reusable, no app imports), the app's instance in `apps/api/src/mastra/agents/team.ts`, the skill `packages/agents/skills/questionnaire-interview`, the glue in `src/services/questionnaire.service.ts`. The chat (phase 4) is not built; the rest of this file is its brief.
 
 ## Responsible for
 
 - Is the chat inside a brand workspace. Explains the strategy, the posts and the results in plain words.
-- Runs the onboarding intake: asks the questions the Growth Consultant needs and saves the answers.
+- Runs the onboarding questionnaire: asks the questions the Growth Consultant needs and saves the answers.
 - Takes requests ("make next week about our Diwali offer", "less formal please") and starts the right workflow with them.
 - Remembers the conversation per brand.
 
@@ -38,7 +38,7 @@ Returned as structured output validated by a zod schema, so a workflow can rely 
 - `tools/read-strategy`
 - `tools/list-posts`
 - `tools/read-analytics`
-- `tools/save-intake`
+- `tools/save-questionnaire`
 - `tools/start-workflow`
 
 ## Model

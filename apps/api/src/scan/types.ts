@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { config } from "../config/constants";
+import { config } from "@/config/constants";
 import {
   pageFactsSchema,
   scanPageSchema,

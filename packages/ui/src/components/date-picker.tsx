@@ -44,7 +44,8 @@ export function DatePicker({ value, onChange, min, placeholder = "Choose a date"
 
   function show(next: Date, focus = false) {
     setDirection(next > month ? 1 : -1);
-    setMonth(startOfMonth(next));
+    const monthStart = startOfMonth(next);
+    setMonth(monthStart);
     setCursor(next);
     focusCursor.current = focus;
   }
@@ -59,7 +60,8 @@ export function DatePicker({ value, onChange, min, placeholder = "Choose a date"
 
   function choose(day: Date) {
     if (unavailable(day)) return;
-    onChange(format(day, ISO));
+    const date = format(day, ISO);
+    onChange(date);
     setOpen(false);
   }
 
@@ -67,10 +69,12 @@ export function DatePicker({ value, onChange, min, placeholder = "Choose a date"
     const step = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -7, ArrowDown: 7 }[e.key];
     if (step) {
       e.preventDefault();
-      show(addDays(cursor, step), true);
+      const next = addDays(cursor, step);
+      show(next, true);
     } else if (e.key === "PageUp" || e.key === "PageDown") {
       e.preventDefault();
-      show(addMonths(cursor, e.key === "PageUp" ? -1 : 1), true);
+      const next = addMonths(cursor, e.key === "PageUp" ? -1 : 1);
+      show(next, true);
     }
   }
 

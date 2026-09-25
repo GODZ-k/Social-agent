@@ -1,5 +1,5 @@
 import { load } from "cheerio";
-import { config } from "../config/constants";
+import { config } from "@/config/constants";
 
 // Which inner pages are worth reading, most useful group first. Plain data, so another
 // language's words ("ueber-uns", "kontakt") can be added without touching the code below.

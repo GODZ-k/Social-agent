@@ -16,7 +16,7 @@ Domain words: a **client** is a person (a business owner). A **brand** is one we
 | [Art Director](agents/art-director) | What a post looks like | Visual concept, slide plan or script, image brief |
 | [Editor](agents/editor) | Quality control | Pass, or notes for a rewrite |
 | [Performance Analyst](agents/performance-analyst) | Reading results | Learnings with evidence |
-| [Account Manager](../../../../packages/agents/src/account-manager) | Talking with the client | The intake (built, in `packages/agents`); later the chat, which starts workflows |
+| [Account Manager](../../../../packages/agents/src/account-manager) | Talking with the client | The questionnaire (built, in `packages/agents`); later the chat, which starts workflows |
 
 The chain:
 
@@ -46,7 +46,7 @@ Not agents: planning post slots from the cadence, scheduling, publishing, fetchi
 
 1. **One craft per agent.** Whoever writes a post never approves it. The Editor is always a different agent with its own rubric.
 2. **The rewrite loop.** Work below the bar goes back with specific notes, at most 2 rounds. A post that still fails is kept as a draft with the notes, never dropped silently.
-3. **Business first.** Strategy is written from the growth brief and the audience profile, not from website copy. Both need the owner's intake answers.
+3. **Business first.** Strategy is written from the growth brief and the audience profile, not from website copy. Both need the owner's questionnaire answers.
 4. **Facts come from data.** Phones, emails, prices, hours, colours and fonts are taken from the brand's data by code and checked again by the Editor. A model never invents them.
 5. **Measured.** Scorers rate every generation, so a quality drop after a change shows up.
 6. **A person approves every post.** Only a strategy may go ahead by itself, 30 minutes after it was drafted.

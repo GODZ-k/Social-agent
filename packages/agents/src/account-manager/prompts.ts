@@ -1,8 +1,8 @@
-import { NOT_SURE, type BrandKit, type BusinessInfo, type Intake, type IntakeQuestion, type IntakeSession, type Language } from "@social-agent/shared";
+import { NOT_SURE, type BrandKit, type BusinessInfo, type Questionnaire, type QuestionnaireQuestion, type QuestionnaireSession, type Language } from "@social-agent/shared";
 import { asDataBlock } from "../prompt-text.js";
 
 /** What the Account Manager knows about a business before it talks to the owner. */
-export type IntakeContext = {
+export type QuestionnaireContext = {
   brandName: string;
   industry: string;
   url: string;
@@ -34,8 +34,11 @@ function location(business: BusinessInfo): string | undefined {
 }
 
 /** The brand as the scan found it, inside a data block. */
-function renderSite(context: IntakeContext): string {
+function renderSite(context: QuestionnaireContext): string {
   const kit = context.brandKit;
+  const voice = kit.voice.join(", ");
+  const keywords = kit.keywords?.join(", ");
+  const place = location(context.business);
   const text =
     line("Business name", context.brandName) +
     line("Industry", context.industry) +
@@ -43,21 +46,21 @@ function renderSite(context: IntakeContext): string {
     line("Tagline", kit.tagline) +
     line("Summary", kit.summary) +
     line("Audience (first guess)", kit.audience) +
-    line("Voice", kit.voice.join(", ")) +
-    line("Keywords", kit.keywords?.join(", ")) +
+    line("Voice", voice) +
+    line("Keywords", keywords) +
     knownOrMissing("Phone", context.business.phone) +
     knownOrMissing("Email", context.business.email) +
-    knownOrMissing("Location", location(context.business)) +
+    knownOrMissing("Location", place) +
     knownOrMissing("Opening hours", context.business.hours?.length ? `${context.business.hours.length} days listed` : undefined) +
     `Pages the scan read:\n${context.pagesRead.map((page) => `- ${page.title} (${page.url})`).join("\n") || "- none"}\n`;
   return asDataBlock("site", text);
 }
 
 /** Call 1: write the questions for this brand. */
-export function renderQuestionsPrompt(context: IntakeContext): string {
+export function renderQuestionsPrompt(context: QuestionnaireContext): string {
   const country = context.business.location?.country ?? "unknown";
   return [
-    "Job: write the intake questions.",
+    "Job: write the questionnaire questions.",
     `Chat language: ${LANGUAGE_NAMES[context.chatLanguage]}`,
     `Country (for the currency of money ranges): ${country}`,
     "",
@@ -69,7 +72,7 @@ function renderRange(option: { min?: number; max?: number }, currency: string | 
   return ` (min ${option.min ?? "none"}, max ${option.max ?? "none"}, ${currency ?? "currency unknown"})`;
 }
 
-function renderAnswer(question: IntakeQuestion, answer: string | undefined): string {
+function renderAnswer(question: QuestionnaireQuestion, answer: string | undefined): string {
   const value = answer === NOT_SURE ? "Not sure" : (answer ?? "(not answered)");
   const option = question.options?.find((candidate) => candidate.value === answer);
   const numbers = option && question.kind === "range" ? renderRange(option, question.currency) : "";
@@ -79,25 +82,29 @@ function renderAnswer(question: IntakeQuestion, answer: string | undefined): str
   return `Q ${question.id} (${question.kind}, covers: ${covers}): ${question.text}${prefill}\nA: ${shown}\n`;
 }
 
-/** The intake the owner edited in Settings after the interview, as plain lines for the review. */
-function renderEditedIntake(intake: Intake): string {
-  const lines = Object.entries(intake).map(([key, value]) => `${key}: ${typeof value === "string" ? value : JSON.stringify(value)}`);
-  return asDataBlock("intake", lines.join("\n"));
+/** The questionnaire the owner edited in Settings after the interview, as plain lines for the review. */
+function renderEditedQuestionnaire(questionnaire: Questionnaire): string {
+  const lines = Object.entries(questionnaire).map(([key, value]) => `${key}: ${typeof value === "string" ? value : JSON.stringify(value)}`);
+  const text = lines.join("\n");
+  return asDataBlock("questionnaire", text);
 }
 
 /**
- * Call 2: review the answers and read the facts out of them. `editedIntake` is the owner's own later
+ * Call 2: review the answers and read the facts out of them. `editedQuestionnaire` is the owner's own later
  * edit in Settings; it replaces the interview answers wherever they differ.
  */
-export function renderReviewPrompt(context: IntakeContext, session: IntakeSession, finalRound: boolean, editedIntake?: Intake): string {
+export function renderReviewPrompt(context: QuestionnaireContext, session: QuestionnaireSession, finalRound: boolean, editedQuestionnaire?: Questionnaire): string {
   const questions = session.questions.map((question) => renderAnswer(question, session.answers[question.id])).join("\n");
   const followUps = session.followUps.map((question) => renderAnswer(question, session.answers[question.id])).join("\n");
   const answers = followUps ? `${questions}\nFollow-up questions:\n${followUps}` : questions;
   const header = ["Job: review the answers."];
   if (finalRound) header.push("This is the final round: approve unless a required fact is truly missing.");
   header.push(`Chat language for any follow-up: ${LANGUAGE_NAMES[session.chatLanguage]}`);
-  if (editedIntake) header.push("The owner edited the facts in <intake> in Settings after the interview. Review those facts; where they differ from the answers, the <intake> block is the owner's latest word.");
+  if (editedQuestionnaire) header.push("The owner edited the facts in <questionnaire> in Settings after the interview. Review those facts; where they differ from the answers, the <questionnaire> block is the owner's latest word.");
   const blocks = [renderSite(context), asDataBlock("answers", answers || "(no interview answers)")];
-  if (editedIntake) blocks.push(renderEditedIntake(editedIntake));
+  if (editedQuestionnaire) {
+    const block = renderEditedQuestionnaire(editedQuestionnaire);
+    blocks.push(block);
+  }
   return [...header, "", blocks.join("\n\n")].join("\n");
 }

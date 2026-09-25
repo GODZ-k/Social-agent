@@ -1,7 +1,7 @@
 import { lookup } from "node:dns/promises";
 import { isIP } from "node:net";
 import { load } from "cheerio";
-import { config } from "../config/constants";
+import { config } from "@/config/constants";
 import { isBlockedAddress } from "./address-check";
 import { extractPageFacts } from "./extract-facts";
 import { ScanError } from "./types";
@@ -112,12 +112,10 @@ function parseJson(text: string): FirecrawlResponse {
 
 async function postFirecrawl(endpoint: string, payload: Record<string, unknown>, timeoutMs: number): Promise<Response> {
   try {
-    return await fetch(endpoint, {
-      method: "POST",
-      headers: requestHeaders(),
-      body: JSON.stringify({ ...payload, timeout: timeoutMs }),
-      signal: AbortSignal.timeout(timeoutMs + config.firecrawl.ABORT_GRACE_MS),
-    });
+    const headers = requestHeaders();
+    const body = JSON.stringify({ ...payload, timeout: timeoutMs });
+    const signal = AbortSignal.timeout(timeoutMs + config.firecrawl.ABORT_GRACE_MS);
+    return await fetch(endpoint, { method: "POST", headers, body, signal });
   } catch {
     throw new ScanError("SITE_UNREACHABLE"); // network error, or our own timeout fired
   }
@@ -151,7 +149,8 @@ function classifyResponse(status: number, body: FirecrawlResponse, text: string)
 async function callFirecrawl(endpoint: string, payload: Record<string, unknown>, timeoutMs: number): Promise<FirecrawlResponse> {
   const response = await postFirecrawl(endpoint, payload, timeoutMs);
   const text = await readBody(response);
-  const outcome = classifyResponse(response.status, parseJson(text), text);
+  const body = parseJson(text);
+  const outcome = classifyResponse(response.status, body, text);
   if (outcome instanceof Error) throw outcome;
   return outcome;
 }

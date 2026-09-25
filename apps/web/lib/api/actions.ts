@@ -46,7 +46,8 @@ function revalidateClient(clientId: string) {
 /** Runs an action body and turns any thrown error into a result. */
 async function attempt<T>(body: () => Promise<T>): Promise<ActionResult<T>> {
   try {
-    return ok(await body());
+    const data = await body();
+    return ok(data);
   } catch (error) {
     return fail(error instanceof Error ? error.message : "Something went wrong.");
   }
@@ -90,7 +91,8 @@ export async function createClient(input: NewClientInput): Promise<ActionResult<
       stats: { followers: 0, followersDelta: 0, engagementRate: 0, engagementDelta: 0, scheduled: 0, pendingApprovals: 0 },
     };
     db.clients.unshift(client);
-    db.strategies.push(firstStrategy(client, db.strategies[0]!));
+    const strategy = firstStrategy(client, db.strategies[0]!);
+    db.strategies.push(strategy);
     db.analytics.push({ clientId: client.id, series: [], byFormat: [], byPillar: [] });
     revalidatePath("/");
     return clone(client);

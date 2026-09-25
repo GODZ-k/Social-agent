@@ -10,7 +10,7 @@ Things an agent may call. Most agents here need none: a workflow hands them ever
 | `read-page` | Growth Consultant, Audience Researcher | Reads one public page through `readMainText` in `src/scan/firecrawl.ts` (title + main text ≤ 6,000 characters), so the same address safety rules apply. Never a raw `fetch`. 12 reads per run; every page read lands in `budget.sources`. |
 | `read-audience-insights` | Audience Researcher | The brand's latest `audience_insights`. |
 | `read-brand`, `read-strategy`, `list-posts`, `read-analytics` | Account Manager | Read-only views of the conversation's brand. |
-| `save-intake` | Account Manager | Saves onboarding answers to `brands.intake`. |
+| `save-questionnaire` | Account Manager | Saves onboarding answers to `brands.questionnaire`. |
 | `start-workflow` | Account Manager | Starts a workflow for the conversation's brand with the person's request. |
 
 ## Rules

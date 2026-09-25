@@ -14,7 +14,10 @@ declare global {
 }
 
 export function getDb(): SeedData {
-  globalThis.__cadenceMockDb ??= recounted(buildSeed());
+  if (!globalThis.__cadenceMockDb) {
+    const seed = buildSeed();
+    globalThis.__cadenceMockDb = recounted(seed);
+  }
   return globalThis.__cadenceMockDb;
 }
 

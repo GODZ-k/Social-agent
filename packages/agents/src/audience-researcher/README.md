@@ -19,7 +19,7 @@
 
 ## Reads
 
-The growth brief, brand kit, intake answers, public reviews, competitor pages, and `audience_insights` when present.
+The growth brief, brand kit, questionnaire answers, public reviews, competitor pages, and `audience_insights` when present.
 
 ## Returns
 

@@ -267,15 +267,16 @@ same way: one run at a time, one active run per brand, a start-up sweep
 (`ResearchRepository.failInterrupted()`), results versioned in `brand_research`. Spec
 [`2026-09-22-business-discovery-design.md`](./superpowers/specs/2026-09-22-business-discovery-design.md).
 
-Since 2026-09-25 research starts only from the Account Manager's approved intake. The owner picks a
+Since 2026-09-25 research starts only from the Account Manager's approved questionnaire. The owner picks a
 chat language (English, Hindi, Hinglish); the Account Manager (`createAccountManager` in
 `packages/agents`, instance in `src/mastra/agents/team.ts`) writes 5-8 questions
-tailored to what the Brand Analyst found, code checks them (`checkIntakeQuestions`), the owner
+tailored to what the Brand Analyst found, code checks them (`checkQuestionnaireQuestions`), the owner
 answers, and a second Account Manager call reviews the answers and reads the facts out of them.
-Approval saves `brands.intake`, sets `brands.intake_approved_at` and queues research; both calls run
-inside the request through `generateStructured`. Endpoints `/brands/:brandId/intake` (4), service
-`src/services/intake.service.ts`, columns `intake_session` and `intake_approved_at` (migration
-`0006`). Spec [`2026-09-25-guided-intake-design.md`](./superpowers/specs/2026-09-25-guided-intake-design.md).
+Approval saves `brands.questionnaire`, sets `brands.questionnaire_approved_at` and queues research; both calls run
+inside the request through `generateStructured`. Endpoints `/brands/:brandId/questionnaire` (4), service
+`src/services/questionnaire.service.ts` (the flow; the two model calls and their checks are in
+`src/questionnaire/account-manager-calls.ts`), columns `questionnaire_session` and `questionnaire_approved_at` (migration
+`0006`). Spec [`2026-09-25-guided-questionnaire-design.md`](./superpowers/specs/2026-09-25-guided-questionnaire-design.md).
 
 ```mermaid
 flowchart TD
@@ -398,7 +399,7 @@ stores each network's `active_hours` and `demographics` as JSON.
 Mastra adds its own tables to the same database through `PostgresStore`; we do not model chat.
 
 > [!NOTE]
-> Tables 1 to 3 exist and are used. Phases 2 to 5 fill the rest. `brands.intake`,
+> Tables 1 to 3 exist and are used. Phases 2 to 5 fill the rest. `brands.questionnaire`,
 > `research_runs` and `brand_research` are in the schema (migration `0005_business_research.sql`,
 > applied 2026-09-25). `research_runs.current_step` is the `research_steps` enum (`gather`,
 > `diagnose`, `profile`, `save`, built from `researchStepIdSchema`; migration `0008_research_steps.sql`),

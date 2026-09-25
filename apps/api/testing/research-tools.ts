@@ -56,7 +56,8 @@ async function search(query: string): Promise<number> {
   const { context, budget } = freshRun();
   for (let call = 1; call <= repeat; call += 1) {
     const started = Date.now();
-    const output = settled(await webSearch.execute!({ query }, context));
+    const result = await webSearch.execute!({ query }, context);
+    const output = settled(result);
     if (repeat === 1) {
       print(output);
       continue;
@@ -70,7 +71,8 @@ async function search(query: string): Promise<number> {
 async function read(url: string): Promise<number> {
   const { context, budget } = freshRun();
   const started = Date.now();
-  const output = settled(await readPage.execute!({ url }, context));
+  const result = await readPage.execute!({ url }, context);
+  const output = settled(result);
   const preview = output.text.length > TEXT_PREVIEW_CHARS ? `${output.text.slice(0, TEXT_PREVIEW_CHARS)}...` : output.text;
   print({ ...output, text: preview, textChars: output.text.length });
   console.error(`done in ${seconds(started)}; readsLeft=${budget.readsLeft}; sources=${JSON.stringify([...budget.sources])}`);

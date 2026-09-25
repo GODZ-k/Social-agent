@@ -49,7 +49,10 @@ export function PostSheet({
   });
 
   useEffect(() => {
-    if (current) form.reset(toValues(current));
+    if (current) {
+      const values = toValues(current);
+      form.reset(values);
+    }
   }, [current, form]);
 
   const locked = post?.status === "published";
@@ -58,7 +61,8 @@ export function PostSheet({
 
   function save(values: Values, status?: PostStatus) {
     if (!post) return;
-    update.run(post.id, toPatch(values, status));
+    const patch = toPatch(values, status);
+    update.run(post.id, patch);
     onClose();
   }
 

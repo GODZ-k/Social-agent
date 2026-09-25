@@ -1,6 +1,6 @@
 # Worked examples by business type
 
-Six business types the outline asked for, each worked from the diagnosis to the `growthLever` sentence, with what social cannot do written as `constraints` or `openQuestions`. They are patterns, not answers: a real brief cites this business's reviews, prices and intake, never a pattern. Figures are illustrative, in the business's own currency.
+Six business types the outline asked for, each worked from the diagnosis to the `growthLever` sentence, with what social cannot do written as `constraints` or `openQuestions`. They are patterns, not answers: a real brief cites this business's reviews, prices and questionnaire, never a pattern. Figures are illustrative, in the business's own currency.
 
 ## Bakery
 

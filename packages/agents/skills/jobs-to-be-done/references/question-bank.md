@@ -17,7 +17,7 @@ The agent does not interview customers in this phase. The bank has two uses: to 
 | Who else was involved? | Second people: partner, boss, kids, guests, "my mum" |
 | What did the purchase let them do next? | The sentence after the praise: "so we could", "in time for" |
 
-### For the owner (write them as open questions when intake is thin)
+### For the owner (write them as open questions when questionnaire is thin)
 
 - Think of the last three customers. What was going on in their life the day they got in touch?
 - What do people say when they explain why they chose you over the last place?

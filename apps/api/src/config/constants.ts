@@ -1,4 +1,4 @@
-import type { ScanErrorCode } from "../scan/types";
+import type { ScanErrorCode } from "@/scan/types";
 
 export const config = {
     crypto: {
@@ -87,7 +87,7 @@ export const config = {
         COULD_NOT_READ_NOTE: "Could not read this page.",
         SEARCH_FAILED_NOTE: "The search did not answer. Try different words, or conclude from what you have.",
     },
-    intake: {
+    questionnaire: {
         QUESTIONS_FAILED: "We could not prepare your questions. Please try again.",
         REVIEW_FAILED: "We could not check your answers. Please try again.",
     },

@@ -10,17 +10,21 @@ export class AdminClientsController {
     }
 
     static async get(req: Request, res: Response) {
-        const data = await AdminClientsService.get(idParam(req));
+        const id = idParam(req);
+        const data = await AdminClientsService.get(id);
         return res.status(200).json({ success: true, data });
     }
 
     static async invite(req: Request, res: Response) {
-        const data = await AdminClientsService.invite(currentUser(req), req.body);
+        const user = currentUser(req);
+        const data = await AdminClientsService.invite(user, req.body);
         return res.status(201).json({ success: true, data });
     }
 
     static async createBrand(req: Request, res: Response) {
-        const data = await AdminClientsService.createBrand(currentUser(req), idParam(req), req.body);
+        const user = currentUser(req);
+        const id = idParam(req);
+        const data = await AdminClientsService.createBrand(user, id, req.body);
         return res.status(201).json({ success: true, data });
     }
 }

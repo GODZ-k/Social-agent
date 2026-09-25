@@ -1,7 +1,7 @@
 import type { RequestContext } from "@mastra/core/request-context";
 import { createStep } from "@mastra/core/workflows";
-import { budgetFrom } from "../../../tools/research-budget";
-import { RESEARCH_FAILURE, discoveryOutcomeSchema, profileOutputSchema, type DiscoveryOutcome } from "../schemas";
+import { budgetFrom } from "@/mastra/tools/research-budget";
+import { RESEARCH_FAILURE, discoveryOutcomeSchema, profileOutputSchema, type DiscoveryOutcome } from "@/mastra/workflows/business-discovery/schemas";
 
 /** The URLs the tools read during this run, in the order they were read. */
 function sourcesOf(requestContext: RequestContext): string[] {

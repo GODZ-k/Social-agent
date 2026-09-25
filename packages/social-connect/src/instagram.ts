@@ -61,11 +61,12 @@ export function createInstagramProvider(config: InstagramConfig): Provider {
 
     authorizeUrl(state: string): string {
       const url = new URL(AUTHORIZE_URL);
+      const scope = scopes.join(",");
       url.search = new URLSearchParams({
         client_id: config.appId,
         redirect_uri: config.redirectUri,
         response_type: "code",
-        scope: scopes.join(","),
+        scope,
         state,
       }).toString();
       return url.href;
@@ -89,29 +90,34 @@ export function createInstagramProvider(config: InstagramConfig): Provider {
     // Allowed once the token is a day old and before it expires.
     async refresh(token: OAuthToken): Promise<OAuthToken> {
       const query = { grant_type: "ig_refresh_token", access_token: token.accessToken };
-      return longLivedSchema.parse(await getJson(NETWORK, `${GRAPH_URL}/refresh_access_token`, query));
+      const body = await getJson(NETWORK, `${GRAPH_URL}/refresh_access_token`, query);
+      return longLivedSchema.parse(body);
     },
   };
 }
 
 async function exchangeCode(config: InstagramConfig, code: string) {
+  // Meta appends `#_` to the redirect.
+  const authCode = code.replace(/#_$/, "");
   const form = new URLSearchParams({
     client_id: config.appId,
     client_secret: config.appSecret,
     grant_type: "authorization_code",
     redirect_uri: config.redirectUri,
-    // Meta appends `#_` to the redirect.
-    code: code.replace(/#_$/, ""),
+    code: authCode,
   });
-  return shortLivedSchema.parse(await postForm(NETWORK, TOKEN_URL, form));
+  const body = await postForm(NETWORK, TOKEN_URL, form);
+  return shortLivedSchema.parse(body);
 }
 
 async function exchangeForLongLived(config: InstagramConfig, shortLivedToken: string): Promise<OAuthToken> {
   const query = { grant_type: "ig_exchange_token", client_secret: config.appSecret, access_token: shortLivedToken };
-  return longLivedSchema.parse(await getJson(NETWORK, `${GRAPH_URL}/access_token`, query));
+  const body = await getJson(NETWORK, `${GRAPH_URL}/access_token`, query);
+  return longLivedSchema.parse(body);
 }
 
 async function fetchProfile(accessToken: string) {
   const query = { fields: "user_id,username,name,profile_picture_url", access_token: accessToken };
-  return profileSchema.parse(await getJson(NETWORK, `${GRAPH_URL}/me`, query));
+  const body = await getJson(NETWORK, `${GRAPH_URL}/me`, query);
+  return profileSchema.parse(body);
 }

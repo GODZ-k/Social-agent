@@ -2,7 +2,7 @@ import { createStep } from "@mastra/core/workflows";
 import { config } from "@/config/constants";
 import { discoverSite } from "@/scan/index";
 import { ScanError } from "@/scan/types";
-import { discoverOutputSchema, scanInputSchema } from "../schemas";
+import { discoverOutputSchema, scanInputSchema } from "@/mastra/workflows/brand-scan/schemas";
 
 export const discoverStep = createStep({
   id: "discover",

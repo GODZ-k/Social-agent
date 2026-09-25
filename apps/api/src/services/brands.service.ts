@@ -12,7 +12,8 @@ import { isUuid } from "@/utils";
 
 export class BrandsService {
     static async list(user: AuthUser): Promise<Brand[]> {
-        const rows = await BrandsRepository.list(scopeFor(user));
+        const scope = scopeFor(user);
+        const rows = await BrandsRepository.list(scope);
         return withAccounts(rows);
     }
 
@@ -32,22 +33,29 @@ export class BrandsService {
         const { scanId, ...brand } = input;
         const scan = scanId ? await ScansService.claim(user, scanId) : undefined;
 
+        const accent = accentFor(brand.brand);
         const row = await BrandsRepository.create({
             ...brand,
             ownerId,
             createdBy: user.id,
-            accent: accentFor(brand.brand),
+            accent,
         });
         if (scan) await ScansRepository.attachBrand(scan.id, row.id);
         return toBrand(row, []);
     }
 
     static async get(user: AuthUser, id: string): Promise<Brand> {
-        if (!isUuid(id)) throw brandNotFound();
-
-        const row = await BrandsRepository.findById(id, scopeFor(user));
-        if (!row) throw brandNotFound();
+        const row = await BrandsService.findRow(user, id);
         return brandWithAccounts(row);
+    }
+
+    /** The brand row the caller may reach, or 404. Every brand-scoped service starts here. */
+    static async findRow(user: AuthUser, id: string): Promise<BrandRow> {
+        if (!isUuid(id)) throw brandNotFound();
+        const scope = scopeFor(user);
+        const row = await BrandsRepository.findById(id, scope);
+        if (!row) throw brandNotFound();
+        return row;
     }
 
     /** `patch` holds only the fields an owner may change; the zod schema dropped everything else. */
@@ -56,10 +64,11 @@ export class BrandsService {
 
         const changes: Partial<NewBrandRow> = { ...patch };
         if (patch.brand) changes.accent = accentFor(patch.brand);
-        // An edited intake needs the Account Manager's approval again before research re-runs.
-        if (patch.intake) changes.intakeApprovedAt = null;
+        // An edited questionnaire needs the Account Manager's approval again before research re-runs.
+        if (patch.questionnaire) changes.questionnaireApprovedAt = null;
 
-        const row = await BrandsRepository.update(id, scopeFor(user), changes);
+        const scope = scopeFor(user);
+        const row = await BrandsRepository.update(id, scope, changes);
         if (!row) throw brandNotFound();
         return brandWithAccounts(row);
     }
@@ -67,7 +76,8 @@ export class BrandsService {
     static async archive(user: AuthUser, id: string): Promise<void> {
         if (!isUuid(id)) throw brandNotFound();
 
-        const archived = await BrandsRepository.archive(id, scopeFor(user));
+        const scope = scopeFor(user);
+        const archived = await BrandsRepository.archive(id, scope);
         if (!archived) throw brandNotFound();
     }
 }
@@ -81,7 +91,7 @@ export function scopeFor(user: AuthUser): BrandScope {
 }
 
 /** "Missing", "archived" and "not yours" get the same answer, so nobody can probe for ids. */
-export function brandNotFound() {
+function brandNotFound() {
     return new AppError("This brand doesn't exist, or you don't have access to it.", 404, "BRAND_NOT_FOUND");
 }
 
@@ -91,8 +101,12 @@ function accentFor(brand: BrandKit) {
 }
 
 async function withAccounts(rows: BrandRow[]): Promise<Brand[]> {
-    const accounts = await SocialAccountsRepository.listVisibleByBrands(rows.map((row) => row.id));
-    return rows.map((row) => toBrand(row, accounts.filter((account) => account.brandId === row.id)));
+    const brandIds = rows.map((row) => row.id);
+    const accounts = await SocialAccountsRepository.listVisibleByBrands(brandIds);
+    return rows.map((row) => {
+        const brandAccounts = accounts.filter((account) => account.brandId === row.id);
+        return toBrand(row, brandAccounts);
+    });
 }
 
 async function brandWithAccounts(row: BrandRow): Promise<Brand> {
@@ -126,8 +140,8 @@ function toBrand(row: BrandRow, accounts: SocialAccountRow[]): Brand {
         business: row.business,
         platforms: row.platforms,
         preferences: row.preferences,
-        intake: row.intake ?? null,
-        intakeApprovedAt: row.intakeApprovedAt?.toISOString() ?? null,
+        questionnaire: row.questionnaire ?? null,
+        questionnaireApprovedAt: row.questionnaireApprovedAt?.toISOString() ?? null,
         createdAt: row.createdAt.toISOString(),
         accounts: accounts.map(toAccount),
         stats: config.brand.EMPTY_STATS,

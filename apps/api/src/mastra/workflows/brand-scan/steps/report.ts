@@ -1,7 +1,7 @@
 import { createStep } from "@mastra/core/workflows";
 import { config } from "@/config/constants";
 import { scanOutcomeSchema, type ScanOutcome } from "@/scan/types";
-import { interpretOutputSchema } from "../schemas";
+import { interpretOutputSchema } from "@/mastra/workflows/brand-scan/schemas";
 
 export const reportStep = createStep({
   id: "report",

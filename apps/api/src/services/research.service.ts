@@ -5,29 +5,32 @@ import { enqueueResearch } from "@/research-queue";
 import { BrandsService } from "@/services/brands.service";
 import type { AuthUser } from "@/services/users.service";
 import { AppError } from "@/utils/AppError";
-import { isUniqueViolation } from "@/utils";
+import { isUniqueViolation, isoOrNull } from "@/utils";
 
 export class ResearchService {
     /**
      * Starts business discovery for a brand, or returns the run it already has going: one active
-     * run per brand. Needs the intake the Account Manager approved; a website cannot tell us what the owner wants.
+     * run per brand. Needs the questionnaire the Account Manager approved; a website cannot tell us what the owner wants.
      */
     static async start(user: AuthUser, brandId: string): Promise<{ research: Research; created: boolean }> {
-        const brand = await BrandsService.get(user, brandId);
-        if (!brand.intake || !brand.intakeApprovedAt) throw new AppError("Answer the intake questions before research can start.", 409, "INTAKE_REQUIRED");
+        const brand = await BrandsService.findRow(user, brandId);
+        if (!brand.questionnaire || !brand.questionnaireApprovedAt) throw new AppError("Answer the questionnaire before research can start.", 409, "QUESTIONNAIRE_REQUIRED");
 
         const active = await ResearchRepository.findActiveRunFor(brand.id);
         if (active) return { research: await toResearch(brand.id, active), created: false };
 
         const row = await createRunOnce(brand.id, user.id);
-        if (!row) return { research: await toResearch(brand.id, await ResearchRepository.findActiveRunFor(brand.id)), created: false };
+        if (!row) {
+            const run = await ResearchRepository.findActiveRunFor(brand.id);
+            return { research: await toResearch(brand.id, run), created: false };
+        }
         enqueueResearch(row.id);
         return { research: await toResearch(brand.id, row), created: true };
     }
 
     /** The latest run's state plus the latest brief and profile. `status` is null when nothing ever ran. */
     static async get(user: AuthUser, brandId: string): Promise<Research> {
-        const brand = await BrandsService.get(user, brandId);
+        const brand = await BrandsService.findRow(user, brandId);
         const run = await ResearchRepository.findLatestRunFor(brand.id);
         return toResearch(brand.id, run);
     }
@@ -42,8 +45,6 @@ async function createRunOnce(brandId: string, requestedBy: string): Promise<Rese
         throw error;
     }
 }
-
-const isoOrNull = (date: Date | null | undefined) => (date ? date.toISOString() : null);
 
 /** One stored version. The row's `content` is typed by its `kind`; the caller names which. */
 function toVersion<T>(row: BrandResearchRow | undefined) {

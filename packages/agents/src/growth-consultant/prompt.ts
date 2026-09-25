@@ -1,10 +1,10 @@
-import type { AudienceProfile, BrandContext, BusinessType, GrowthBrief, Intake, IntakeGoal, Language, MoneyRange, SiteFacts } from "@social-agent/shared";
+import type { AudienceProfile, BrandContext, BusinessType, GrowthBrief, Questionnaire, QuestionnaireGoal, Language, MoneyRange, SiteFacts } from "@social-agent/shared";
 import { asDataBlock } from "../prompt-text.js";
 
-/** The intake facts that are free text, each with the question it answers, so the model reads a question with its answer. */
+/** The questionnaire facts that are free text, each with the question it answers, so the model reads a question with its answer. */
 type TextFact = "offer" | "bestSellers" | "capacity" | "idealCustomer" | "competitors" | "constraints";
 
-export const INTAKE_QUESTIONS: { key: TextFact; question: string }[] = [
+export const QUESTIONNAIRE_QUESTIONS: { key: TextFact; question: string }[] = [
   { key: "offer", question: "What do you sell, and how do people buy it?" },
   { key: "bestSellers", question: "Best sellers, and anything high-margin you would like to sell more of?" },
   { key: "capacity", question: "Spare capacity or slow periods?" },
@@ -13,7 +13,7 @@ export const INTAKE_QUESTIONS: { key: TextFact; question: string }[] = [
   { key: "constraints", question: "Anything the posts must never say or show?" },
 ];
 
-const GOAL_LABELS: Record<IntakeGoal["kind"], string> = {
+const GOAL_LABELS: Record<QuestionnaireGoal["kind"], string> = {
   more_customers: "More new customers",
   repeat_customers: "More repeat customers",
   bigger_orders: "Bigger orders",
@@ -31,7 +31,7 @@ const LANGUAGE_LABELS: Record<Language, string> = { en: "English", hi: "Hindi", 
 
 export const NOT_ANSWERED = "Not answered";
 
-// About 2k tokens of site text at ~4 characters per token; the brief works mostly from the intake and research.
+// About 2k tokens of site text at ~4 characters per token; the brief works mostly from the questionnaire and research.
 const SITE_TEXT_BUDGET = 8_000;
 const HOME_SHARE = 3_000;
 
@@ -42,9 +42,9 @@ function line(label: string, value?: string | readonly string[]): string {
 }
 
 /** One question and its answer per line pair; an unanswered one says so, so the model asks instead of guessing. */
-export function renderAnswers(intake: Intake, keys: readonly (typeof INTAKE_QUESTIONS)[number]["key"][]): string {
-  return INTAKE_QUESTIONS.filter(({ key }) => keys.includes(key))
-    .map(({ key, question }) => `Q: ${question}\nA: ${intake[key] || NOT_ANSWERED}\n`)
+export function renderAnswers(questionnaire: Questionnaire, keys: readonly (typeof QUESTIONNAIRE_QUESTIONS)[number]["key"][]): string {
+  return QUESTIONNAIRE_QUESTIONS.filter(({ key }) => keys.includes(key))
+    .map(({ key, question }) => `Q: ${question}\nA: ${questionnaire[key] || NOT_ANSWERED}\n`)
     .join("");
 }
 
@@ -55,24 +55,27 @@ function renderMoney(range: MoneyRange | undefined): string {
   return `over ${range.min} ${range.currency}`;
 }
 
-function renderNotes(intake: Intake): string {
-  return intake.notes.map(({ question, answer }) => `Q: ${question}\nA: ${answer}\n`).join("");
+function renderNotes(questionnaire: Questionnaire): string {
+  return questionnaire.notes.map(({ question, answer }) => `Q: ${question}\nA: ${answer}\n`).join("");
 }
 
-function renderIntake(intake: Intake): string {
-  const note = intake.goal.note ? ` (${intake.goal.note})` : "";
+function renderQuestionnaire(questionnaire: Questionnaire): string {
+  const note = questionnaire.goal.note ? ` (${questionnaire.goal.note})` : "";
   const facts =
-    `Goal for the next 3 months: ${GOAL_LABELS[intake.goal.kind]}${note}\n` +
-    `Business type: ${BUSINESS_TYPE_LABELS[intake.businessType]}\n` +
-    `Language of the posts: ${LANGUAGE_LABELS[intake.postLanguage]}\n` +
-    `What one customer usually spends: ${renderMoney(intake.orderValue)}\n`;
-  const keys = INTAKE_QUESTIONS.map(({ key }) => key);
-  return asDataBlock("intake", facts + renderAnswers(intake, keys) + renderNotes(intake));
+    `Goal for the next 3 months: ${GOAL_LABELS[questionnaire.goal.kind]}${note}\n` +
+    `Business type: ${BUSINESS_TYPE_LABELS[questionnaire.businessType]}\n` +
+    `Language of the posts: ${LANGUAGE_LABELS[questionnaire.postLanguage]}\n` +
+    `What one customer usually spends: ${renderMoney(questionnaire.orderValue)}\n`;
+  const keys = QUESTIONNAIRE_QUESTIONS.map(({ key }) => key);
+  const answers = renderAnswers(questionnaire, keys);
+  const notes = renderNotes(questionnaire);
+  return asDataBlock("questionnaire", facts + answers + notes);
 }
 
 function renderPage(page: SiteFacts["pages"][number], budget: number): string {
   const text = page.text.slice(0, budget);
-  return `## Page: ${page.url}\n` + line("Title", page.title) + line("Headings", page.headings.join(" | ")) + (text ? `Text: ${text}\n` : "");
+  const headings = page.headings.join(" | ");
+  return `## Page: ${page.url}\n` + line("Title", page.title) + line("Headings", headings) + (text ? `Text: ${text}\n` : "");
 }
 
 /** Names, headings and the start of each page's text, within the budget. The home page gets the largest share. */
@@ -103,7 +106,8 @@ function renderBrandKit(brand: BrandContext["brand"]): string {
 /** The brand kit and, when the brand came from a scan, what the scanner read; all inside one <site> block. */
 export function renderSite(input: BrandContext): string {
   const facts = input.siteFacts ? `\n${renderSiteFacts(input.siteFacts)}` : "\nNo website scan on file for this brand.\n";
-  return asDataBlock("site", renderBrandKit(input.brand) + facts);
+  const kit = renderBrandKit(input.brand);
+  return asDataBlock("site", kit + facts);
 }
 
 /** An earlier research document, so a re-run improves on it instead of starting over. */
@@ -115,9 +119,12 @@ export function renderPrevious(label: string, document: GrowthBrief | AudiencePr
 export function renderDiscoveryInput(input: BrandContext): string {
   const parts = [
     "Diagnose this business and write its growth brief. Research the competitors and the reviews first, within the tool budget, then answer.",
-    renderIntake(input.intake),
+    renderQuestionnaire(input.questionnaire),
     renderSite(input),
   ];
-  if (input.research.brief) parts.push(renderPrevious("Previous growth brief", input.research.brief));
+  if (input.research.brief) {
+    const block = renderPrevious("Previous growth brief", input.research.brief);
+    parts.push(block);
+  }
   return parts.join("\n\n");
 }

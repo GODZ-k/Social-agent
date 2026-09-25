@@ -40,7 +40,7 @@ Typical for: clinics, dentists, trades doing big jobs, consultants, wedding supp
 | A form asking more than a name, a contact and the one thing wanted | | | |
 | Primary call to action is "enquire" or "contact us" for something that could be booked | | | |
 | Cart requires an account, or shipping is only shown at the end | | | |
-| Reviews or intake mention "hard to book", "never answered", "waited weeks" | | | |
+| Reviews or questionnaire mention "hard to book", "never answered", "waited weeks" | | | |
 
 Typical for: salons and clinics still on phone booking, restaurants with no reservation link, shops whose web store is an afterthought.
 
@@ -48,7 +48,7 @@ Typical for: salons and clinics still on phone booking, restaurants with no rese
 
 | Evidence (citable) | Hunch only | Counter-signals | Ask |
 |---|---|---|---|
-| Product is naturally rebought monthly or more (food, drink, hair, nails, cleaning, pet care, dental hygiene, gym) and nothing on the site or in the intake brings people back: no loyalty, no list, no reminders, no regulars' content | "Customers probably do not come back" | The owner says most customers are regulars | "Do you have any list of past customers (email, WhatsApp, booking software)?" |
+| Product is naturally rebought monthly or more (food, drink, hair, nails, cleaning, pet care, dental hygiene, gym) and nothing on the site or in the questionnaire brings people back: no loyalty, no list, no reminders, no regulars' content | "Customers probably do not come back" | The owner says most customers are regulars | "Do you have any list of past customers (email, WhatsApp, booking software)?" |
 | Owner's `goal` is `repeat_customers` | | A loyalty scheme, subscription or reminder system exists and is used | "Roughly what share of a week's customers have been before?" |
 | Owner's `capacity` names slow days or hours that regulars would fill | | Product is bought once (a wedding, a bathroom, a course) | "Do you run any loyalty or referral scheme?" |
 | Competitors nearby run loyalty and this business does not | | | |

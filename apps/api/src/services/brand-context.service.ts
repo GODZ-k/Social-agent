@@ -7,12 +7,12 @@ import { ScansRepository } from "@/repositories/scans.repository";
 export class BrandContextService {
     /**
      * Everything Cadence knows about one brand's business, in the shape every agent takes. A brand
-     * without an approved intake has no context yet: research and the agents after it need one.
+     * without an approved questionnaire has no context yet: research and the agents after it need one.
      */
     static async load(brandId: string): Promise<BrandContext | undefined> {
         const brand = await BrandsRepository.findById(brandId, "all");
         if (!brand) throw new Error(`brand ${brandId} does not exist or is archived`);
-        if (!brand.intake || !brand.intakeApprovedAt) return undefined;
+        if (!brand.questionnaire || !brand.questionnaireApprovedAt) return undefined;
 
         const [scan, brief, profile] = await Promise.all([
             ScansRepository.findLatestDoneForBrand(brandId),
@@ -22,7 +22,7 @@ export class BrandContextService {
 
         return {
             brand: pickBrand(brand),
-            intake: brand.intake,
+            questionnaire: brand.questionnaire,
             siteFacts: siteFactsFromScan(scan),
             research: {
                 brief: brief ? (brief.content as GrowthBrief) : null,

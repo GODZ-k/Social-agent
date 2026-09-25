@@ -5,7 +5,7 @@ import type { ScanScope } from "@/types/scope";
 import { enqueueScan } from "@/scan-queue";
 import type { AuthUser } from "@/services/users.service";
 import { AppError } from "@/utils/AppError";
-import { isUuid } from "@/utils";
+import { isoOrNull, isUuid } from "@/utils";
 
 export class ScansService {
     /** Starts a scan, or returns the one this person already has running: a double click must not start two. */
@@ -33,7 +33,8 @@ export class ScansService {
 
 async function findScan(user: AuthUser, id: string): Promise<BrandScanRow> {
     if (!isUuid(id)) throw scanNotFound();
-    const row = await ScansRepository.findById(id, scopeFor(user));
+    const scope = scopeFor(user);
+    const row = await ScansRepository.findById(id, scope);
     if (!row) throw scanNotFound();
     return row;
 }
@@ -47,8 +48,6 @@ function scopeFor(user: AuthUser): ScanScope {
 function scanNotFound() {
     return new AppError("This scan doesn't exist, or you don't have access to it.", 404, "SCAN_NOT_FOUND");
 }
-
-const isoOrNull = (date: Date | null) => (date ? date.toISOString() : null);
 
 /** Database row to the `Scan` shape the web app expects. */
 export function toScan(row: BrandScanRow): Scan {

@@ -13,11 +13,12 @@ function line(label: string, value?: string | string[]): string {
 
 function pageBlock(page: SiteFacts["pages"][number], budget: number): string {
   const text = cleanText(page.text).slice(0, budget);
+  const headings = page.headings.map(cleanText).join(" | ");
   return (
     `## Page: ${cleanText(page.url)}\n` +
     line("Title", page.title) +
     line("Description", page.description ?? page.og.description) +
-    line("Headings", page.headings.map(cleanText).join(" | ")) +
+    line("Headings", headings) +
     (text ? `Text: ${text}\n` : "")
   );
 }

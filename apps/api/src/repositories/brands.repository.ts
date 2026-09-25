@@ -1,64 +1,71 @@
 import { brands, type BrandRow, type NewBrandRow } from "@social-agent/db";
-import type { Intake, IntakeSession } from "@social-agent/shared";
+import type { Questionnaire, QuestionnaireSession } from "@social-agent/shared";
 import { and, desc, eq, isNull, sql } from "drizzle-orm";
 import { db } from "@/config/db";
+import { insertedRow } from "@/utils";
 import type { BrandScope } from "@/types/scope";
 
 /** Database queries for the `brands` table. No business rules here. */
 export class BrandsRepository {
     static async list(scope: BrandScope): Promise<BrandRow[]> {
-        return db.select().from(brands).where(BrandsRepository.live(scope)).orderBy(desc(brands.createdAt));
+        const brandFilter = BrandsRepository.reachable(scope);
+        return db.select().from(brands).where(brandFilter).orderBy(desc(brands.createdAt));
     }
 
     static async findById(id: string, scope: BrandScope): Promise<BrandRow | undefined> {
-        const [row] = await db.select().from(brands).where(BrandsRepository.byId(id, scope)).limit(1);
-        return row;
+        const brandFilter = BrandsRepository.reachable(scope, id);
+        return db.query.brands.findFirst({ where: brandFilter });
     }
 
     static async create(values: NewBrandRow): Promise<BrandRow> {
-        const [row] = await db.insert(brands).values(values).returning();
-        if (!row) throw new Error("Insert into brands returned no row");
-        return row;
+        const rows = await db.insert(brands).values(values).returning();
+        return insertedRow(rows, "brands");
     }
 
     /** Returns undefined when the brand does not exist or is outside the scope. */
     static async update(id: string, scope: BrandScope, changes: Partial<NewBrandRow>): Promise<BrandRow | undefined> {
+        const brandFilter = BrandsRepository.reachable(scope, id);
         const [row] = await db
             .update(brands)
             .set({ ...changes, updatedAt: new Date() })
-            .where(BrandsRepository.byId(id, scope))
+            .where(brandFilter)
             .returning();
         return row;
     }
 
-    /** Approves an intake nobody approved yet. Of two approvals at once only one gets a row back. */
-    static async approveIntake(id: string, scope: BrandScope, intake: Intake): Promise<BrandRow | undefined> {
+    /**
+     * Approves a questionnaire nobody approved yet; of two approvals at once only one gets a row back.
+     * The service already checked ownership.
+     */
+    static async approveQuestionnaire(id: string, questionnaire: Questionnaire): Promise<BrandRow | undefined> {
         const now = new Date();
+        const brandFilter = and(eq(brands.id, id), isNull(brands.questionnaireApprovedAt));
         const [row] = await db
             .update(brands)
-            .set({ intake, intakeApprovedAt: now, updatedAt: now })
-            .where(and(BrandsRepository.byId(id, scope), isNull(brands.intakeApprovedAt)))
+            .set({ questionnaire, questionnaireApprovedAt: now, updatedAt: now })
+            .where(brandFilter)
             .returning();
         return row;
     }
 
     /**
      * Writes a session only while the stored one is still `expectedSessionId` (null: no session yet)
-     * and the intake is not approved, so a slow request never overwrites a newer session.
+     * and the questionnaire is not approved, so a slow request never overwrites a newer session.
+     * The service already checked ownership.
      */
-    static async replaceIntakeSession(
+    static async replaceQuestionnaireSession(
         id: string,
-        scope: BrandScope,
         expectedSessionId: string | null,
-        changes: { intakeSession: IntakeSession; preferences?: NewBrandRow["preferences"] },
+        changes: { questionnaireSession: QuestionnaireSession; preferences?: NewBrandRow["preferences"] },
     ): Promise<BrandRow | undefined> {
         const sameSession = expectedSessionId === null
-            ? isNull(brands.intakeSession)
-            : sql`${brands.intakeSession}->>'sessionId' = ${expectedSessionId}`;
+            ? isNull(brands.questionnaireSession)
+            : sql`${brands.questionnaireSession}->>'sessionId' = ${expectedSessionId}`;
+        const brandFilter = and(eq(brands.id, id), isNull(brands.questionnaireApprovedAt), sameSession);
         const [row] = await db
             .update(brands)
             .set({ ...changes, updatedAt: new Date() })
-            .where(and(BrandsRepository.byId(id, scope), isNull(brands.intakeApprovedAt), sameSession))
+            .where(brandFilter)
             .returning();
         return row;
     }
@@ -69,21 +76,19 @@ export class BrandsRepository {
      */
     static async archive(id: string, scope: BrandScope): Promise<boolean> {
         const now = new Date();
+        const brandFilter = BrandsRepository.reachable(scope, id);
         const archived = await db
             .update(brands)
             .set({ status: "archived", archivedAt: now, updatedAt: now })
-            .where(BrandsRepository.byId(id, scope))
+            .where(brandFilter)
             .returning({ id: brands.id });
         return archived.length > 0;
     }
 
-    /** Every query filters through here, so archived brands and other owners' brands are never touched. */
-    private static live(scope: BrandScope) {
+    /** The ownership rule: live brands the scope may reach, or only the one with `id`. Archived and other owners' brands are never touched. */
+    private static reachable(scope: BrandScope, id?: string) {
         const owner = scope === "all" ? undefined : eq(brands.ownerId, scope.ownerId);
-        return and(eq(brands.status, "active"), owner);
-    }
-
-    private static byId(id: string, scope: BrandScope) {
-        return and(eq(brands.id, id), BrandsRepository.live(scope));
+        const one = id === undefined ? undefined : eq(brands.id, id);
+        return and(eq(brands.status, "active"), owner, one);
     }
 }

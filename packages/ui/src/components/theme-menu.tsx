@@ -49,10 +49,14 @@ export function setThemePreference(preference: ThemePreference) {
 function subscribe(notify: () => void) {
   listeners.add(notify);
   // Follow the device while on "system", and other tabs when they change the setting.
-  const onSystemChange = () => apply(readPreference(), true);
+  const onSystemChange = () => {
+    const preference = readPreference();
+    apply(preference, true);
+  };
   const onStorage = (event: StorageEvent) => {
     if (event.key !== THEME_STORAGE_KEY) return;
-    apply(readPreference(), true);
+    const preference = readPreference();
+    apply(preference, true);
     notify();
   };
   systemDark().addEventListener("change", onSystemChange);

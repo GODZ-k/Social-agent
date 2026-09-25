@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 /*
- * The guided intake: what the Account Manager asks after the brand kit is saved, and what it
+ * The guided questionnaire: what the Account Manager asks after the brand kit is saved, and what it
  * approves before business discovery may start. Answers are data in prompts, never instructions.
  */
 
@@ -10,12 +10,12 @@ export const languageSchema = z.enum(["en", "hi", "hinglish"]);
 
 export const businessTypeSchema = z.enum(["product", "service", "both"]);
 
-/** One free-text intake answer. */
-const intakeAnswer = z.string().trim().max(2_000);
+/** One free-text questionnaire answer. */
+const questionnaireAnswer = z.string().trim().max(2_000);
 
-export const intakeGoalSchema = z.object({
+export const questionnaireGoalSchema = z.object({
   kind: z.enum(["more_customers", "repeat_customers", "bigger_orders", "launch", "awareness"]),
-  note: intakeAnswer.optional(),
+  note: questionnaireAnswer.optional(),
 });
 
 /** A money range in the brand's own currency, kept as numbers so brands can be compared. */
@@ -25,7 +25,7 @@ export const moneyRangeSchema = z.object({
   currency: z.string().length(3),
 });
 
-export const intakeKeySchema = z.enum([
+export const questionnaireKeySchema = z.enum([
   "offer",
   "businessType",
   "goal",
@@ -39,26 +39,26 @@ export const intakeKeySchema = z.enum([
 ]);
 
 /** Research never starts without these (owner, 2026-09-25). */
-export const REQUIRED_INTAKE_KEYS = ["offer", "businessType", "goal", "postLanguage", "idealCustomer"] as const;
+export const REQUIRED_QUESTIONNAIRE_KEYS = ["offer", "businessType", "goal", "postLanguage", "idealCustomer"] as const;
 
 /** What the owner told us that a website cannot, after the Account Manager's review. */
-export const intakeSchema = z.object({
-  offer: intakeAnswer.min(1),
+export const questionnaireSchema = z.object({
+  offer: questionnaireAnswer.min(1),
   businessType: businessTypeSchema,
-  goal: intakeGoalSchema,
+  goal: questionnaireGoalSchema,
   postLanguage: languageSchema,
-  idealCustomer: intakeAnswer.min(1),
-  bestSellers: intakeAnswer.optional(),
-  capacity: intakeAnswer.optional(),
+  idealCustomer: questionnaireAnswer.min(1),
+  bestSellers: questionnaireAnswer.optional(),
+  capacity: questionnaireAnswer.optional(),
   orderValue: moneyRangeSchema.optional(),
-  competitors: intakeAnswer.optional(),
-  constraints: intakeAnswer.optional(),
+  competitors: questionnaireAnswer.optional(),
+  constraints: questionnaireAnswer.optional(),
   /** Answers to the questions written for this brand only, for the Growth Consultant. */
-  notes: z.array(z.object({ question: intakeAnswer, answer: intakeAnswer })).max(6).default([]),
+  notes: z.array(z.object({ question: questionnaireAnswer, answer: questionnaireAnswer })).max(6).default([]),
 });
 
 /** The same facts, all optional: what the review reads from the answers before code checks them. */
-export const intakeDraftSchema = intakeSchema.partial();
+export const questionnaireDraftSchema = questionnaireSchema.partial();
 
 const questionOption = z.object({
   value: z.string().min(1).max(60),
@@ -67,10 +67,10 @@ const questionOption = z.object({
   max: z.number().positive().optional(),
 });
 
-export const intakeQuestionSchema = z.object({
+export const questionnaireQuestionSchema = z.object({
   id: z.string().regex(/^[a-z][a-z0-9]{0,11}$/),
   /** The facts this question answers; empty for a question written for this brand only. */
-  covers: z.array(intakeKeySchema),
+  covers: z.array(questionnaireKeySchema),
   /** What the scan left unclear, for the log and the review. */
   why: z.string().max(200),
   kind: z.enum(["confirm", "choice", "text", "range"]),
@@ -85,39 +85,39 @@ export const intakeQuestionSchema = z.object({
 });
 
 /** What the Account Manager returns when it writes the questions. Code checks the limits too. */
-export const intakeQuestionListSchema = z.object({ questions: z.array(intakeQuestionSchema) });
+export const questionnaireQuestionListSchema = z.object({ questions: z.array(questionnaireQuestionSchema) });
 
 /** The answer to an optional question the owner cannot answer. */
 export const NOT_SURE = "not_sure";
 
-export const intakeSessionSchema = z.object({
+export const questionnaireSessionSchema = z.object({
   /** New for every question list: a screen holding an older list is refused instead of answering the wrong questions. */
   sessionId: z.uuid(),
   chatLanguage: languageSchema,
-  questions: z.array(intakeQuestionSchema),
+  questions: z.array(questionnaireQuestionSchema),
   /** Keyed by question id. */
-  answers: z.record(z.string(), intakeAnswer),
-  followUps: z.array(intakeQuestionSchema).default([]),
+  answers: z.record(z.string(), questionnaireAnswer),
+  followUps: z.array(questionnaireQuestionSchema).default([]),
   updatedAt: z.string(),
 });
 
 /** What the Account Manager returns when it reviews the answers: the facts, and approval or follow-ups. */
-export const intakeReviewSchema = z.object({
+export const questionnaireReviewSchema = z.object({
   approved: z.boolean(),
   reason: z.string().max(300),
-  intake: intakeDraftSchema,
-  followUps: z.array(intakeQuestionSchema).max(3),
+  questionnaire: questionnaireDraftSchema,
+  followUps: z.array(questionnaireQuestionSchema).max(3),
 });
 
-export const intakeStateSchema = z.object({
+export const questionnaireStateSchema = z.object({
   status: z.enum(["not_started", "in_progress", "approved"]),
-  session: intakeSessionSchema.nullable(),
+  session: questionnaireSessionSchema.nullable(),
   approvedAt: z.string().nullable(),
 });
 
-export const intakeQuestionsRequestSchema = z.object({ chatLanguage: languageSchema });
+export const questionnaireQuestionsRequestSchema = z.object({ chatLanguage: languageSchema });
 
-export const intakeAnswersRequestSchema = z.object({ sessionId: z.uuid(), answers: z.record(z.string(), intakeAnswer) });
+export const questionnaireAnswersRequestSchema = z.object({ sessionId: z.uuid(), answers: z.record(z.string(), questionnaireAnswer) });
 
-/** `sessionId` is the answered session; an intake edited in Settings is approved without one. */
-export const intakeApproveRequestSchema = z.object({ sessionId: z.uuid().optional() });
+/** `sessionId` is the answered session; a questionnaire edited in Settings is submitted without one. */
+export const questionnaireSubmitRequestSchema = z.object({ sessionId: z.uuid().optional() });

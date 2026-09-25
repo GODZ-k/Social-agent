@@ -1,19 +1,19 @@
 // TESTING TOOL: business discovery (Growth Consultant + Audience Researcher) on a real brand.
 //
-// What it does: loads the brand from the database (brand kit, approved intake, latest scan and
+// What it does: loads the brand from the database (brand kit, approved questionnaire, latest scan and
 // research), runs the whole business-discovery workflow and prints the outcome. Nothing is saved:
 // only the API's research queue stores versions.
 //
 // How to use (from the repo root):
 //   pnpm --filter api run discovery -- <brandId>
-//   e.g. pnpm --filter api run discovery -- cda30f29-...   (a brand whose intake is approved)
+//   e.g. pnpm --filter api run discovery -- cda30f29-...   (a brand whose questionnaire is approved)
 //
 // Needs in apps/api/.env: DATABASE_URL, ANTHROPIC_API_KEY, FIRECRAWL_API_KEY. Costs real money
 // (Opus calls plus up to 8 searches and 12 page reads) and takes about 3 to 5 minutes.
 //
 // What you should see: progress lines "[12.0s] diagnose" on stderr, then JSON
 //   { ok: true, brief: { ...growth brief }, profile: { ...audience profile }, sources: [urls read] }
-//   or { ok: false, code: "INTAKE_REQUIRED", message } when the brand has no approved intake.
+//   or { ok: false, code: "QUESTIONNAIRE_REQUIRED", message } when the brand has no approved questionnaire.
 // Exit code 0 = ok, 1 = failed, 2 = usage or missing key.
 import "dotenv/config";
 import { isUuid } from "@/utils";

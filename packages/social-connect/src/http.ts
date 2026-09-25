@@ -12,14 +12,16 @@ export class SocialConnectError extends Error {
 }
 
 export async function postForm(network: string, url: string, form: URLSearchParams): Promise<unknown> {
-  const response = await fetch(url, { method: "POST", body: form, signal: AbortSignal.timeout(TIMEOUT_MS) });
+  const signal = AbortSignal.timeout(TIMEOUT_MS);
+  const response = await fetch(url, { method: "POST", body: form, signal });
   return readJson(network, response);
 }
 
 export async function getJson(network: string, url: string, query: Record<string, string>): Promise<unknown> {
   const target = new URL(url);
   target.search = new URLSearchParams(query).toString();
-  const response = await fetch(target, { signal: AbortSignal.timeout(TIMEOUT_MS) });
+  const signal = AbortSignal.timeout(TIMEOUT_MS);
+  const response = await fetch(target, { signal });
   return readJson(network, response);
 }
 

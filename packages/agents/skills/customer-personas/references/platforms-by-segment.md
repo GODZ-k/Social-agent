@@ -32,7 +32,7 @@ Use the first platform when only one is allowed; the second when the brand alrea
 
 - One platform is a complete answer. Two is the maximum for a small business that has to make the content; three or four in a segment means the researcher has not decided.
 - A brand that posts nowhere yet gets the default; say in `summary` that the platform is a category default.
-- A brand's `constraints` (intake) can rule a platform out ("no TikTok, we are a law firm"); obey it.
+- A brand's `constraints` (questionnaire) can rule a platform out ("no TikTok, we are a law firm"); obey it.
 - A segment whose competitors' customers demonstrably appear on one platform (a competitor note that says "reviews reference their Facebook group") takes that platform over the default.
 - Do not choose a platform for its reach. Reach outside the catchment is not a reason for a local business.
 

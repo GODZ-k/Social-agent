@@ -13,7 +13,8 @@ export function BrandTheme({ color }: { color: string | undefined }) {
   useEffect(() => {
     if (!color) return;
     const root = document.documentElement;
-    for (const [name, value] of Object.entries(brandProperties(color))) root.style.setProperty(name, value);
+    const properties = brandProperties(color);
+    for (const [name, value] of Object.entries(properties)) root.style.setProperty(name, value);
     return () => {
       for (const name of BRAND_PROPERTIES) root.style.removeProperty(name);
     };

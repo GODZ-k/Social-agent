@@ -68,8 +68,14 @@ async function main(): Promise<number> {
     console.error("Usage: pnpm --filter api run scan -- <url> [--fetch | --facts]");
     return 2;
   }
-  if (flags.has("--fetch")) return fetchOnly(normaliseScanUrl(input));
-  if (flags.has("--facts")) return factsOnly(normaliseScanUrl(input));
+  if (flags.has("--fetch")) {
+    const url = normaliseScanUrl(input);
+    return fetchOnly(url);
+  }
+  if (flags.has("--facts")) {
+    const url = normaliseScanUrl(input);
+    return factsOnly(url);
+  }
   return fullScan(input);
 }
 

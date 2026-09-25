@@ -11,7 +11,9 @@ export function validateMiddleware(schema: ZodType): RequestHandler {
         const result = schema.safeParse({ body: req.body, query: req.query, params: req.params });
 
         if (!result.success) {
-            return next(new AppError("Some fields are invalid.", 400, "VALIDATION_ERROR", toFieldErrors(result.error)));
+            const details = toFieldErrors(result.error);
+            const error = new AppError("Some fields are invalid.", 400, "VALIDATION_ERROR", details);
+            return next(error);
         }
 
         const parsed = result.data as { body?: unknown };

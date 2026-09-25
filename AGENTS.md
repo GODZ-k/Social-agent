@@ -39,6 +39,8 @@ All skills live at the repo root, whichever app uses them (decided 2026-09-22: o
 
 ## Working in this repo
 
+- **Name a value before you pass it** (owner rule, 2026-09-25): `const context = await contextFor(row, lang); const questions = await writeQuestions(context);`, never `writeQuestions(await contextFor(row, lang))`; `const brandFilter = BrandsRepository.reachable(scope, id); ... .where(brandFilter)`. The name is a plain, generic noun for what the function returns (`brand`, `session`, `questions`, `context`, `brandFilter`), so anyone can tell what the value is without opening the function. Inline is fine for zod schema builders, JSX, trivial built-ins, the parts of one `and(eq(...), isNull(...))`, and `Promise.all([...])`. Never move a call out of an `if`, `?:`, `??` or `&&` branch.
+
 - Package manager is pnpm 11 with Turborepo. Run app scripts with `pnpm --filter <name> run <script>`.
 - pnpm blocks dependency install scripts until each is answered under `allowBuilds` in `pnpm-workspace.yaml`. An unanswered one makes every `pnpm run` fail with `ERR_PNPM_IGNORED_BUILDS`.
 - A dependency used by `packages/ui` must be declared there at the same version the apps use, so pnpm links a single copy.

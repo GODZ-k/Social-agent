@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { platformSchema } from "./brand.schema.js";
-import { intakeQuestionSchema } from "./intake.schema.js";
+import { questionnaireQuestionSchema } from "./questionnaire.schema.js";
 
 /*
  * Business discovery: what the Growth Consultant and the Audience Researcher return, and how
@@ -92,8 +92,8 @@ export type AudienceSegmentProfile = z.infer<typeof audienceSegmentProfileSchema
 export type AudienceProfile = z.infer<typeof audienceProfileSchema>;
 export type Research = z.infer<typeof researchSchema>;
 
-/** What approving an intake answers: research started, or the Account Manager's follow-up questions. */
-export const intakeApproveResponseSchema = z.discriminatedUnion("approved", [
+/** What approving a questionnaire answers: research started, or the Account Manager's follow-up questions. */
+export const questionnaireSubmitResponseSchema = z.discriminatedUnion("approved", [
   z.object({ approved: z.literal(true), research: researchSchema }),
   z.object({
     approved: z.literal(false),
@@ -102,10 +102,10 @@ export const intakeApproveResponseSchema = z.discriminatedUnion("approved", [
     /** True after the second review: no new questions; answer the reopened ones again. */
     final: z.boolean(),
     /** New questions to answer (first review only). */
-    followUps: z.array(intakeQuestionSchema),
+    followUps: z.array(questionnaireQuestionSchema),
     /** Existing question ids to show again (final review). */
     reopen: z.array(z.string()),
   }),
 ]);
 
-export type IntakeApproveResponse = z.infer<typeof intakeApproveResponseSchema>;
+export type QuestionnaireSubmitResponse = z.infer<typeof questionnaireSubmitResponseSchema>;

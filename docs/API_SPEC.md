@@ -3,7 +3,7 @@
 ![base path](https://img.shields.io/badge/base_path-%2Fapi%2Fv1-blue)
 ![endpoints](https://img.shields.io/badge/endpoints-24_live_of_45-yellow)
 ![scans](https://img.shields.io/badge/scan_endpoints-live-brightgreen)
-![research](https://img.shields.io/badge/research_and_intake-live-brightgreen)
+![research](https://img.shields.io/badge/research_and_questionnaire-live-brightgreen)
 ![routes](https://img.shields.io/badge/routes-17_live-brightgreen)
 ![updated](https://img.shields.io/badge/updated-2026--09--25-lightgrey)
 
@@ -26,7 +26,7 @@ with its index; the request and response detail sits in the fold under it.
 - [6. Admin](#6-admin)
 - [7. Scans](#7-scans)
 - [8. Research](#8-research)
-  - [8.1 Intake](#8-1-intake)
+  - [8.1 Questionnaire](#8-1-questionnaire)
 - [9. Planned endpoints](#9-planned-endpoints)
 - [10. Keeping this file current](#10-keeping-this-file-current)
 - [Related](#related)
@@ -109,14 +109,14 @@ Fifteen codes are in use:
 | ![409][st409]  | **`CLIENT_EXISTS`**         | Someone with this email is already here.                                                  | `admin-clients.service.ts`                      |
 | ![409][st409]  | **`EMAIL_IN_USE`**          | This email already belongs to another account. Verify your email address, then try again. | `users.service.ts`                              |
 | ![409][st409]  | **`SCAN_NOT_DONE`**         | This scan hasn't finished yet.                                                            | `scans.service.ts`                              |
-| ![400][st400]  | **`INTAKE_ANSWERS_INVALID`** | Some answers do not fit their questions. `details` names each one.                       | `intake.service.ts`                             |
-| ![400][st400]  | **`INTAKE_INCOMPLETE`**   | A required answer is still missing or unclear. `details` names the question ids when known. | `intake.service.ts`                          |
-| ![409][st409]  | **`INTAKE_REQUIRED`**     | Answer the intake questions before research can start. Also sent when the intake is not approved yet. | `research.service.ts`             |
-| ![409][st409]  | **`INTAKE_NOT_STARTED`**  | Ask for the intake questions first.                                                       | `intake.service.ts`                             |
-| ![409][st409]  | **`INTAKE_APPROVED`**     | The intake is already approved.                                                           | `intake.service.ts`                             |
-| ![409][st409]  | **`INTAKE_SESSION_CHANGED`** | These questions were replaced. Reload them and answer again.                          | `intake.service.ts`                             |
-| ![502][st502]  | **`INTAKE_QUESTIONS_FAILED`** | We could not prepare your questions. Please try again.                                | `intake.service.ts`                             |
-| ![502][st502]  | **`INTAKE_REVIEW_FAILED`** | We could not check your answers. Please try again.                                      | `intake.service.ts`                             |
+| ![400][st400]  | **`QUESTIONNAIRE_ANSWERS_INVALID`** | Some answers do not fit their questions. `details` names each one.                       | `questionnaire.service.ts`                             |
+| ![400][st400]  | **`QUESTIONNAIRE_INCOMPLETE`**   | A required answer is still missing or unclear. `details` names the question ids when known. | `questionnaire.service.ts`                          |
+| ![409][st409]  | **`QUESTIONNAIRE_REQUIRED`**     | Answer the questionnaire before research can start. Also sent when the questionnaire is not approved yet. | `research.service.ts`             |
+| ![409][st409]  | **`QUESTIONNAIRE_NOT_STARTED`**  | Ask for the questionnaire first.                                                       | `questionnaire.service.ts`                             |
+| ![409][st409]  | **`QUESTIONNAIRE_APPROVED`**     | The questionnaire is already approved.                                                           | `questionnaire.service.ts`                             |
+| ![409][st409]  | **`QUESTIONNAIRE_SESSION_CHANGED`** | These questions were replaced. Reload them and answer again.                          | `questionnaire.service.ts`                             |
+| ![502][st502]  | **`QUESTIONNAIRE_QUESTIONS_FAILED`** | We could not prepare your questions. Please try again.                                | `questionnaire.service.ts`                             |
+| ![502][st502]  | **`QUESTIONNAIRE_REVIEW_FAILED`** | We could not check your answers. Please try again.                                      | `questionnaire.service.ts`                             |
 | ![409][st409]  | **`RESEARCH_RUNNING`**      | Research is already running for this brand. The body also carries the running run in `data`. | `research.controller.ts`                     |
 | ![502][st502]  | **`INVITE_FAILED`**         | The invitation email could not be sent. Try again.                                        | `admin-clients.service.ts`                      |
 | ![501][st501]  | **`PLATFORM_NOT_AVAILABLE`** | Connecting <platform> is not available yet.                                              | `social-accounts.service.ts`                    |
@@ -230,7 +230,7 @@ Errors: as `GET /me`.
   "platforms": ["instagram", "linkedin", "tiktok"],
   "accounts": [],
   "preferences": { "timezone": "UTC", "approvalEmails": true },
-  "intake": null,
+  "questionnaire": null,
   "createdAt": "2026-09-20T16:40:12.345Z",
   "stats": { "followers": 0, "followersDelta": 0, "engagementRate": 0,
              "engagementDelta": 0, "scheduled": 0, "pendingApprovals": 0 }
@@ -279,7 +279,7 @@ success the scan's `brand_id` is set (`ScansRepository.attachBrand`).
 <summary>PATCH /api/v1/brands/:id, and DELETE /api/v1/brands/:id</summary>
 
 `PATCH` takes `brandPatchSchema`, all optional, unknown keys dropped: `name`, `industry`,
-`brand`, `business`, `platforms`, `preferences`, `intake`. Changing `brand` recomputes `accent`. `200`:
+`brand`, `business`, `platforms`, `preferences`, `questionnaire`. Changing `brand` recomputes `accent`. `200`:
 the updated `Brand`. Errors: `400 VALIDATION_ERROR`, `404 BRAND_NOT_FOUND`.
 
 `DELETE` archives the brand (`status` becomes `archived`, `archived_at` records when); nothing is deleted. `204`, no body. Errors:
@@ -584,8 +584,8 @@ in `src/routes/research.route.ts` (mounted from `brands.route.ts`),
 `src/repositories/research.repository.ts` and `src/research-queue/index.ts`. The run itself is
 `runBusinessDiscovery` (`src/mastra/workflows/business-discovery/run.ts`): the Growth Consultant
 writes a growth brief, the Audience Researcher an audience profile, both from the brand kit, the
-owner's intake answers, the linked scan's facts and live web research. Awaiting migration `0004`
-(tables `research_runs`, `brand_research`, column `brands.intake`) before it can be tried live.
+owner's questionnaire answers, the linked scan's facts and live web research. Awaiting migration `0004`
+(tables `research_runs`, `brand_research`, column `brands.questionnaire`) before it can be tried live.
 
 Research is **versioned, never edited**: every finished run writes the next `version` of each
 kind. One active run per brand; one run at a time in the process, as with scans.
@@ -604,7 +604,7 @@ sequenceDiagram
     end
 ```
 
-*Onboarding calls `POST …/research` right after `POST /brands` (with `intake`); the Strategy screen polls.*
+*Onboarding calls `POST …/research` right after `POST /brands` (with `questionnaire`); the Strategy screen polls.*
 
 <details>
 <summary>The Research shape</summary>
@@ -640,7 +640,7 @@ Start business discovery for a brand. Who: the owner, or an admin. No body.
 
 - `202`: `Research` with `status: "queued"` and `currentStep: null` (plus the previous
   versions, if any).
-- `409 INTAKE_REQUIRED`: `brands.intake` is null. Send the intake answers with `POST /brands`
+- `409 QUESTIONNAIRE_REQUIRED`: `brands.questionnaire` is null. Send the questionnaire answers with `POST /brands`
   or `PATCH /brands/:id` first.
 - `409 RESEARCH_RUNNING`: the brand already has a queued or running run. The body is the usual
   error envelope **plus** `data`, the running `Research`, so a double click can start polling:
@@ -669,63 +669,63 @@ Errors: `404 BRAND_NOT_FOUND`.
 
 </details>
 
-<a id="8-1-intake"></a>
+<a id="8-1-questionnaire"></a>
 
-### 8.1 Intake
+### 8.1 Questionnaire
 
-The Account Manager's guided intake (spec `docs/superpowers/specs/2026-09-25-guided-intake-design.md`). After the brand kit is saved, the owner picks a chat language, the Account Manager writes 5-8 questions for this brand (the five required facts plus 2-4 brand-only questions from the gaps the scan left), the owner answers them, and the Account Manager reviews the answers. **Its approval starts research; without it, `POST .../research` answers 409 `INTAKE_REQUIRED`.** Admins go through exactly the same flow.
+The Account Manager's guided questionnaire (spec `docs/superpowers/specs/2026-09-25-guided-questionnaire-design.md`). After the brand kit is saved, the owner picks a chat language, the Account Manager writes 5-8 questions for this brand (the five required facts plus 2-4 brand-only questions from the gaps the scan left), the owner answers them, and the Account Manager reviews the answers. **Its approval starts research; without it, `POST .../research` answers 409 `QUESTIONNAIRE_REQUIRED`.** Admins go through exactly the same flow.
 
 | Method | Path | Who | Answers |
 |---|---|---|---|
-| ![GET][get]   | `/api/v1/brands/:brandId/intake`           | owner, or an admin | ![200][st200] ![404][st404] |
-| ![POST][post] | `/api/v1/brands/:brandId/intake/questions` | owner, or an admin | ![200][st200] ![400][st400] ![404][st404] ![409][st409] ![502][st502] |
-| ![PUT][put]   | `/api/v1/brands/:brandId/intake/answers`   | owner, or an admin | ![200][st200] ![400][st400] ![404][st404] ![409][st409] |
-| ![POST][post] | `/api/v1/brands/:brandId/intake/approve`   | owner, or an admin | ![200][st200] ![400][st400] ![404][st404] ![409][st409] ![502][st502] |
+| ![GET][get]   | `/api/v1/brands/:brandId/questionnaire`           | owner, or an admin | ![200][st200] ![404][st404] |
+| ![POST][post] | `/api/v1/brands/:brandId/questionnaire/questions` | owner, or an admin | ![200][st200] ![400][st400] ![404][st404] ![409][st409] ![502][st502] |
+| ![PUT][put]   | `/api/v1/brands/:brandId/questionnaire/answers`   | owner, or an admin | ![200][st200] ![400][st400] ![404][st404] ![409][st409] |
+| ![POST][post] | `/api/v1/brands/:brandId/questionnaire/submit`   | owner, or an admin | ![200][st200] ![400][st400] ![404][st404] ![409][st409] ![502][st502] |
 
-Code: `src/routes/intake.route.ts` (mounted from `brands.route.ts`), `src/controllers/intake.controller.ts`, `src/services/intake.service.ts`. The agent is `createAccountManager` in `packages/agents`, with the skill `packages/agents/skills/intake-interview`. Shapes: `packages/shared/src/schema/intake.schema.ts`. Both model calls run inside the request (about 15-60 s each).
+Code: `src/routes/questionnaire.route.ts` (mounted from `brands.route.ts`), `src/controllers/questionnaire.controller.ts`, `src/services/questionnaire.service.ts`. The agent is `createAccountManager` in `packages/agents`, with the skill `packages/agents/skills/questionnaire-interview`. Shapes: `packages/shared/src/schema/questionnaire.schema.ts`. Both model calls run inside the request (about 15-60 s each).
 
 <details>
-<summary>POST /api/v1/brands/:brandId/intake/questions</summary>
+<summary>POST /api/v1/brands/:brandId/questionnaire/questions</summary>
 
-Body `{ "chatLanguage": "en" | "hi" | "hinglish" }`. Writes the questions once per language and stores them in `brands.intake_session` (and `preferences.chatLanguage`); asking again in the same language returns the stored ones without a model call, a new language starts the intake again. Code checks every list before it is stored: 5-8 questions, the five required facts (`offer`, `businessType`, `goal`, `postLanguage`, `idealCustomer`) covered, at most 14 words each, options on choice and range questions, a currency on ranges. A list that fails twice answers 502 `INTAKE_QUESTIONS_FAILED`; the owner never sees it.
+Body `{ "chatLanguage": "en" | "hi" | "hinglish" }`. Writes the questions once per language and stores them in `brands.questionnaire_session` (and `preferences.chatLanguage`); asking again in the same language returns the stored ones without a model call, a new language starts the questionnaire again. Code checks every list before it is stored: 5-8 questions, the five required facts (`offer`, `businessType`, `goal`, `postLanguage`, `idealCustomer`) covered, at most 14 words each, options on choice and range questions, a currency on ranges. A list that fails twice answers 502 `QUESTIONNAIRE_QUESTIONS_FAILED`; the owner never sees it.
 
-`200` `{ "success": true, "data": IntakeSession }`: `{ sessionId, chatLanguage, questions: IntakeQuestion[], answers, followUps, updatedAt }`. Keep `sessionId`: answers and approval must send it, so a screen still holding an older list (another language, another tab) is refused with 409 `INTAKE_SESSION_CHANGED` instead of answering the wrong questions. An `IntakeQuestion` is `{ id, covers: IntakeKey[], why, kind: "confirm" | "choice" | "text" | "range", text, example?, options?: { value, label, min?, max? }[], prefill?, required, currency? }`. The screen shows `prefill` above a confirm question's `text`.
+`200` `{ "success": true, "data": QuestionnaireSession }`: `{ sessionId, chatLanguage, questions: QuestionnaireQuestion[], answers, followUps, updatedAt }`. Keep `sessionId`: answers and approval must send it, so a screen still holding an older list (another language, another tab) is refused with 409 `QUESTIONNAIRE_SESSION_CHANGED` instead of answering the wrong questions. An `QuestionnaireQuestion` is `{ id, covers: QuestionnaireKey[], why, kind: "confirm" | "choice" | "text" | "range", text, example?, options?: { value, label, min?, max? }[], prefill?, required, currency? }`. The screen shows `prefill` above a confirm question's `text`.
 
-Errors: `404 BRAND_NOT_FOUND`, `409 INTAKE_APPROVED`, `502 INTAKE_QUESTIONS_FAILED`.
+Errors: `404 BRAND_NOT_FOUND`, `409 QUESTIONNAIRE_APPROVED`, `502 QUESTIONNAIRE_QUESTIONS_FAILED`.
 
 </details>
 
 <details>
-<summary>GET /api/v1/brands/:brandId/intake</summary>
+<summary>GET /api/v1/brands/:brandId/questionnaire</summary>
 
 `200` `{ status: "not_started" | "in_progress" | "approved", session: { chatLanguage, questions, answers, followUps, updatedAt } | null, approvedAt: string | null }`.
 
 </details>
 
 <details>
-<summary>PUT /api/v1/brands/:brandId/intake/answers</summary>
+<summary>PUT /api/v1/brands/:brandId/questionnaire/answers</summary>
 
 Body `{ "sessionId": "<uuid>", "answers": { "<questionId>": "<value>" } }`, one or many at a time; later calls merge. A value is the option `value` for choice and range questions, `"yes"` or the owner's fix for a confirm question, free text otherwise, or `"not_sure"` for an optional question. Nothing is saved when any answer does not fit.
 
-`200` the intake state, as `GET`.
+`200` the questionnaire state, as `GET`.
 
-Errors: `400 INTAKE_ANSWERS_INVALID` (unknown id, empty, `not_sure` on a required question, a value not among the options), `409 INTAKE_NOT_STARTED`, `409 INTAKE_APPROVED`, `409 INTAKE_SESSION_CHANGED`.
+Errors: `400 QUESTIONNAIRE_ANSWERS_INVALID` (unknown id, empty, `not_sure` on a required question, a value not among the options), `409 QUESTIONNAIRE_NOT_STARTED`, `409 QUESTIONNAIRE_APPROVED`, `409 QUESTIONNAIRE_SESSION_CHANGED`.
 
 </details>
 
 <details>
-<summary>POST /api/v1/brands/:brandId/intake/approve</summary>
+<summary>POST /api/v1/brands/:brandId/questionnaire/submit</summary>
 
-Body `{ "sessionId": "<uuid>" }` (optional only for an intake edited in Settings, which has no session to answer). Checks every required question has an answer (`400 INTAKE_INCOMPLETE` with the ids), then the Account Manager reviews the answers and reads the facts out of them. Facts the owner **tapped** (business type, post language, goal, the money range with its numbers and currency) are taken from the answers by code, never from the model's reading.
+Body `{ "sessionId": "<uuid>" }` (optional only for a questionnaire edited in Settings, which has no session to answer). Checks every required question has an answer (`400 QUESTIONNAIRE_INCOMPLETE` with the ids), then the Account Manager reviews the answers and reads the facts out of them. Facts the owner **tapped** (business type, post language, goal, the money range with its numbers and currency) are taken from the answers by code, never from the model's reading.
 
-- **Approved:** `{ approved: true, research }`. The intake is saved to `brands.intake` (validated by `intakeSchema`), `intakeApprovedAt` is set, research is queued (`research` as `GET .../research`). The approval is written only if nobody approved first, and the database allows one active research run per brand, so two approvals at once start one run; both answer `approved: true`.
-- **Not approved, first review:** `{ approved: false, final: false, reason, followUps: IntakeQuestion[], reopen: [] }` with 1-3 follow-ups (checked like the first questions). Answer them with `PUT .../answers` and approve again.
-- **Not approved, final review:** `{ approved: false, final: true, reason, followUps: [], reopen: ["q4", "f1"] }`: no new questions; show the `reopen` questions again with the `reason`, let the owner change those answers, and approve again.
+- **Approved:** `{ approved: true, research }`. The questionnaire is saved to `brands.questionnaire` (validated by `questionnaireSchema`), `questionnaireApprovedAt` is set, research is queued (`research` as `GET .../research`). The approval is written only if nobody approved first, and the database allows one active research run per brand, so two approvals at once start one run; both answer `approved: true`.
+- **Not approved, first review:** `{ approved: false, final: false, reason, followUps: QuestionnaireQuestion[], reopen: [] }` with 1-3 follow-ups (checked like the first questions). Answer them with `PUT .../answers` and submit again.
+- **Not approved, final review:** `{ approved: false, final: true, reason, followUps: [], reopen: ["q4", "f1"] }`: no new questions; show the `reopen` questions again with the `reason`, let the owner change those answers, and submit again.
 - **Already approved:** `{ approved: true, research }`, and nothing new starts.
 
-**Edited in Settings:** `PATCH /brands/:id` with `intake` clears `intakeApprovedAt` (research answers 409 until approved again). Approving then reviews the owner's edited intake and, when approved, keeps it exactly as they wrote it; when not, answers `{ approved: false, final: true, reason, followUps: [], reopen: [] }` and the owner fixes it in Settings.
+**Edited in Settings:** `PATCH /brands/:id` with `questionnaire` clears `questionnaireApprovedAt` (research answers 409 until approved again). Submitting then reviews the owner's edited questionnaire and, when approved, keeps it exactly as they wrote it; when not, answers `{ approved: false, final: true, reason, followUps: [], reopen: [] }` and the owner fixes it in Settings.
 
-Errors: `400 INTAKE_INCOMPLETE`, `409 INTAKE_NOT_STARTED`, `409 INTAKE_SESSION_CHANGED`, `502 INTAKE_REVIEW_FAILED`.
+Errors: `400 QUESTIONNAIRE_INCOMPLETE`, `409 QUESTIONNAIRE_NOT_STARTED`, `409 QUESTIONNAIRE_SESSION_CHANGED`, `502 QUESTIONNAIRE_REVIEW_FAILED`.
 
 </details>
 
@@ -736,8 +736,8 @@ Errors: `400 INTAKE_INCOMPLETE`, `409 INTAKE_NOT_STARTED`, `409 INTAKE_SESSION_C
 The full catalogue is
 [`2026-09-20-api-endpoints-catalogue.md`](./superpowers/specs/2026-09-20-api-endpoints-catalogue.md),
 which carries request and response shapes for the original 39; the research pair above was
-added on 2026-09-22 and the four intake endpoints on 2026-09-25, making 45. Twenty-four are live:
-the 12 from phase 1, the 2 scans, the 2 research endpoints, the 4 intake endpoints and the 4
+added on 2026-09-22 and the four questionnaire endpoints on 2026-09-25, making 45. Twenty-four are live:
+the 12 from phase 1, the 2 scans, the 2 research endpoints, the 4 questionnaire endpoints and the 4
 social account endpoints.
 
 | Phase                                   | Endpoints | Built          |

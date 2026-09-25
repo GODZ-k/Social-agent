@@ -3,7 +3,7 @@
 import { load, type CheerioAPI } from "cheerio";
 import { z } from "zod";
 import { timeSchema, weekdaySchema, type BusinessInfo, type Weekday } from "@social-agent/shared";
-import { config } from "../config/constants";
+import { config } from "@/config/constants";
 import type { PageFacts } from "./types";
 
 // Page types, and pure value types (address, rating, menu item). "Place" and "ContactPoint" are
@@ -166,7 +166,8 @@ function businessNodes($: CheerioAPI): Node[] {
   const found: Node[] = [];
   $('script[type="application/ld+json"]').each((_, element) => {
     try {
-      collectFrom(JSON.parse($(element).text()), 0, found);
+      const json = JSON.parse($(element).text());
+      collectFrom(json, 0, found);
     } catch {
       // Broken JSON-LD is common. It is simply not a source.
     }
@@ -178,11 +179,12 @@ function readLocation(address: unknown): BusinessInfo["location"] {
   if (typeof address === "string") return clean(address) ? { address: clean(address) } : undefined;
   if (!address || typeof address !== "object") return undefined;
   const node = address as Node;
+  const country = fieldOrSelf(node.addressCountry, "name");
   const location = {
     address: clean(node.streetAddress) || undefined,
     city: clean(node.addressLocality) || undefined,
     region: clean(node.addressRegion) || undefined,
-    country: clean(fieldOrSelf(node.addressCountry, "name")) || undefined,
+    country: clean(country) || undefined,
   };
   return Object.values(location).some(Boolean) ? location : undefined;
 }
@@ -193,8 +195,10 @@ function readHours(spec: unknown): BusinessInfo["hours"] {
   for (const entry of [spec].flat()) {
     if (!entry || typeof entry !== "object") continue;
     const node = entry as Node;
-    const open = timeSchema.safeParse(clean(node.opens).slice(0, 5));
-    const close = timeSchema.safeParse(clean(node.closes).slice(0, 5));
+    const openTime = clean(node.opens).slice(0, 5);
+    const open = timeSchema.safeParse(openTime);
+    const closeTime = clean(node.closes).slice(0, 5);
+    const close = timeSchema.safeParse(closeTime);
     if (!open.success || !close.success) continue;
     for (const day of [node.dayOfWeek].flat()) {
       // "Monday", "https://schema.org/Monday" and "Mo" all start with the weekday's first letters.
@@ -212,15 +216,20 @@ function linkHrefs($: CheerioAPI): string[] {
 }
 
 function pageIdentity($: CheerioAPI, url: string) {
-  const meta = (selector: string) => clean($(selector).attr("content")) || undefined;
+  const meta = (selector: string) => {
+    const content = $(selector).attr("content");
+    return clean(content) || undefined;
+  };
+  const title = $("title").first().text();
+  const image = meta('meta[property="og:image"]');
   return {
-    title: clean($("title").first().text()),
+    title: clean(title),
     description: meta('meta[name="description"]'),
     og: {
       siteName: meta('meta[property="og:site_name"]'),
       title: meta('meta[property="og:title"]'),
       description: meta('meta[property="og:description"]'),
-      image: absolute(meta('meta[property="og:image"]'), url),
+      image: absolute(image, url),
     },
   };
 }
@@ -229,9 +238,10 @@ function contactDetails($: CheerioAPI, nodes: Node[]): { phones: string[]; email
   const hrefs = linkHrefs($);
   // A mailto's headers ("?subject=...") are not part of the address, so they go before decoding.
   const mailtoAddresses = hrefsWithScheme(hrefs, "mailto:").map((value) => value.split("?")[0]!);
+  const telNumbers = hrefsWithScheme(hrefs, "tel:");
 
   const phones = unique([
-    ...decodeAll(hrefsWithScheme(hrefs, "tel:")).map((phone) => phone.trim()),
+    ...decodeAll(telNumbers).map((phone) => phone.trim()),
     ...nodes.map((node) => clean(node.telephone)),
   ]);
   const emails = unique([
@@ -248,7 +258,13 @@ function socialLinksOn($: CheerioAPI, url: string): string[] {
 }
 
 function headingsOn($: CheerioAPI): string[] {
-  return unique($("h1, h2, h3").map((_, element) => clean($(element).text())).get()).slice(0, config.scan.MAX_HEADINGS_PER_PAGE);
+  const headings = $("h1, h2, h3")
+    .map((_, element) => {
+      const text = $(element).text();
+      return clean(text);
+    })
+    .get();
+  return unique(headings).slice(0, config.scan.MAX_HEADINGS_PER_PAGE);
 }
 
 /** Document order decides: the header's logo comes before a footer or partner logo. */
@@ -263,10 +279,16 @@ function imageNamedLogo($: CheerioAPI): string | undefined {
 }
 
 function logoOn($: CheerioAPI, nodes: Node[], url: string, ogImage?: string): string | undefined {
-  const declared = nodes.map((node) => absolute(fieldOrSelf(node.logo, "url"), url)).find(Boolean);
+  const declared = nodes
+    .map((node) => {
+      const logo = fieldOrSelf(node.logo, "url");
+      return absolute(logo, url);
+    })
+    .find(Boolean);
   if (declared) return declared;
   const icon = $('link[rel~="icon"]').attr("href") ?? $('link[rel="apple-touch-icon"]').attr("href");
-  return absolute(imageNamedLogo($), url) ?? ogImage ?? absolute(icon, url);
+  const namedLogo = imageNamedLogo($);
+  return absolute(namedLogo, url) ?? ogImage ?? absolute(icon, url);
 }
 
 /** Mutates the parse: chrome and cookie/modal overlays are gone once this has run. */

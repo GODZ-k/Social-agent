@@ -45,8 +45,8 @@ When a profile cannot be read, write "profile not readable" and stop. Do not inf
 
 | Test | Needs | Writes into `opening` |
 |---|---|---|
-| What nobody says | a customer need from intake or reviews, and 3+ competitors whose positioning line ignores it | the need, and the specific this brand can show for it now |
+| What nobody says | a customer need from questionnaire or reviews, and 3+ competitors whose positioning line ignores it | the need, and the specific this brand can show for it now |
 | What everybody says the same | the same claim on 3+ positioning lines | the claim named as the category cliché, and the specific proof this brand offers instead |
-| What everybody says badly | a promise on 2+ sites with no proof beside it | the promise, and the proof this brand has (from site facts or intake), or the question to the owner if it does not have it yet |
+| What everybody says badly | a promise on 2+ sites with no proof beside it | the promise, and the proof this brand has (from site facts or questionnaire), or the question to the owner if it does not have it yet |
 
 An opening built on a claim the brand cannot substantiate today goes to `openQuestions`, not to `opening`.

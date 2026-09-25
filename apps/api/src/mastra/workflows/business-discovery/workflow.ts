@@ -6,7 +6,7 @@ import { gatherStep } from "./steps/gather";
 import { profileStep } from "./steps/profile";
 import { saveStep } from "./steps/save";
 
-// The brand kit, the intake answers and the site facts in; a growth brief and an audience
+// The brand kit, the questionnaire answers and the site facts in; a growth brief and an audience
 // profile out. See ./README.md. The rest of the API calls runBusinessDiscovery (./run.ts),
 // never this workflow directly.
 export const businessDiscoveryWorkflow = createWorkflow({

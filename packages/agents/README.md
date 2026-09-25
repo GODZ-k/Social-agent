@@ -11,9 +11,9 @@ The product's agent know-how, kept apart from any one app so it can be reused in
 | `src/brand-analyst/` | `createBrandAnalyst({ model })`: the brand kit from a website's facts |
 | `src/growth-consultant/` | `createGrowthConsultant({ model, tools })`: the growth brief |
 | `src/audience-researcher/` | `createAudienceResearcher({ model, tools })`: the audience profile |
-| `src/account-manager/` | `createAccountManager({ model })`: the intake questions and their review, `checkIntakeQuestions`, `INTAKE_LIMITS` |
+| `src/account-manager/` | `createAccountManager({ model })`: the questionnaire questions and their review, `checkQuestionnaireQuestions`, `QUESTIONNAIRE_LIMITS` |
 
-Every built agent lives here since 2026-09-25; the rest (Strategist, Copywriter, Art Director, Editor, Performance Analyst) are built here too. Each is a factory: **the app passes the model and, for research agents, the tools**, so another project picks its own models and its own search. An agent's input is data the app loads, usually the shared `BrandContext` (`packages/shared`): brand kit, approved intake, site facts, latest research. No agent reads a database.
+Every built agent lives here since 2026-09-25; the rest (Strategist, Copywriter, Art Director, Editor, Performance Analyst) are built here too. Each is a factory: **the app passes the model and, for research agents, the tools**, so another project picks its own models and its own search. An agent's input is data the app loads, usually the shared `BrandContext` (`packages/shared`): brand kit, approved questionnaire, site facts, latest research. No agent reads a database.
 
 ```ts
 // apps/api/src/mastra/agents/team.ts: Cadence's wiring

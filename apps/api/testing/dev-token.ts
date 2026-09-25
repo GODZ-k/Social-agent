@@ -43,7 +43,8 @@ async function userIdFor(who: string): Promise<string> {
 }
 
 async function mintToken(userId: string): Promise<string> {
-    const session = await clerk<{ id: string }>("/sessions", { method: "POST", body: JSON.stringify({ user_id: userId }) });
+    const body = JSON.stringify({ user_id: userId });
+    const session = await clerk<{ id: string }>("/sessions", { method: "POST", body });
     const token = await clerk<{ jwt: string }>(`/sessions/${session.id}/tokens`, { method: "POST" });
     return token.jwt;
 }
@@ -54,7 +55,8 @@ async function main(): Promise<number> {
         console.error("Usage: pnpm --filter api run dev-token -- <email or user_...>");
         return 2;
     }
-    const jwt = await mintToken(await userIdFor(who));
+    const userId = await userIdFor(who);
+    const jwt = await mintToken(userId);
     console.log(jwt);
     return 0;
 }

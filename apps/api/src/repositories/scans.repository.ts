@@ -1,43 +1,40 @@
 import { brandScans, type BrandScanRow, type NewBrandScanRow } from "@social-agent/db";
 import type { ScanPage, ScanResult, ScanStepId } from "@social-agent/shared";
-import { and,desc, asc, eq, inArray } from "drizzle-orm";
+import { and, asc, desc, eq, inArray } from "drizzle-orm";
 import { config } from "@/config/constants";
 import { db } from "@/config/db";
+import { insertedRow } from "@/utils";
 import type { ScanScope } from "@/types/scope";
 
 /** Database queries for the `brand_scans` table. No business rules here. */
 export class ScansRepository {
     static async create(values: NewBrandScanRow): Promise<BrandScanRow> {
-        const [row] = await db.insert(brandScans).values(values).returning();
-        if (!row) throw new Error("Insert into brand_scans returned no row");
-        return row;
+        const rows = await db.insert(brandScans).values(values).returning();
+        return insertedRow(rows, "brand_scans");
     }
 
     static async findById(id: string, scope: ScanScope): Promise<BrandScanRow | undefined> {
-        const [row] = await db.select().from(brandScans).where(ScansRepository.byId(id, scope)).limit(1);
-        return row;
+        const scanFilter = ScansRepository.byId(id, scope);
+        return db.query.brandScans.findFirst({ where: scanFilter });
     }
 
     /** The oldest scan this person still has queued or running, if any. */
     static async findActiveFor(requestedBy: string): Promise<BrandScanRow | undefined> {
-        const [row] = await db
-            .select()
-            .from(brandScans)
-            .where(and(eq(brandScans.requestedBy, requestedBy), ScansRepository.isActive()))
-            .orderBy(asc(brandScans.createdAt))
-            .limit(1);
-        return row;
+        const active = ScansRepository.isActive();
+        const scanFilter = and(eq(brandScans.requestedBy, requestedBy), active);
+        return db.query.brandScans.findFirst({
+            where: scanFilter,
+            orderBy: asc(brandScans.createdAt),
+        });
     }
 
     /** The newest finished scan linked to a brand: business discovery reads its result as site facts. */
     static async findLatestDoneForBrand(brandId: string): Promise<BrandScanRow | undefined> {
-        const [row] = await db
-            .select()
-            .from(brandScans)
-            .where(and(eq(brandScans.brandId, brandId), eq(brandScans.status, "done")))
-            .orderBy(desc(brandScans.createdAt))
-            .limit(1);
-        return row;
+        const scanFilter = and(eq(brandScans.brandId, brandId), eq(brandScans.status, "done"));
+        return db.query.brandScans.findFirst({
+            where: scanFilter,
+            orderBy: desc(brandScans.createdAt),
+        });
     }
 
     static async markRunning(id: string): Promise<void> {
@@ -68,10 +65,11 @@ export class ScansRepository {
 
     /** Scans a previous process left behind can never finish: fail them. Returns how many. */
     static async failInterrupted(): Promise<number> {
+        const scanFilter = ScansRepository.isActive();
         const rows = await db
             .update(brandScans)
             .set({ status: "failed", currentStep: null, error: config.scan.INTERRUPTED_MESSAGE, finishedAt: new Date() })
-            .where(ScansRepository.isActive())
+            .where(scanFilter)
             .returning({ id: brandScans.id });
         return rows.length;
     }

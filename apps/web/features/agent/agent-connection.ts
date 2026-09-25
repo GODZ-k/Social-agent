@@ -75,6 +75,8 @@ async function* run(text: string, threadId: string, runId: string, signal?: Abor
 // Module scope: useChat captures its connection once, on first render.
 export const mockAgentConnection: ConnectConnectionAdapter = {
   connect(messages, _data, abortSignal, runContext) {
-    return run(reply(lastUserText(messages)), runContext?.threadId ?? "local", runContext?.runId ?? "local", abortSignal);
+    const question = lastUserText(messages);
+    const text = reply(question);
+    return run(text, runContext?.threadId ?? "local", runContext?.runId ?? "local", abortSignal);
   },
 };

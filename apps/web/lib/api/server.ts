@@ -51,7 +51,8 @@ export const getStrategy = cache(async (clientId: string): Promise<Strategy | nu
 
 export const listPosts = cache(async (clientId: string): Promise<Post[]> => {
   if (!(await findClient(clientId))) return [];
-  return clone(getDb().posts.filter((p) => p.clientId === clientId));
+  const posts = getDb().posts.filter((p) => p.clientId === clientId);
+  return clone(posts);
 });
 
 export const getAnalytics = cache(async (clientId: string): Promise<Analytics | null> => {

@@ -20,7 +20,8 @@ export function MediaPicker({
   async function pickImage(file: File | undefined) {
     if (!file) return;
     try {
-      onPick(await readImage(file));
+      const url = await readImage(file);
+      onPick(url);
     } catch (error) {
       toast.error((error as Error).message);
     } finally {

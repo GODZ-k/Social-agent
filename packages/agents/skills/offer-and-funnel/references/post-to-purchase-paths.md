@@ -21,7 +21,7 @@ Walking it: open the landing page with `read-page` and check three things: is th
 
 **Constraint wording.** "The profile must show current hours and the address; the weekly special must be on the counter the day it is posted."
 
-**Walk it.** Read the site's contact or hours page and compare with what the scan found. Check that the item in the intake `bestSellers` is on the menu page.
+**Walk it.** Read the site's contact or hours page and compare with what the scan found. Check that the item in the questionnaire `bestSellers` is on the menu page.
 
 ## Bookings
 

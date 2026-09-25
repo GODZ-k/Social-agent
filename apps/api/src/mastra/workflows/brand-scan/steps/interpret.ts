@@ -12,7 +12,7 @@ import {
   type BrandAnalysis,
 } from "@social-agent/agents";
 import { brandAnalyst } from "@/mastra/agents/team";
-import { interpretOutputSchema, readPagesOutputSchema } from "../schemas";
+import { interpretOutputSchema, readPagesOutputSchema } from "@/mastra/workflows/brand-scan/schemas";
 
 type VoiceWord = BrandAnalysis["voice"][number];
 
@@ -30,7 +30,8 @@ function normalise(text: string): string {
 /** Everything the model was shown from the site, as one searchable string. */
 function siteWords(facts: SiteFacts): string {
   const parts = facts.pages.flatMap((page) => [page.title, page.description ?? "", page.og.description ?? "", ...page.headings, page.text]);
-  return normalise(parts.join(" "));
+  const text = parts.join(" ");
+  return normalise(text);
 }
 
 function isOnSite(quote: string, words: string): boolean {
@@ -86,7 +87,8 @@ export const interpretStep = createStep({
     const words = siteWords(facts);
 
     try {
-      const analysis = await generateStructured(agent, renderSiteFacts(facts), brandAnalysisSchema, {
+      const prompt = renderSiteFacts(facts);
+      const analysis = await generateStructured(agent, prompt, brandAnalysisSchema, {
         // No tools here, so the schema goes through the provider's native structured output, as before.
         jsonPromptInjection: false,
         checkFirstAnswer: (answer) => requireSupportedVoice(answer, words),

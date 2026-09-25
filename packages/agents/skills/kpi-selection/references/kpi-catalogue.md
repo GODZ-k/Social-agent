@@ -33,7 +33,7 @@ Rules read alongside the table:
 
 | Source | Phase 2B (now) | Phase 5 (accounts connected) | Notes |
 |---|---|---|---|
-| Owner intake | `orderValue`, `capacity`, best sellers, goal | same, edited in Settings | the only source of margins and capacity; never inferred |
+| Owner questionnaire | `orderValue`, `capacity`, best sellers, goal | same, edited in Settings | the only source of margins and capacity; never inferred |
 | Scanned site facts | prices, booking or order path present, phone, review widget and count if shown | same, re-scanned | prices bound the order value; a booking form makes tier-2 possible |
 | Owner's monthly report | none until asked; the brief asks | monthly numbers the Performance Analyst reads | the tier-1 source; keep it to numbers countable in five minutes |
 | Public profile read (`read-page`) | often blocked by login walls (Instagram, Facebook, LinkedIn as of 2026-09); sometimes a follower count from a search snippet | not needed | treat any count as approximate and dated |

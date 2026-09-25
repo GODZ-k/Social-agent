@@ -21,6 +21,8 @@ export const memory = new Memory({
   storage: postgresStore,
 });
 
+const observabilityStore = await new DuckDBStore().getStore('observability');
+
 export const mastra = new Mastra({
   // Register each agent and workflow here as it is built (build order: see ./README.md).
   workflows: { brandScanWorkflow, businessDiscoveryWorkflow },
@@ -30,7 +32,7 @@ export const mastra = new Mastra({
     id: 'composite-storage',
     default: postgresStore,
     domains: {
-      observability: await new DuckDBStore().getStore('observability'),
+      observability: observabilityStore,
     }
   }),
   logger: new PinoLogger({

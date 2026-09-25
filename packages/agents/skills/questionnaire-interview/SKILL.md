@@ -1,11 +1,11 @@
 ---
-name: intake-interview
+name: questionnaire-interview
 description: Use when writing interview questions for a small-business owner, or reviewing their answers.
 ---
 
-# intake-interview
+# questionnaire-interview
 
-**Status:** written 2026-09-25 for the Account Manager's guided intake. Languages: English, Hindi, Hinglish.
+**Status:** written 2026-09-25 for the Account Manager's guided questionnaire. Languages: English, Hindi, Hinglish.
 
 ## Who you are talking to
 
@@ -70,7 +70,7 @@ Ids are short and stable: `q1`, `q2`, ... Required questions have no "Not sure" 
 
 ## The review
 
-You get every question with its answer. Read the facts into `intake`:
+You get every question with its answer. Read the facts into `questionnaire`:
 
 - a "yes" to a confirm question means its `prefill` is the answer; a typed fix replaces it;
 - a choice answer is its option `value`;

@@ -1,7 +1,7 @@
 export * from "./schema/admin.schema.js";
 export * from "./schema/brand.schema.js";
 export * from "./schema/brand-context.schema.js";
-export * from "./schema/intake.schema.js";
+export * from "./schema/questionnaire.schema.js";
 export * from "./schema/me.schema.js";
 export * from "./schema/post.schema.js";
 export * from "./schema/research.schema.js";
@@ -12,7 +12,7 @@ export * from "./schema/strategy.schema.js";
 export * from "./types/admin.types.js";
 export * from "./types/brand.types.js";
 export * from "./types/brand-context.types.js";
-export * from "./types/intake.types.js";
+export * from "./types/questionnaire.types.js";
 export * from "./types/me.types.js";
 export * from "./types/post.types.js";
 export * from "./types/scan.types.js";

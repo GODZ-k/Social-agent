@@ -1,9 +1,9 @@
 import { createStep } from "@mastra/core/workflows";
 import { audienceProfileSchema } from "@social-agent/shared";
 import { renderProfileInput } from "@social-agent/agents";
-import { audienceResearcher } from "../../../agents/team";
-import { askResearchAgent } from "../research-agent";
-import { RESEARCH_FAILURE, diagnoseOutputSchema, profileOutputSchema } from "../schemas";
+import { audienceResearcher } from "@/mastra/agents/team";
+import { askResearchAgent } from "@/mastra/workflows/business-discovery/research-agent";
+import { RESEARCH_FAILURE, diagnoseOutputSchema, profileOutputSchema } from "@/mastra/workflows/business-discovery/schemas";
 
 export const profileStep = createStep({
   id: "profile",
@@ -14,10 +14,9 @@ export const profileStep = createStep({
     const { input, brief } = inputData;
     if (inputData.failure || !brief) return { failure: inputData.failure };
 
-    const profile = await askResearchAgent("profile", audienceResearcher, renderProfileInput(input, brief), audienceProfileSchema, {
-      requestContext,
-      logger: mastra?.getLogger(),
-    });
+    const prompt = renderProfileInput(input, brief);
+    const logger = mastra?.getLogger();
+    const profile = await askResearchAgent("profile", audienceResearcher, prompt, audienceProfileSchema, { requestContext, logger });
     if (!profile) return { brief, failure: RESEARCH_FAILURE };
     return { brief, profile };
   },

@@ -30,5 +30,8 @@ export function groupByDay(posts: Post[]): Map<string, Post[]> {
 
 /** Every day on the month's grid: whole weeks, so the edges of the month fill their rows. */
 export function monthDays(month: Date): Date[] {
-  return eachDayOfInterval({ start: startOfWeek(month, WEEK), end: endOfWeek(endOfMonth(month), WEEK) });
+  const start = startOfWeek(month, WEEK);
+  const monthEnd = endOfMonth(month);
+  const end = endOfWeek(monthEnd, WEEK);
+  return eachDayOfInterval({ start, end });
 }

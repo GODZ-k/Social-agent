@@ -1,7 +1,7 @@
 // TESTING TOOL: the two research agents on their own, on a made-up café (no database needed).
 //
 // What it does: gives the Growth Consultant and/or the Audience Researcher a stub Four Barrel
-// Coffee intake (STUB_INPUT below) and shows every step the model takes: which searches and page
+// Coffee questionnaire (STUB_INPUT below) and shows every step the model takes: which searches and page
 // reads it made, how long it took, and the answer. Use it to tune an agent's instructions or
 // skills, compare structured-output modes, or measure cost and time.
 //
@@ -31,7 +31,7 @@ import { siteFactsSchema } from "@/scan/types";
 
 const MODES: Record<string, JsonPromptInjection> = { auto: "auto", inline: "inline", system: "system", native: false };
 
-/** A plausible owner's answers for the café, written as the intake screen would save them. */
+/** A plausible owner's answers for the café, written as the questionnaire screen would save them. */
 const STUB_INPUT: BrandContext = {
   brand: {
     name: "Four Barrel Coffee",
@@ -51,7 +51,7 @@ const STUB_INPUT: BrandContext = {
     business: { location: { city: "San Francisco", region: "California", country: "United States" } },
     platforms: ["instagram"],
   },
-  intake: {
+  questionnaire: {
     offer: "Espresso drinks, pour-overs and pastries in three cafés, whole-bean coffee by the bag in the cafés and online, monthly subscriptions, and wholesale to restaurants and offices.",
     goal: { kind: "repeat_customers", note: "Weekday mornings are full; afternoons and weekends are quiet. We want the regulars back more often and more of them on subscription." },
     bestSellers: "Friendo blend, the seasonal single origins, and the subscription. The subscription is the best margin.",
@@ -81,7 +81,8 @@ const seconds = (since: number) => ((Date.now() - since) / 1000).toFixed(1);
 function loadInput(): BrandContext {
   const factsFile = option("facts");
   if (!factsFile) return STUB_INPUT;
-  const saved = JSON.parse(readFileSync(factsFile, "utf8")) as { facts: unknown };
+  const text = readFileSync(factsFile, "utf8");
+  const saved = JSON.parse(text) as { facts: unknown };
   return { ...STUB_INPUT, siteFacts: siteFactsSchema.parse(saved.facts) };
 }
 
@@ -91,8 +92,9 @@ type Probe<T> = { object: T; steps: number; toolCalls: string[]; seconds: string
 async function probe<T>(agent: typeof growthConsultant | typeof audienceResearcher, prompt: string, schema: z.ZodType<T>, requestContext: RequestContext<ResearchContext>, mode: JsonPromptInjection): Promise<Probe<T>> {
   const started = Date.now();
   const toolCalls: string[] = [];
+  const structuredOutput = structuredOutputFor(schema, mode);
   const response = await agent.generate(prompt, {
-    structuredOutput: structuredOutputFor(schema, mode),
+    structuredOutput,
     requestContext,
     maxSteps: config.research.MAX_AGENT_STEPS,
     onStepFinish: (step) => {
@@ -123,7 +125,8 @@ async function main(): Promise<number> {
 
   let brief: GrowthBrief | undefined;
   if (which === "growth" || which === "both") {
-    const result = await probe(growthConsultant, renderDiscoveryInput(input), growthBriefSchema, requestContext, mode);
+    const prompt = renderDiscoveryInput(input);
+    const result = await probe(growthConsultant, prompt, growthBriefSchema, requestContext, mode);
     brief = result.object;
     report.growth = { steps: result.steps, seconds: result.seconds, toolCalls: result.toolCalls };
   } else {
@@ -132,12 +135,15 @@ async function main(): Promise<number> {
       console.error("The audience probe needs --brief <file> with a saved growth brief, or run `both`.");
       return 2;
     }
-    brief = growthBriefSchema.parse(JSON.parse(readFileSync(briefFile, "utf8")));
+    const text = readFileSync(briefFile, "utf8");
+    const saved = JSON.parse(text);
+    brief = growthBriefSchema.parse(saved);
   }
 
   let profile: AudienceProfile | undefined;
   if (which === "audience" || which === "both") {
-    const result = await probe(audienceResearcher, renderProfileInput(input, brief), audienceProfileSchema, requestContext, mode);
+    const prompt = renderProfileInput(input, brief);
+    const result = await probe(audienceResearcher, prompt, audienceProfileSchema, requestContext, mode);
     profile = result.object;
     report.audience = { steps: result.steps, seconds: result.seconds, toolCalls: result.toolCalls };
   }
@@ -146,7 +152,10 @@ async function main(): Promise<number> {
   const output = { report, brief, profile };
   print(output);
   const outFile = option("out");
-  if (outFile) writeFileSync(outFile, JSON.stringify(output, null, 2));
+  if (outFile) {
+    const json = JSON.stringify(output, null, 2);
+    writeFileSync(outFile, json);
+  }
   return 0;
 }
 

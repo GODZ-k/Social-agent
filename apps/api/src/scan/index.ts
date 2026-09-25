@@ -1,5 +1,5 @@
 import type { BusinessInfo } from "@social-agent/shared";
-import { config } from "../config/constants";
+import { config } from "@/config/constants";
 import { pickPages } from "./discover-pages";
 import { extractPageFacts } from "./extract-facts";
 import { buildStyleFacts } from "./extract-style";
@@ -40,7 +40,8 @@ function collectPages(
     const alreadyRead = pages.some((page) => page.url === result.value.url); // two links, one page after redirects
     if (alreadyRead) continue;
     try {
-      pages.push(extractPageFacts(result.value.url, result.value.html));
+      const page = extractPageFacts(result.value.url, result.value.html);
+      pages.push(page);
     } catch {
       // One page whose markup defeats the parser must not lose the whole scan; it counts as unread.
       parseFailures += 1;

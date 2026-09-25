@@ -1,8 +1,8 @@
 import { RequestContext } from "@mastra/core/request-context";
 import type { ResearchStepId } from "@social-agent/shared";
-import { BrandContextService } from "../../../services/brand-context.service";
-import { newResearchBudget } from "../../tools/research-budget";
-import { mastra } from "../../index";
+import { BrandContextService } from "@/services/brand-context.service";
+import { newResearchBudget } from "@/mastra/tools/research-budget";
+import { mastra } from "@/mastra/index";
 import { RESEARCH_MESSAGES, RESEARCH_STEP_IDS, discoveryOutcomeSchema, type DiscoveryOutcome } from "./schemas";
 
 // Lives apart from workflow.ts: this file imports the Mastra instance, and mastra/index.ts
@@ -16,19 +16,20 @@ export type RunBusinessDiscoveryOptions = {
 };
 
 /**
- * The one way the rest of the API runs business discovery. Expected failures (no intake, a model
+ * The one way the rest of the API runs business discovery. Expected failures (no questionnaire, a model
  * answer rejected twice) are returned, never thrown, so a caller can store them. The research
  * queue stores the brief and the profile; this function writes nothing.
  */
 export async function runBusinessDiscovery(brandId: string, options: RunBusinessDiscoveryOptions = {}): Promise<DiscoveryOutcome> {
-  // A brand without an approved intake has no context: the endpoint refuses such a run, so this is a second guard.
+  // A brand without an approved questionnaire has no context: the endpoint refuses such a run, so this is a second guard.
   const inputData = await BrandContextService.load(brandId);
-  if (!inputData) return { ok: false, code: "INTAKE_REQUIRED", message: RESEARCH_MESSAGES.INTAKE_REQUIRED };
+  if (!inputData) return { ok: false, code: "QUESTIONNAIRE_REQUIRED", message: RESEARCH_MESSAGES.QUESTIONNAIRE_REQUIRED };
 
   // One budget per run: the tools count searches and page reads against it and collect the sources.
   // Untyped on purpose: a workflow run takes a plain RequestContext; the tools check the value.
   const requestContext = new RequestContext();
-  requestContext.set("budget", newResearchBudget());
+  const budget = newResearchBudget();
+  requestContext.set("budget", budget);
 
   const run = await mastra.getWorkflow("businessDiscoveryWorkflow").createRun();
   const stream = run.stream({ inputData, requestContext });

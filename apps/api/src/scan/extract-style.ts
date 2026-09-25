@@ -1,5 +1,5 @@
 import { load } from "cheerio";
-import { config } from "../config/constants";
+import { config } from "@/config/constants";
 import type { Branding } from "./firecrawl";
 import type { StyleFacts } from "./types";
 
@@ -72,7 +72,10 @@ function loadedFontNames(html: string): string[] {
       return;
     }
     for (const family of url.searchParams.getAll("family")) {
-      for (const entry of family.split("|")) names.push(entry.split(":")[0]!.replace(/\+/g, " "));
+      for (const entry of family.split("|")) {
+        const name = entry.split(":")[0]!.replace(/\+/g, " ");
+        names.push(name);
+      }
     }
   });
 

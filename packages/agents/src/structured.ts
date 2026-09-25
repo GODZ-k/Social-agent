@@ -64,8 +64,9 @@ export function structuredOutputFor<T>(schema: z.ZodType<T>, jsonPromptInjection
 
 /** One model call, validated. Throws a rejection for a bad answer and anything else untouched. */
 async function generateOnce<T>(agent: StructuredAgent, prompt: string, schema: z.ZodType<T>, options: GenerateStructuredOptions<T>): Promise<T> {
+  const structuredOutput = structuredOutputFor(schema, options.jsonPromptInjection);
   const response = await agent.generate(prompt, {
-    structuredOutput: structuredOutputFor(schema, options.jsonPromptInjection),
+    structuredOutput,
     ...(options.requestContext ? { requestContext: options.requestContext } : {}),
     ...(options.maxSteps ? { maxSteps: options.maxSteps } : {}),
   });

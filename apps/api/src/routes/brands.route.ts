@@ -4,7 +4,7 @@ import { z } from "zod";
 import { BrandsController } from "@/controllers/brands.controller";
 import { validateMiddleware } from "@/middlewares/validate.middleware";
 import socialAccountsRoute from "@/routes/social-accounts.route";
-import intakeRoute from "@/routes/intake.route";
+import questionnaireRoute from "@/routes/questionnaire.route";
 import researchRoute from "@/routes/research.route";
 import { asyncHandler } from "@/utils/asyncHandler";
 
@@ -20,8 +20,8 @@ router.patch("/:id", validateBrandPatch, asyncHandler(BrandsController.update));
 router.delete("/:id", asyncHandler(BrandsController.archive));
 router.use("/:brandId/social-accounts", socialAccountsRoute);
 
-// The Account Manager's intake: questions, answers, approval (which starts research).
-router.use("/:brandId/intake", intakeRoute);
+// The Account Manager's questionnaire: questions, answers, approval (which starts research).
+router.use("/:brandId/questionnaire", questionnaireRoute);
 
 // Brand-scoped research: POST starts a run, GET polls it and returns the latest brief and profile.
 router.use("/:brandId/research", researchRoute);

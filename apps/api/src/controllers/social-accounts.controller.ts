@@ -6,19 +6,25 @@ import { pathParam } from "@/utils";
 
 export class SocialAccountsController {
     static async list(req: Request, res: Response) {
-        const data = await SocialAccountsService.list(currentUser(req), pathParam(req, "brandId"));
+        const user = currentUser(req);
+        const brandId = pathParam(req, "brandId");
+        const data = await SocialAccountsService.list(user, brandId);
         return res.status(200).json({ success: true, data });
     }
 
     static async connect(req: Request, res: Response) {
-        const data = await SocialAccountsService.connect(currentUser(req), pathParam(req, "brandId"), req.body.platform);
+        const user = currentUser(req);
+        const brandId = pathParam(req, "brandId");
+        const data = await SocialAccountsService.connect(user, brandId, req.body.platform);
         return res.status(200).json({ success: true, data });
     }
 
     // The route validated `:platform`.
     static async disconnect(req: Request, res: Response) {
         const platform = pathParam(req, "platform") as Platform;
-        await SocialAccountsService.disconnect(currentUser(req), pathParam(req, "brandId"), platform);
+        const user = currentUser(req);
+        const brandId = pathParam(req, "brandId");
+        await SocialAccountsService.disconnect(user, brandId, platform);
         return res.status(204).end();
     }
 }

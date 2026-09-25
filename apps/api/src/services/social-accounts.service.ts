@@ -3,27 +3,26 @@ import type { ConnectError, ConnectSocialAccountResponse, Platform, SocialAccoun
 import type { ConnectedAccount, Provider } from "@social-agent/social-connect";
 import { config } from "@/config/constants";
 import { env } from "@/config/env";
-import { BrandsRepository } from "@/repositories/brands.repository";
 import { SocialAccountsRepository } from "@/repositories/social-accounts.repository";
-import { scopeFor } from "@/services/brands.service";
+import { BrandsService } from "@/services/brands.service";
 import type { AuthUser } from "@/services/users.service";
 import { encryptSecret, socialCryptoReady } from "@/social/crypto";
 import { providerFor } from "@/social/providers";
 import { createState, readState } from "@/social/state";
 import type { OAuthCallbackQuery, OAuthState } from "@/types/social";
 import { AppError } from "@/utils/AppError";
-import { isUniqueViolation, isUuid } from "@/utils";
+import { isUniqueViolation } from "@/utils";
 
 export class SocialAccountsService {
     static async list(user: AuthUser, brandId: string): Promise<SocialAccountDetail[]> {
-        await requireBrand(user, brandId);
+        await BrandsService.findRow(user, brandId);
         const rows = await SocialAccountsRepository.listByBrand(brandId);
         return rows.map(toDetail);
     }
 
     /** Step one: the consent URL the browser must visit. Reconnect uses it too. */
     static async connect(user: AuthUser, brandId: string, platform: Platform): Promise<ConnectSocialAccountResponse> {
-        await requireBrand(user, brandId);
+        await BrandsService.findRow(user, brandId);
         const provider = providerFor(platform);
         if (!provider || !socialCryptoReady()) {
             throw new AppError(`Connecting ${platform} is not available yet.`, 501, "PLATFORM_NOT_AVAILABLE");
@@ -48,7 +47,8 @@ export class SocialAccountsService {
             const problem = await checkAccount(state, provider, account);
             if (problem) return settings(problem);
 
-            await SocialAccountsRepository.upsertConnected(toRow(state, account));
+            const row = toRow(state, account);
+            await SocialAccountsRepository.upsertConnected(row);
             return settingsUrl(state.brandId, { connected: platform });
         } catch (err) {
             if (isUniqueViolation(err)) return settings("account_in_use");
@@ -58,17 +58,11 @@ export class SocialAccountsService {
     }
 
     static async disconnect(user: AuthUser, brandId: string, platform: Platform): Promise<void> {
-        await requireBrand(user, brandId);
+        await BrandsService.findRow(user, brandId);
         const row = await SocialAccountsRepository.findByBrandPlatform(brandId, platform);
         if (!row || row.status === "disconnected") throw accountNotFound();
         await SocialAccountsRepository.disconnect(row.id);
     }
-}
-
-// Same 404 as brands: another person's brand must look like it does not exist.
-async function requireBrand(user: AuthUser, brandId: string) {
-    const brand = isUuid(brandId) ? await BrandsRepository.findById(brandId, scopeFor(user)) : undefined;
-    if (!brand) throw new AppError("This brand doesn't exist, or you don't have access to it.", 404, "BRAND_NOT_FOUND");
 }
 
 function accountNotFound() {

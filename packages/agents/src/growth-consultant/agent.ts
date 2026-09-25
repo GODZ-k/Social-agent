@@ -13,7 +13,7 @@ export function createGrowthConsultant({ model, tools }: { model: string; tools:
   return new Agent({
     id: "growth-consultant",
     name: "Growth Consultant",
-    description: "Diagnoses a business from its intake, website and web research, and writes the growth brief the Strategist plans from.",
+    description: "Diagnoses a business from its questionnaire, website and web research, and writes the growth brief the Strategist plans from.",
     instructions: [GROWTH_CONSULTANT_INSTRUCTIONS, ...SKILLS.map((name) => `# Craft notes: ${name}\n\n${loadSkill(name)}`)],
     model,
     tools,

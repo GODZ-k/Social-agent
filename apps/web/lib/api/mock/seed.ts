@@ -265,7 +265,8 @@ function buildPosts(): Post[] {
       const format = formats[n % formats.length] as PostFormat;
       const pillar = pillars[n % pillars.length]!;
       const hook = clientHooks[n % clientHooks.length]!;
-      const when = addHours(addDays(today, offset), [8, 12, 18, 10][n % 4]!);
+      const day = addDays(today, offset);
+      const when = addHours(day, [8, 12, 18, 10][n % 4]!);
 
       let status: PostStatus;
       if (offset < 0) status = "published";
@@ -308,6 +309,7 @@ function buildPosts(): Post[] {
       const pillar = pillars[(k + 1) % pillars.length]!;
       const format = formats[(k + 2) % formats.length] as PostFormat;
       const hook = clientHooks[(k + 5) % clientHooks.length]!;
+      const day = addDays(today, 5 + k * 2);
       out.push({
         id: `${client.id}-q${k + 1}`,
         clientId: client.id,
@@ -318,7 +320,7 @@ function buildPosts(): Post[] {
         caption: `${hook}. ${pillar.description} Drafted from this week's strategy. Edit anything that doesn't sound like you.`,
         hashtags: [`#${pillar.id}`, "#smallbusiness", "#local"],
         status: "in_review",
-        scheduledFor: addHours(addDays(today, 5 + k * 2), 9 + k).toISOString(),
+        scheduledFor: addHours(day, 9 + k).toISOString(),
         publishedAt: null,
         art: { variant: (k + 1) % 4, colorIndex: k % client.brand.colors.length },
         durationSec: format === "reel" ? 9 + k * 2 : undefined,

@@ -7,8 +7,8 @@ export function createAccountManager({ model }: { model: string }): Agent {
   return new Agent({
     id: "account-manager",
     name: "Account Manager",
-    description: "Talks with the business owner: runs the intake interview and reviews the answers before research.",
-    instructions: [ACCOUNT_MANAGER_INSTRUCTIONS, `# Craft notes: intake interview\n\n${loadSkill("intake-interview")}`],
+    description: "Talks with the business owner: runs the questionnaire interview and reviews the answers before research.",
+    instructions: [ACCOUNT_MANAGER_INSTRUCTIONS, `# Craft notes: questionnaire interview\n\n${loadSkill("questionnaire-interview")}`],
     model,
   });
 }

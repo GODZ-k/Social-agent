@@ -10,44 +10,39 @@ import type { ResearchKind, ResearchStepId } from "@social-agent/shared";
 import { and, asc, desc, eq, inArray, max } from "drizzle-orm";
 import { config } from "@/config/constants";
 import { db } from "@/config/db";
+import { insertedRow } from "@/utils";
 
 /**
  * Database queries for `research_runs` and `brand_research`. No business rules here. Access is
- * decided per brand by the service (`BrandsService.get` applies the ownership rule first), so
+ * decided per brand by the service (`BrandsService.findRow` applies the ownership rule first), so
  * these queries take a brand id, not a scope.
  */
 export class ResearchRepository {
     static async createRun(values: NewResearchRunRow): Promise<ResearchRunRow> {
-        const [row] = await db.insert(researchRuns).values(values).returning();
-        if (!row) throw new Error("Insert into research_runs returned no row");
-        return row;
+        const rows = await db.insert(researchRuns).values(values).returning();
+        return insertedRow(rows, "research_runs");
     }
 
     static async findRunById(id: string): Promise<ResearchRunRow | undefined> {
-        const [row] = await db.select().from(researchRuns).where(eq(researchRuns.id, id)).limit(1);
-        return row;
+        return db.query.researchRuns.findFirst({ where: eq(researchRuns.id, id) });
     }
 
     /** The oldest run this brand still has queued or running, if any. */
     static async findActiveRunFor(brandId: string): Promise<ResearchRunRow | undefined> {
-        const [row] = await db
-            .select()
-            .from(researchRuns)
-            .where(and(eq(researchRuns.brandId, brandId), ResearchRepository.isActive()))
-            .orderBy(asc(researchRuns.createdAt))
-            .limit(1);
-        return row;
+        const active = ResearchRepository.isActive();
+        const runFilter = and(eq(researchRuns.brandId, brandId), active);
+        return db.query.researchRuns.findFirst({
+            where: runFilter,
+            orderBy: asc(researchRuns.createdAt),
+        });
     }
 
     /** The newest run for this brand, whatever its status. Undefined when research never ran. */
     static async findLatestRunFor(brandId: string): Promise<ResearchRunRow | undefined> {
-        const [row] = await db
-            .select()
-            .from(researchRuns)
-            .where(eq(researchRuns.brandId, brandId))
-            .orderBy(desc(researchRuns.createdAt))
-            .limit(1);
-        return row;
+        return db.query.researchRuns.findFirst({
+            where: eq(researchRuns.brandId, brandId),
+            orderBy: desc(researchRuns.createdAt),
+        });
     }
 
     static async markRunning(id: string): Promise<void> {
@@ -74,23 +69,22 @@ export class ResearchRepository {
 
     /** Runs a previous process left behind can never finish: fail them. Returns how many. */
     static async failInterrupted(): Promise<number> {
+        const runFilter = ResearchRepository.isActive();
         const rows = await db
             .update(researchRuns)
             .set({ status: "failed", currentStep: null, error: config.research.INTERRUPTED_MESSAGE, finishedAt: new Date() })
-            .where(ResearchRepository.isActive())
+            .where(runFilter)
             .returning({ id: researchRuns.id });
         return rows.length;
     }
 
     /** The newest version of one kind for this brand, if any. */
     static async latestResearch(brandId: string, kind: ResearchKind): Promise<BrandResearchRow | undefined> {
-        const [row] = await db
-            .select()
-            .from(brandResearch)
-            .where(ResearchRepository.ofKind(brandId, kind))
-            .orderBy(desc(brandResearch.version))
-            .limit(1);
-        return row;
+        const researchFilter = ResearchRepository.ofKind(brandId, kind);
+        return db.query.brandResearch.findFirst({
+            where: researchFilter,
+            orderBy: desc(brandResearch.version),
+        });
     }
 
     /**
@@ -99,15 +93,15 @@ export class ResearchRepository {
      */
     static async insertResearch(values: Omit<NewBrandResearchRow, "version">): Promise<BrandResearchRow> {
         return db.transaction(async (tx) => {
+            const researchFilter = ResearchRepository.ofKind(values.brandId, values.kind);
             const [latest] = await tx
                 .select({ version: max(brandResearch.version) })
                 .from(brandResearch)
-                .where(ResearchRepository.ofKind(values.brandId, values.kind));
+                .where(researchFilter);
             const version = (latest?.version ?? 0) + 1;
 
-            const [row] = await tx.insert(brandResearch).values({ ...values, version }).returning();
-            if (!row) throw new Error("Insert into brand_research returned no row");
-            return row;
+            const rows = await tx.insert(brandResearch).values({ ...values, version }).returning();
+            return insertedRow(rows, "brand_research");
         });
     }
 

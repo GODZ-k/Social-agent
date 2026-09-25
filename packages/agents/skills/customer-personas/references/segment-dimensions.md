@@ -30,10 +30,10 @@ Answer these from `offer`, the services page and the reviews. Each answer is a c
 
 ## Evidence vs hypothesis: the counting rule
 
-1. For each of `pains`, `desires`, `objections`, `triggers`, mark each item "read" (a URL, or the intake) or "reasoned".
+1. For each of `pains`, `desires`, `objections`, `triggers`, mark each item "read" (a URL, or the questionnaire) or "reasoned".
 2. A list counts as sourced when at least one item is read.
 3. `basis` is `evidence` when 2+ lists are sourced and `language` has 2+ phrases with URLs. Otherwise `hypothesis`.
-4. The owner's intake counts as a read source for pains and desires (they hear customers daily), not for `language` (they are not the customer) and not for `objections` (owners rarely hear why people did not buy).
+4. The owner's questionnaire counts as a read source for pains and desires (they hear customers daily), not for `language` (they are not the customer) and not for `objections` (owners rarely hear why people did not buy).
 5. Competitor reviews count as read sources for a segment when the situation is the same; say so in the source.
 
 ## Picking the primary segment
@@ -42,8 +42,8 @@ In order, stop at the first that decides it:
 
 1. The brief's `priorityOffers`: the segment that buys them.
 2. The brief's `bottleneck`: `repeat` and `orderValue` point to the segment that already buys; `awareness`, `trust` and `conversion` point to the segment the brand is not yet reaching but can serve at its price.
-3. Intake `orderValue` and `bestSellers`: the segment that buys the best seller at that value.
-4. Intake `idealCustomer`, if it matches a segment the reviews support.
+3. Questionnaire `orderValue` and `bestSellers`: the segment that buys the best seller at that value.
+4. Questionnaire `idealCustomer`, if it matches a segment the reviews support.
 5. When none decides, pick the segment with the most sourced items and write "primary by evidence available, revenue share unconfirmed" in `summary`.
 
 ## Merging and splitting

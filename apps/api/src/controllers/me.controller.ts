@@ -4,12 +4,14 @@ import { MeService } from "@/services/me.service";
 
 export class MeController {
     static async me(req: Request, res: Response) {
-        const data = MeService.profile(currentUser(req));
+        const user = currentUser(req);
+        const data = MeService.profile(user);
         return res.status(200).json({ success: true, data });
     }
 
     static async overview(req: Request, res: Response) {
-        const data = await MeService.overview(currentUser(req));
+        const user = currentUser(req);
+        const data = await MeService.overview(user);
         return res.status(200).json({ success: true, data });
     }
 }

@@ -19,7 +19,7 @@
 
 ## Reads
 
-The brand kit, the owner's intake answers (`brands.intake`), site facts, and web research on competitors and the local market.
+The brand kit, the owner's questionnaire answers (`brands.questionnaire`), site facts, and web research on competitors and the local market.
 
 ## Returns
 

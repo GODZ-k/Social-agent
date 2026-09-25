@@ -30,7 +30,7 @@ const segmentOutputSchema = z.object({
   basis: z
     .enum(["evidence", "hypothesis"])
     .describe(
-      '"evidence": built from reviews, pages or intake answers you can point to. "hypothesis": a reasoned guess with no direct evidence; say so in the summary.',
+      '"evidence": built from reviews, pages or questionnaire answers you can point to. "hypothesis": a reasoned guess with no direct evidence; say so in the summary.',
     ),
 });
 
