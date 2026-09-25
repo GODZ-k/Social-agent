@@ -1,0 +1,10 @@
+{
+  "enabledMcpjsonServers": [
+    "graft",
+    "codebase-memory-mcp"
+  ],
+  "enabledPlugins": {
+    "code-simplifier@claude-plugins-official": true
+  },
+  "enableAllProjectMcpServers": true
+}
