@@ -23,12 +23,7 @@ export class BrandsService {
         return withAccounts(rows);
     }
 
-    /**
-     * `ownerId` defaults to the caller. An admin setting a brand up for a client passes the
-     * client's id; `createdBy` still records the admin. A client may own any number of brands.
-     * `input.scanId`, when given, must be a scan the caller (or an admin) may claim: done, and
-     * requested by them (`ScansService.claim`). The scan is linked to the new brand afterwards.
-     */
+    
     static async create(user: AuthUser, input: NewBrandInput, ownerId: string = user.id): Promise<Brand> {
         const { scanId, ...brand } = input;
         const scan = scanId ? await ScansService.claim(user, scanId) : undefined;

@@ -12,6 +12,6 @@ export function createBrandAnalyst({ model }: { model: string }): Agent {
     name: "Brand Analyst",
     description: "Turns the facts our scanner extracted from a business's website into a draft brand kit.",
     instructions: [BRAND_ANALYST_INSTRUCTIONS, `# Craft notes: brand voice\n\n${loadSkill("brand-voice")}`],
-    model,
+    model
   });
 }
