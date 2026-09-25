@@ -399,8 +399,10 @@ Mastra adds its own tables to the same database through `PostgresStore`; we do n
 
 > [!NOTE]
 > Tables 1 to 3 exist and are used. Phases 2 to 5 fill the rest. `brands.intake`,
-> `research_runs` and `brand_research` are in the schema and migration `0004_wild_whistler.sql`
-> (2026-09-22); the owner applies it. The two `strategies` research columns wait for 2B-2.
+> `research_runs` and `brand_research` are in the schema (migration `0005_business_research.sql`,
+> applied 2026-09-25). `research_runs.current_step` is the `research_steps` enum (`gather`,
+> `diagnose`, `profile`, `save`, built from `researchStepIdSchema`; migration `0008_research_steps.sql`),
+> so the database refuses an unknown step. The two `strategies` research columns wait for 2B-2.
 
 <a id="8-environment-and-configuration"></a>
 
@@ -502,7 +504,7 @@ limit nobody has started sits at zero.
 | **Admin role changes lag up to 1 hour**                    | ![deferred][def] | ![0%][pr0]     | `ONE_HOUR_MS` in `src/services/users.service.ts`. The Clerk profile is trusted an hour |
 | **Mastra observability on local DuckDB**                   | ![deferred][def] | ![0%][pr0]     | `src/mastra/index.ts`. `apps/api/mastra.duckdb` is a local file, not shared            |
 | **No rate limiting beyond one-active-scan**                | ![deferred][def] | ![0%][pr0]     | Nothing else throttles a caller                                                        |
-| **Business discovery and the research queue**              | ![done][done]    | ![100%][pr100] | `src/research-queue`, `src/mastra/workflows/business-discovery`, `src/{routes,controllers,services,repositories}/research.*`. Migrations `0004`-`0007` applied 2026-09-25, verified live; not committed yet |
+| **Business discovery and the research queue**              | ![done][done]    | ![100%][pr100] | `src/research-queue`, `src/mastra/workflows/business-discovery`, `src/{routes,controllers,services,repositories}/research.*`. Migrations `0004`-`0008` applied 2026-09-25, verified live; not committed yet |
 | **Strategy, posts, chat, accounts, publishing, analytics** | ![planned][plan] | ![0%][pr0]     | Catalogue phases 2 to 5. Not started                                                   |
 | **Billing**                                                | ![later][later]  | ![0%][pr0]     | Schema spec, "Left out on purpose". Provider-agnostic, not Clerk Billing               |
 

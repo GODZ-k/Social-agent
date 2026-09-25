@@ -16,6 +16,7 @@ import {
 } from "drizzle-orm/pg-core";
 import {
   DEFAULT_PREFERENCES,
+  researchStepIdSchema,
   type ActiveHours,
   type AudienceDemographics,
   type AudienceProfile,
@@ -69,6 +70,9 @@ export const platform = pgEnum("platform", ["instagram", "facebook", "linkedin",
 export const scanStatus = pgEnum("scan_status", ["queued", "running", "done", "failed"]);
 
 export const researchStatus = pgEnum("research_status", ["queued", "running", "done", "failed"]);
+
+/** The business-discovery workflow's step ids, in order, taken from `researchStepIdSchema`. */
+export const researchSteps = pgEnum("research_steps", researchStepIdSchema.enum);
 
 export const researchKind = pgEnum("research_kind", ["growth_brief", "audience_profile"]);
 
@@ -189,7 +193,7 @@ export const researchRuns = pgTable(
       .notNull()
       .references(() => users.id),
     status: researchStatus("status").notNull().default("queued"),
-    currentStep: text("current_step"),
+    currentStep: researchSteps("current_step"),
     error: text("error"),
     startedAt: timestamp("started_at", { withTimezone: true }),
     finishedAt: timestamp("finished_at", { withTimezone: true }),

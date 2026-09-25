@@ -61,7 +61,7 @@ async function toResearch(brandId: string, run: ResearchRunRow | undefined): Pro
     return {
         brandId,
         status: run?.status ?? null,
-        currentStep: (run?.currentStep ?? null) as Research["currentStep"],
+        currentStep: run?.currentStep ?? null,
         error: run?.error ?? null,
         growthBrief: toVersion<GrowthBrief>(brief),
         audienceProfile: toVersion<AudienceProfile>(profile),
