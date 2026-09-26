@@ -1,0 +1,367 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Observability: frontend error</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..700&family=Instrument+Sans:wght@400..700&display=swap" rel="stylesheet">
+<style>/* Mirrors packages/ui/src/styles/globals.css and the @repo/ui components, as plain CSS for static mockups. */
+:root {
+  --brand: #4b3fe4;
+  --brand-2: #9d96f2;
+  --background: #f5f6f8;
+  --foreground: #1a1d26;
+  --card: #ffffff;
+  --secondary: #eceef2;
+  --muted-foreground: #5f6879;
+  --accent: #eceef2;
+  --destructive: #cf3f57;
+  --success: #178a5e;
+  --warning: #b7740a;
+  --border: #e1e4ea;
+  --input: #d5d9e1;
+  --material: rgba(255, 255, 255, 0.925);
+  --material-edge: rgb(255 255 255 / 0.7);
+  --elevation-raised: 0 1px 2px rgb(20 24 34 / 0.05), 0 6px 18px -8px rgb(20 24 34 / 0.12);
+  --elevation-floating: 0 2px 6px rgb(20 24 34 / 0.06), 0 24px 60px -18px rgb(20 24 34 / 0.28);
+  --tint: #edecfc;
+  --tint-strong: #dfdcfa;
+  --tint-foreground: #4138be;
+  --error-fill: #dc7586;
+  --font-body: "Instrument Sans", system-ui, sans-serif;
+  --font-display: "Bricolage Grotesque", "Instrument Sans", system-ui, sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; }
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-body);
+  font-size: 0.9375rem;
+  line-height: 1.55;
+  font-optical-sizing: auto;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: clip;
+}
+a { color: inherit; text-decoration: none; }
+button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+.i { width: 1rem; height: 1rem; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.num { font-variant-numeric: tabular-nums; }
+.muted { color: var(--muted-foreground); }
+
+/* Type scale: tracking tightens as size grows. */
+.type-title { font-family: var(--font-display); font-weight: 600; font-size: 2.125rem; line-height: 1.1; letter-spacing: -0.025em; }
+.type-heading { font-family: var(--font-display); font-weight: 600; font-size: 1.1875rem; line-height: 1.25; letter-spacing: -0.015em; }
+.type-label { color: var(--muted-foreground); font-size: 0.8125rem; line-height: 1.35; letter-spacing: 0.005em; }
+.type-number { font-family: var(--font-display); font-weight: 600; font-variant-numeric: tabular-nums; letter-spacing: -0.03em; }
+
+.material {
+  background: var(--material);
+  backdrop-filter: blur(22px) saturate(180%);
+  box-shadow: inset 0 1px 0 var(--material-edge), var(--elevation-floating);
+}
+.pressable { transition: transform 160ms cubic-bezier(0.22, 1, 0.36, 1); }
+.pressable:active { transform: scale(0.97); transition-duration: 80ms; }
+
+/* App shell: top bar pill and the floating rail (apps/web/components/shell). */
+.topbar { position: sticky; top: 0; z-index: 40; padding: 0.75rem 1.25rem 0; }
+.topbar-inner { display: flex; align-items: center; gap: 0.75rem; height: 3.5rem; max-width: 88rem; margin: 0 auto; padding: 0 0.5rem 0 1rem; border-radius: 999px; }
+.logo { display: flex; align-items: center; gap: 0.5rem; font-family: var(--font-display); font-weight: 600; font-size: 1.0625rem; letter-spacing: -0.01em; }
+.logo svg { width: 1.5rem; height: 1.5rem; color: var(--brand); }
+.topbar-end { margin-left: auto; display: flex; align-items: center; gap: 0.375rem; }
+.avatar { display: grid; place-items: center; width: 2rem; height: 2rem; border-radius: 999px; background: var(--tint-strong); color: var(--tint-foreground); font-size: 0.75rem; font-weight: 600; }
+.rail { position: fixed; z-index: 40; top: 6rem; left: 1.25rem; width: 13rem; padding: 0.5rem; border-radius: 1.375rem; display: flex; flex-direction: column; gap: 0.125rem; }
+.rail a { display: flex; align-items: center; gap: 0.75rem; padding: 0.625rem 0.75rem; border-radius: 0.75rem; font-size: 0.875rem; font-weight: 500; color: var(--muted-foreground); }
+.rail a:hover { color: var(--foreground); }
+.rail a .i { width: 1.125rem; height: 1.125rem; stroke-width: 1.8; }
+.rail a.on { background: var(--tint-strong); color: var(--tint-foreground); }
+.rail a.on .i { stroke-width: 2.2; }
+.rail .sep { height: 1px; background: var(--border); margin: 0.375rem 0.5rem; }
+main { max-width: 88rem; margin: 0 auto; padding: 1.75rem 2rem 4rem 16rem; }
+
+/* PageHeader */
+.page-header { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 1rem 1.5rem; margin-bottom: 1.5rem; }
+.page-header p { margin-top: 0.5rem; color: var(--muted-foreground); max-width: 60ch; }
+.toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.75rem; margin-bottom: 1.25rem; }
+.toolbar-end { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; }
+
+/* Button (cva variants in button.tsx) */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; height: 2.5rem; padding: 0 1.125rem; border-radius: 999px; font-size: 0.875rem; font-weight: 500; white-space: nowrap; }
+.btn.sm { height: 2.125rem; padding: 0 0.875rem; font-size: 0.8125rem; }
+.btn.icon { width: 2.125rem; height: 2.125rem; padding: 0; color: var(--muted-foreground); }
+.btn-default { background: var(--brand); color: #fff; box-shadow: var(--elevation-raised); }
+.btn-outline { background: var(--card); border: 1px solid var(--border); }
+.btn-outline:hover, .btn-ghost:hover { background: var(--accent); }
+.btn-tint { background: var(--tint); color: var(--tint-foreground); }
+.btn .chev { width: 0.875rem; height: 0.875rem; color: var(--muted-foreground); }
+
+/* Badge (badge.tsx) */
+.badge { display: inline-flex; align-items: center; gap: 0.375rem; width: fit-content; padding: 0.125rem 0.625rem; border-radius: 999px; font-size: 0.75rem; font-weight: 500; white-space: nowrap; }
+.badge .i { width: 0.75rem; height: 0.75rem; }
+.badge-neutral { background: var(--secondary); }
+.badge-tint { background: var(--tint); color: var(--tint-foreground); }
+.badge-success { background: rgba(23, 138, 94, 0.12); color: var(--success); }
+.badge-warning { background: rgba(183, 116, 10, 0.14); color: var(--warning); }
+.badge-danger { background: rgba(207, 63, 87, 0.12); color: var(--destructive); }
+.badge-outline { border: 1px solid var(--border); color: var(--muted-foreground); }
+
+/* Segmented (segmented.tsx): the selected pill is a raised card. */
+.seg { display: inline-flex; max-width: 100%; padding: 0.25rem; border-radius: 999px; background: var(--secondary); }
+.seg button { padding: 0.375rem 0.875rem; border-radius: 999px; font-size: 0.8125rem; font-weight: 500; color: var(--muted-foreground); white-space: nowrap; }
+.seg button.on { background: var(--card); color: var(--foreground); box-shadow: var(--elevation-raised); }
+.seg.sm { padding: 0.1875rem; }
+.seg.sm button { padding: 0.25rem 0.75rem; font-size: 0.78rem; }
+.chip { display: inline-flex; align-items: center; gap: 0.375rem; height: 2.125rem; padding: 0 0.5rem 0 0.875rem; border-radius: 999px; background: var(--tint); color: var(--tint-foreground); font-size: 0.8125rem; font-weight: 500; }
+.chip .i { width: 0.875rem; height: 0.875rem; }
+
+/* Panel (states.tsx): white, raised, no border. */
+.panel { border-radius: 1.375rem; background: var(--card); padding: 1.5rem; box-shadow: var(--elevation-raised); min-width: 0; }
+.panel.tinted { background: var(--tint); box-shadow: none; }
+.grid { display: grid; gap: 1.25rem; margin-bottom: 1.25rem; }
+.g4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.g3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.g2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.g21 { grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr); }
+
+/* Metric card */
+.stat .value { font-size: 2rem; line-height: 1.1; margin-top: 0.625rem; }
+.stat .value small { font-family: var(--font-body); font-size: 0.9375rem; font-weight: 500; letter-spacing: 0; color: var(--muted-foreground); margin-left: 0.25rem; }
+.stat .delta { display: flex; align-items: center; gap: 0.375rem; margin-top: 0.625rem; font-size: 0.8125rem; color: var(--muted-foreground); }
+.up-good { color: var(--success); }
+.up-bad { color: var(--destructive); }
+
+/* Card header: question on the left, the one number that answers it on the right. */
+.card-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; margin-bottom: 1.25rem; }
+.card-head .type-label { margin-top: 0.25rem; }
+.figure { text-align: right; flex: none; }
+.figure .type-number { font-size: 1.5rem; line-height: 1.1; }
+.figure .type-label { margin-top: 0.125rem; }
+.card-tools { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.75rem; margin-bottom: 1rem; }
+.legend { display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; font-size: 0.8125rem; color: var(--muted-foreground); }
+.legend span { display: inline-flex; align-items: center; gap: 0.4rem; }
+.legend b { color: var(--foreground); font-weight: 500; font-variant-numeric: tabular-nums; }
+.dot { width: 0.5rem; height: 0.5rem; border-radius: 999px; flex: none; }
+.link { display: inline-flex; align-items: center; gap: 0.25rem; font-size: 0.8125rem; font-weight: 500; color: var(--tint-foreground); }
+.link .i { width: 0.875rem; height: 0.875rem; }
+
+/* Ranked bars: white label inside the fill when it fits, ink label just after a short fill. */
+.bars { display: grid; gap: 0.625rem; }
+.bars-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.125rem; }
+.bar-row { display: grid; grid-template-columns: minmax(0, 1fr) 4.5rem; align-items: center; gap: 0.875rem; }
+.bar { position: relative; height: 2.25rem; border-radius: 0.75rem; background: rgba(236, 238, 242, 0.7); overflow: hidden; }
+.fill { display: flex; height: 100%; border-radius: 0.75rem; overflow: hidden; }
+.fill span { height: 100%; }
+.bar .lbl { position: absolute; inset: 0; display: flex; align-items: center; gap: 0.5rem; padding: 0 0.875rem; font-size: 0.875rem; font-weight: 500; white-space: nowrap; }
+.bar .lbl.on { color: #fff; }
+.bar .lbl .note { font-weight: 400; opacity: 0.8; }
+.bar-total { text-align: right; font-weight: 500; font-variant-numeric: tabular-nums; }
+
+/* Charts: thin lines, faint guides, labels in the muted ink. */
+.chart { width: 100%; height: auto; display: block; overflow: visible; }
+.chart text { font-family: var(--font-body); font-size: 11px; fill: var(--muted-foreground); font-variant-numeric: tabular-nums; }
+.chart .grid-line { stroke: var(--foreground); stroke-opacity: 0.08; }
+
+/* Table (TanStack Table look) */
+.table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+.table th { text-align: left; font-size: 0.8125rem; font-weight: 500; color: var(--muted-foreground); padding: 0 0.75rem 0.625rem; border-bottom: 1px solid var(--border); white-space: nowrap; }
+.table td { padding: 0.8rem 0.75rem; border-bottom: 1px solid var(--border); white-space: nowrap; }
+.table tr:last-child td { border-bottom: 0; }
+.table tbody tr:hover td { background: rgba(236, 238, 242, 0.6); }
+.table td:first-child, .table th:first-child { padding-left: 0; }
+.table td:last-child, .table th:last-child { padding-right: 0; }
+.table .r { text-align: right; }
+.table .trunc { max-width: 18rem; overflow: hidden; text-overflow: ellipsis; color: var(--muted-foreground); }
+.table .go { width: 1.5rem; color: var(--muted-foreground); }
+.who { display: inline-flex; align-items: center; gap: 0.5rem; }
+.mini-avatar { display: grid; place-items: center; width: 1.375rem; height: 1.375rem; border-radius: 999px; font-size: 0.625rem; font-weight: 600; color: #fff; flex: none; }
+.method { display: inline-block; min-width: 2.75rem; text-align: center; padding: 0.0625rem 0.5rem; border-radius: 0.5rem; font-size: 0.72rem; font-weight: 600; background: var(--secondary); }
+.method.post { background: var(--tint); color: var(--tint-foreground); }
+.search { display: inline-flex; align-items: center; gap: 0.5rem; height: 2.125rem; padding: 0 0.875rem; border-radius: 999px; border: 1px solid var(--input); color: var(--muted-foreground); font-size: 0.8125rem; min-width: 14rem; }
+
+@media (max-width: 1100px) {
+  .g4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .g2, .g21, .g3 { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 1023px) {
+  .rail { display: none; }
+  main { padding: 1.75rem 1.5rem 8rem; }
+}
+@media (max-width: 640px) {
+  .g4 { grid-template-columns: minmax(0, 1fr); }
+  main { padding: 1.75rem 1rem 8rem; }
+  .table-wrap { overflow-x: auto; }
+}
+
+/* Stat card: label left, a small trend line right so direction reads at a glance. */
+.stat-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 0.75rem; }
+.spark { width: 5.5rem; height: 1.875rem; flex: none; overflow: visible; }
+.trend { display: inline-flex; align-items: center; gap: 0.2rem; font-weight: 500; color: var(--foreground); }
+.trend .i { width: 0.8rem; height: 0.8rem; stroke-width: 2.4; }
+.trend.good { color: var(--success); }
+.trend.bad { color: var(--destructive); }
+
+/* Hover state, drawn once so reviewers can see what a chart point reveals. */
+.chart-wrap { position: relative; }
+.tooltip { position: absolute; top: 0.5rem; min-width: 9.5rem; padding: 0.625rem 0.75rem; border-radius: 0.75rem; background: var(--card); border: 1px solid var(--border); box-shadow: var(--elevation-floating); font-size: 0.8125rem; }
+.tip-title { font-weight: 500; margin-bottom: 0.375rem; }
+.tip-row { display: flex; align-items: center; gap: 0.5rem; color: var(--muted-foreground); }
+.tip-row b { margin-left: auto; color: var(--foreground); font-weight: 500; font-variant-numeric: tabular-nums; }
+
+/* Switch (switch.tsx) and the toolbar divider. */
+.switch-row { display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.8125rem; font-weight: 500; }
+.switch { position: relative; width: 2.25rem; height: 1.25rem; border-radius: 999px; background: var(--input); flex: none; }
+.switch span { position: absolute; top: 0.125rem; left: 0.125rem; width: 1rem; height: 1rem; border-radius: 999px; background: #fff; box-shadow: 0 1px 2px rgb(20 24 34 / 0.2); }
+.switch.on { background: var(--brand); }
+.switch.on span { left: 1.125rem; }
+.toolbar-sep { width: 1px; height: 1.25rem; background: var(--border); margin: 0 0.25rem; }
+
+/* What already sorted itself out, so the attention list never feels like an alarm. */
+.resolved { display: flex; align-items: center; gap: 0.5rem; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border); font-size: 0.8125rem; color: var(--muted-foreground); }
+.resolved > .i { color: var(--success); }
+.resolved .link { margin-left: auto; }
+</style>
+<style>
+.mono { font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace; font-size: 0.8125rem; letter-spacing: 0; }
+.c-narrow { display: none; }
+
+/* Row lists: a table on wide screens, stacked cards on a phone. Columns come from --cols on the list. */
+.rl { display: grid; }
+.rl-head, .rl-row { display: grid; grid-template-columns: var(--cols); gap: 1rem; align-items: center; }
+.rl-head { padding: 0 0 0.625rem; border-bottom: 1px solid var(--border); font-size: 0.8125rem; font-weight: 500; color: var(--muted-foreground); }
+.rl-row { padding: 0.875rem 0; border-bottom: 1px solid var(--border); font-size: 0.875rem; }
+.rl-row:last-child { border-bottom: 0; }
+a.rl-row:hover { background: rgba(236, 238, 242, 0.6); }
+.rl .r { text-align: right; justify-self: end; }
+.rl .num { font-variant-numeric: tabular-nums; }
+.cell-main { min-width: 0; }
+.cell-main .mono { display: block; overflow-wrap: anywhere; color: var(--foreground); }
+.cell-sub { display: block; margin-top: 0.25rem; font-size: 0.8125rem; color: var(--muted-foreground); }
+.go-cell { color: var(--muted-foreground); justify-self: end; }
+
+/* Small inline rate bar, used for failure rates. */
+.rate { display: flex; align-items: center; gap: 0.625rem; justify-content: flex-end; }
+.rate-track { width: 4.5rem; height: 0.375rem; border-radius: 999px; background: var(--secondary); overflow: hidden; flex: none; }
+.rate-track span { display: block; height: 100%; border-radius: 999px; }
+
+.state { display: inline-flex; align-items: center; gap: 0.5rem; }
+.note-row { display: flex; align-items: center; gap: 0.5rem; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border); font-size: 0.8125rem; color: var(--muted-foreground); flex-wrap: wrap; }
+.note-row .link { margin-left: auto; }
+
+/* Release check: before and after, side by side. */
+.release { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 1.5rem; align-items: center; margin-bottom: 1.25rem; }
+.release-copy { display: flex; gap: 0.875rem; align-items: flex-start; }
+.compare { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; }
+.compare > div { padding: 0.875rem 1rem; border-radius: 1rem; background: rgba(255, 255, 255, 0.7); }
+.compare .type-number { font-size: 1.5rem; line-height: 1.1; margin-top: 0.25rem; }
+.compare .after .type-number { color: var(--destructive); }
+
+/* Stack trace and the steps before an error. */
+.stack { padding: 1rem 1.125rem; border-radius: 1rem; background: #f3f4f7; line-height: 1.7; overflow-wrap: anywhere; }
+.stack .frame { display: block; color: var(--muted-foreground); padding-left: 1rem; }
+.stack .frame.app { color: var(--foreground); font-weight: 500; }
+.steps { display: grid; gap: 0; }
+.step { display: grid; grid-template-columns: 5.5rem 1rem minmax(0, 1fr); gap: 0.75rem; align-items: start; padding-bottom: 1rem; position: relative; }
+.step:last-child { padding-bottom: 0; }
+.step .t { font-size: 0.8125rem; color: var(--muted-foreground); font-variant-numeric: tabular-nums; padding-top: 0.05rem; }
+.step .pin { width: 0.625rem; height: 0.625rem; border-radius: 999px; background: var(--tint-strong); margin-top: 0.4rem; justify-self: center; position: relative; z-index: 1; }
+.step:not(:last-child)::after { content: ""; position: absolute; left: calc(5.5rem + 0.75rem + 0.5rem - 0.5px); top: 1.2rem; bottom: 0.2rem; width: 1px; background: var(--border); }
+.step.bad .pin { background: var(--destructive); }
+.facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem 1.5rem; }
+.facts .v { font-weight: 500; margin-top: 0.25rem; overflow-wrap: anywhere; }
+
+@media (max-width: 1100px) {
+  .release { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 700px) {
+  .rl-head { display: none; }
+  .rl-row { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.625rem 1rem; padding: 1rem 0; }
+  .rl-row > .cell-main { grid-column: 1 / -1; }
+  .rl-row > [data-label]::before { content: attr(data-label); display: block; font-size: 0.75rem; color: var(--muted-foreground); margin-bottom: 0.125rem; }
+  .rl .r { text-align: left; justify-self: start; }
+  .rate { justify-content: flex-start; min-width: 0; }
+  .rate-track { width: 2.5rem; }
+  .go-cell { display: none; }
+  .facts { grid-template-columns: minmax(0, 1fr); }
+  .step { grid-template-columns: 4.75rem 1rem minmax(0, 1fr); }
+  .step:not(:last-child)::after { left: calc(4.75rem + 0.75rem + 0.5rem - 0.5px); }
+}
+@media (max-width: 640px) {
+  .c-wide { display: none; }
+  .c-narrow { display: block; }
+  .compare { grid-template-columns: minmax(0, 1fr); }
+  .toolbar .seg { width: 100%; }
+  .toolbar .seg button { flex: 1; padding: 0.375rem 0.5rem; }
+  .search { min-width: 0; width: 100%; }
+  .type-title { font-size: 1.75rem; }
+}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute"><symbol id="i-calendar" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></symbol><symbol id="i-filter" viewBox="0 0 24 24"><path d="M3 6h18M7 12h10M10 18h4"/></symbol><symbol id="i-chevron-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol><symbol id="i-chevron-right" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol><symbol id="i-external" viewBox="0 0 24 24"><path d="M15 3h6v6M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></symbol><symbol id="i-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></symbol><symbol id="i-activity" viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></symbol><symbol id="i-settings" viewBox="0 0 24 24"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></symbol><symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2m-7.07-17.07 1.41 1.41m11.32 11.32 1.41 1.41M2 12h2m16 0h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></symbol><symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol><symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></symbol><symbol id="i-arrow-up" viewBox="0 0 24 24"><path d="m5 12 7-7 7 7M12 19V5"/></symbol><symbol id="i-arrow-down" viewBox="0 0 24 24"><path d="M12 5v14M19 12l-7 7-7-7"/></symbol><symbol id="i-arrow-left" viewBox="0 0 24 24"><path d="m12 19-7-7 7-7M19 12H5"/></symbol><symbol id="i-rotate" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></symbol><symbol id="i-copy" viewBox="0 0 24 24"><rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></symbol><symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></symbol><symbol id="i-alert" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></symbol><symbol id="i-bot" viewBox="0 0 24 24"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2M20 14h2M15 13v2M9 13v2"/></symbol><symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20M2 12h20"/></symbol><symbol id="i-file" viewBox="0 0 24 24"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4M16 13H8M16 17H8"/></symbol><symbol id="i-database" viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0 0 18 0V5M3 12a9 3 0 0 0 18 0"/></symbol><symbol id="i-workflow" viewBox="0 0 24 24"><rect width="8" height="8" x="3" y="3" rx="2"/><path d="M7 11v4a2 2 0 0 0 2 2h4"/><rect width="8" height="8" x="13" y="13" rx="2"/></symbol><symbol id="i-book" viewBox="0 0 24 24"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></symbol></svg>
+<header class="topbar"><div class="topbar-inner material">
+  <a class="logo" href="#"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="9" width="4.5" height="10" rx="2.25" fill="currentColor" opacity=".55"/><rect x="9.75" y="4" width="4.5" height="15" rx="2.25" fill="currentColor"/><rect x="16.5" y="7" width="4.5" height="12" rx="2.25" fill="currentColor" opacity=".8"/></svg>Cadence</a>
+  <div class="topbar-end">
+    <button class="btn icon pressable" aria-label="Theme"><svg class="i" aria-hidden="true"><use href="#i-sun"/></svg></button>
+    <span class="badge badge-outline">Admin</span>
+    <span class="avatar">SA</span>
+  </div>
+</div></header>
+<nav class="rail material" aria-label="Admin">
+  <a href="#"><svg class="i" aria-hidden="true"><use href="#i-users"/></svg>Clients</a>
+  <a href="#" class="on" aria-current="page"><svg class="i" aria-hidden="true"><use href="#i-activity"/></svg>Observability</a>
+  <div class="sep"></div>
+  <a href="#"><svg class="i" aria-hidden="true"><use href="#i-settings"/></svg>Settings</a>
+</nav>
+<main>
+
+
+
+<a class="btn sm btn-ghost pressable" href="#" style="margin-left:-0.75rem;margin-bottom:0.5rem;color:var(--muted-foreground)"><svg class="i" aria-hidden="true"><use href="#i-arrow-left"/></svg>Frontend</a>
+<header class="page-header">
+  <div style="min-width:0;flex:1 1 32rem"><div style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;margin-bottom:0.625rem"><span class="badge badge-danger">Unresolved</span><span class="badge badge-tint">New in the release of 25 Sep, 6:05 PM</span></div>
+  <h1 class="mono" style="font-size:1.25rem;line-height:1.4;font-weight:600;overflow-wrap:anywhere">TypeError: Cannot read properties of undefined (reading 'platforms')</h1>
+  <p>People see a blank page with “Something went wrong” right after pressing Approve on the Approvals page.</p></div>
+  <div class="toolbar-end"><button class="btn btn-outline pressable">Open in SigNoz<svg class="i" aria-hidden="true"><use href="#i-external"/></svg></button><button class="btn btn-default pressable"><svg class="i" aria-hidden="true"><use href="#i-check"/></svg>Mark as fixed</button></div>
+</header>
+<div class="grid g4">
+  <div class="panel stat"><div class="stat-top"><div class="type-label">People</div></div><div class="value type-number">5</div><div class="delta">Across 4 clients</div></div>
+  <div class="panel stat"><div class="stat-top"><div class="type-label">Times</div></div><div class="value type-number">14</div><div class="delta">About 3 an hour since the release</div></div>
+  <div class="panel stat"><div class="stat-top"><div class="type-label">First seen</div></div><div class="value type-number">6:12 PM</div><div class="delta">25 Sep, 7 min after the release</div></div>
+  <div class="panel stat"><div class="stat-top"><div class="type-label">Last seen</div></div><div class="value type-number">12 min ago</div><div class="delta">Still happening</div></div>
+</div>
+<section class="panel" style="margin-bottom:1.25rem"><div class="card-head"><div><h2 class="type-heading">When it happened</h2><p class="type-label">Times per hour. The dashed line is the release.</p></div></div>
+  <div class="c-wide"><svg class="chart" viewBox="0 0 1100 220" role="img"><line class="grid-line" x1="44" x2="1100" y1="196.0" y2="196.0"/><text x="34" y="200.0" text-anchor="end">0</text><line class="grid-line" x1="44" x2="1100" y1="149.0" y2="149.0"/><text x="34" y="153.0" text-anchor="end">1</text><line class="grid-line" x1="44" x2="1100" y1="102.0" y2="102.0"/><text x="34" y="106.0" text-anchor="end">2</text><line class="grid-line" x1="44" x2="1100" y1="55.0" y2="55.0"/><text x="34" y="59.0" text-anchor="end">3</text><line class="grid-line" x1="44" x2="1100" y1="8.0" y2="8.0"/><text x="34" y="12.0" text-anchor="end">4</text><text x="44.0" y="216" text-anchor="middle">00:00</text><text x="227.7" y="216" text-anchor="middle">04:00</text><text x="411.3" y="216" text-anchor="middle">08:00</text><text x="595.0" y="216" text-anchor="middle">12:00</text><text x="778.6" y="216" text-anchor="middle">16:00</text><text x="962.3" y="216" text-anchor="middle">20:00</text><text x="1100.0" y="216" text-anchor="middle">Now</text><polygon points="44,196 44.0,196.0 89.9,196.0 135.8,196.0 181.7,196.0 227.7,196.0 273.6,196.0 319.5,196.0 365.4,196.0 411.3,196.0 457.2,196.0 503.1,196.0 549.0,196.0 595.0,196.0 640.9,196.0 686.8,196.0 732.7,196.0 778.6,196.0 824.5,196.0 870.4,102.0 916.3,55.0 962.3,55.0 1008.2,102.0 1054.1,55.0 1100.0,149.0 1100,196" fill="var(--destructive)" fill-opacity="0.12"/><polyline points="44.0,196.0 89.9,196.0 135.8,196.0 181.7,196.0 227.7,196.0 273.6,196.0 319.5,196.0 365.4,196.0 411.3,196.0 457.2,196.0 503.1,196.0 549.0,196.0 595.0,196.0 640.9,196.0 686.8,196.0 732.7,196.0 778.6,196.0 824.5,196.0 870.4,102.0 916.3,55.0 962.3,55.0 1008.2,102.0 1054.1,55.0 1100.0,149.0" fill="none" stroke="var(--destructive)" stroke-width="2.25" stroke-linejoin="round" stroke-linecap="round"/><line x1="870.4" x2="870.4" y1="8" y2="196" stroke="var(--tint-foreground)" stroke-width="1.5" stroke-dasharray="4 4"/><rect x="840.4" y="6" width="60" height="20" rx="10" fill="var(--tint)"/><text x="870.4" y="20" text-anchor="middle" style="fill:var(--tint-foreground);font-weight:500">Release</text></svg></div><div class="c-narrow"><svg class="chart" viewBox="0 0 340 220" role="img"><line class="grid-line" x1="44" x2="340" y1="196.0" y2="196.0"/><text x="34" y="200.0" text-anchor="end">0</text><line class="grid-line" x1="44" x2="340" y1="149.0" y2="149.0"/><text x="34" y="153.0" text-anchor="end">1</text><line class="grid-line" x1="44" x2="340" y1="102.0" y2="102.0"/><text x="34" y="106.0" text-anchor="end">2</text><line class="grid-line" x1="44" x2="340" y1="55.0" y2="55.0"/><text x="34" y="59.0" text-anchor="end">3</text><line class="grid-line" x1="44" x2="340" y1="8.0" y2="8.0"/><text x="34" y="12.0" text-anchor="end">4</text><text x="44.0" y="216" text-anchor="middle">00:00</text><text x="147.0" y="216" text-anchor="middle">08:00</text><text x="249.9" y="216" text-anchor="middle">16:00</text><text x="340.0" y="216" text-anchor="middle">Now</text><polygon points="44,196 44.0,196.0 56.9,196.0 69.7,196.0 82.6,196.0 95.5,196.0 108.3,196.0 121.2,196.0 134.1,196.0 147.0,196.0 159.8,196.0 172.7,196.0 185.6,196.0 198.4,196.0 211.3,196.0 224.2,196.0 237.0,196.0 249.9,196.0 262.8,196.0 275.7,102.0 288.5,55.0 301.4,55.0 314.3,102.0 327.1,55.0 340.0,149.0 340,196" fill="var(--destructive)" fill-opacity="0.12"/><polyline points="44.0,196.0 56.9,196.0 69.7,196.0 82.6,196.0 95.5,196.0 108.3,196.0 121.2,196.0 134.1,196.0 147.0,196.0 159.8,196.0 172.7,196.0 185.6,196.0 198.4,196.0 211.3,196.0 224.2,196.0 237.0,196.0 249.9,196.0 262.8,196.0 275.7,102.0 288.5,55.0 301.4,55.0 314.3,102.0 327.1,55.0 340.0,149.0" fill="none" stroke="var(--destructive)" stroke-width="2.25" stroke-linejoin="round" stroke-linecap="round"/><line x1="275.7" x2="275.7" y1="8" y2="196" stroke="var(--tint-foreground)" stroke-width="1.5" stroke-dasharray="4 4"/><rect x="245.7" y="6" width="60" height="20" rx="10" fill="var(--tint)"/><text x="275.7" y="20" text-anchor="middle" style="fill:var(--tint-foreground);font-weight:500">Release</text></svg></div>
+</section>
+<div class="grid g21">
+  <div style="display:grid;gap:1.25rem;align-content:start;min-width:0">
+    <section class="panel"><div class="card-head"><div><h2 class="type-heading">What the person did</h2><p class="type-label">The last steps before the error, from the most recent time.</p></div></div>
+      <div class="steps"><div class="step "><span class="t">6:41:02 PM</span><span class="pin"></span><span style="min-width:0;overflow-wrap:anywhere">Opened <span class="mono">/c/:clientId/approvals</span> </span></div><div class="step "><span class="t">6:41:03 PM</span><span class="pin"></span><span style="min-width:0;overflow-wrap:anywhere">Loaded posts: <span class="mono">GET /api/v1/brands/:brandId/posts</span> 200 <a class="link" href="#">Trace<svg class="i" aria-hidden="true"><use href="#i-external"/></svg></a></span></div><div class="step "><span class="t">6:41:09 PM</span><span class="pin"></span><span style="min-width:0;overflow-wrap:anywhere">Pressed Approve on a post for Instagram </span></div><div class="step bad"><span class="t">6:41:09 PM</span><span class="pin"></span><span style="min-width:0;overflow-wrap:anywhere">The page broke and showed “Something went wrong” </span></div></div>
+    </section>
+    <section class="panel"><div class="card-head"><div><h2 class="type-heading">Where in the code</h2><p class="type-label">Our code first. Library lines are folded.</p></div></div>
+      <div class="stack mono">TypeError: Cannot read properties of undefined (reading 'platforms')
+        <span class="frame app">at PostSidePanel (features/approvals/post-side-panel.tsx:48:31)</span>
+        <span class="frame app">at ApprovalStack (features/approvals/approval-stack.tsx:112:9)</span>
+        <span class="frame">14 lines from react-dom, folded</span></div>
+    </section>
+  </div>
+  <div style="display:grid;gap:1.25rem;align-content:start;min-width:0">
+    <section class="panel"><div class="card-head"><div><h2 class="type-heading">Details</h2><p class="type-label">Where it shows up.</p></div></div>
+      <div class="facts">
+        <div><div class="type-label">Page</div><div class="v mono">/c/:clientId/approvals</div></div>
+        <div><div class="type-label">Release</div><div class="v">25 Sep, 6:05 PM</div></div>
+        <div><div class="type-label">Devices</div><div class="v">11 desktop, 3 phone</div></div>
+        <div><div class="type-label">Session replay</div><div class="v muted" style="font-weight:400">Not recorded</div></div>
+      </div>
+      <h3 class="type-heading" style="font-size:1rem;margin:1.25rem 0 0.75rem">Browsers</h3>
+      <div class="bars"><div class="bar-row"><div class="bar"><div class="fill" style="width:100.00%"><span style="width:100.00%;background:var(--brand)"></span></div><div class="lbl on">Chrome</div></div><div class="bar-total">9</div></div><div class="bar-row"><div class="bar"><div class="fill" style="width:44.44%"><span style="width:100.00%;background:var(--brand)"></span></div><div class="lbl on">Safari</div></div><div class="bar-total">4</div></div><div class="bar-row"><div class="bar"><div class="fill" style="width:11.11%"><span style="width:100.00%;background:var(--brand)"></span></div><div class="lbl" style="left:calc(11.11% + 2px)">Edge</div></div><div class="bar-total">1</div></div></div>
+    </section>
+    <section class="panel"><div class="card-head"><div><h2 class="type-heading">Who hit it</h2><p class="type-label">Clients whose people saw this error.</p></div></div>
+      <div class="rl" style="--cols:minmax(0,1fr) 4.5rem 6rem"><div class="rl-head"><span class="">Client</span><span class="r">Hit it</span><span class="r">Last</span></div><div class="rl-row"><span class="cell-main"><span class="who"><span class="mini-avatar" style="background:#c2410c">TB</span>Tartine Bakery</span></span><span class="r num" data-label="Hit it">6 times</span><span class="r num" data-label="Last">12 min ago</span></div><div class="rl-row"><span class="cell-main"><span class="who"><span class="mini-avatar" style="background:#0f766e">MM</span>Meow Meow Tweet</span></span><span class="r num" data-label="Hit it">4 times</span><span class="r num" data-label="Last">1 h ago</span></div><div class="rl-row"><span class="cell-main"><span class="who"><span class="mini-avatar" style="background:#8a4b2a">FB</span>Four Barrel Coffee</span></span><span class="r num" data-label="Hit it">2 times</span><span class="r num" data-label="Last">3 h ago</span></div><div class="rl-row"><span class="cell-main"><span class="who"><span class="mini-avatar" style="background:#9f1239">DA</span>Don Angie</span></span><span class="r num" data-label="Hit it">2 times</span><span class="r num" data-label="Last">5 h ago</span></div></div>
+    </section>
+  </div>
+</div>
+</main>
+</body>
+</html>

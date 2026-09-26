@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Observability: agents</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..700&family=Instrument+Sans:wght@400..700&display=swap" rel="stylesheet">
+<style>/* Mirrors packages/ui/src/styles/globals.css and the @repo/ui components, as plain CSS for static mockups. */
+:root {
+  --brand: #4b3fe4;
+  --brand-2: #9d96f2;
+  --background: #f5f6f8;
+  --foreground: #1a1d26;
+  --card: #ffffff;
+  --secondary: #eceef2;
+  --muted-foreground: #5f6879;
+  --accent: #eceef2;
+  --destructive: #cf3f57;
+  --success: #178a5e;
+  --warning: #b7740a;
+  --border: #e1e4ea;
+  --input: #d5d9e1;
+  --material: rgba(255, 255, 255, 0.925);
+  --material-edge: rgb(255 255 255 / 0.7);
+  --elevation-raised: 0 1px 2px rgb(20 24 34 / 0.05), 0 6px 18px -8px rgb(20 24 34 / 0.12);
+  --elevation-floating: 0 2px 6px rgb(20 24 34 / 0.06), 0 24px 60px -18px rgb(20 24 34 / 0.28);
+  --tint: #edecfc;
+  --tint-strong: #dfdcfa;
+  --tint-foreground: #4138be;
+  --error-fill: #dc7586;
+  --font-body: "Instrument Sans", system-ui, sans-serif;
+  --font-display: "Bricolage Grotesque", "Instrument Sans", system-ui, sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; }
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-body);
+  font-size: 0.9375rem;
+  line-height: 1.55;
+  font-optical-sizing: auto;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: clip;
+}
+a { color: inherit; text-decoration: none; }
+button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+.i { width: 1rem; height: 1rem; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.num { font-variant-numeric: tabular-nums; }
+.muted { color: var(--muted-foreground); }
+
+/* Type scale: tracking tightens as size grows. */
+.type-title { font-family: var(--font-display); font-weight: 600; font-size: 2.125rem; line-height: 1.1; letter-spacing: -0.025em; }
+.type-heading { font-family: var(--font-display); font-weight: 600; font-size: 1.1875rem; line-height: 1.25; letter-spacing: -0.015em; }
+.type-label { color: var(--muted-foreground); font-size: 0.8125rem; line-height: 1.35; letter-spacing: 0.005em; }
+.type-number { font-family: var(--font-display); font-weight: 600; font-variant-numeric: tabular-nums; letter-spacing: -0.03em; }
+
+.material {
+  background: var(--material);
+  backdrop-filter: blur(22px) saturate(180%);
+  box-shadow: inset 0 1px 0 var(--material-edge), var(--elevation-floating);
+}
+.pressable { transition: transform 160ms cubic-bezier(0.22, 1, 0.36, 1); }
+.pressable:active { transform: scale(0.97); transition-duration: 80ms; }
+
+/* App shell: top bar pill and the floating rail (apps/web/components/shell). */
+.topbar { position: sticky; top: 0; z-index: 40; padding: 0.75rem 1.25rem 0; }
+.topbar-inner { display: flex; align-items: center; gap: 0.75rem; height: 3.5rem; max-width: 88rem; margin: 0 auto; padding: 0 0.5rem 0 1rem; border-radius: 999px; }
+.logo { display: flex; align-items: center; gap: 0.5rem; font-family: var(--font-display); font-weight: 600; font-size: 1.0625rem; letter-spacing: -0.01em; }
+.logo svg { width: 1.5rem; height: 1.5rem; color: var(--brand); }
+.topbar-end { margin-left: auto; display: flex; align-items: center; gap: 0.375rem; }
+.avatar { display: grid; place-items: center; width: 2rem; height: 2rem; border-radius: 999px; background: var(--tint-strong); color: var(--tint-foreground); font-size: 0.75rem; font-weight: 600; }
+.rail { position: fixed; z-index: 40; top: 6rem; left: 1.25rem; width: 13rem; padding: 0.5rem; border-radius: 1.375rem; display: flex; flex-direction: column; gap: 0.125rem; }
+.rail a { display: flex; align-items: center; gap: 0.75rem; padding: 0.625rem 0.75rem; border-radius: 0.75rem; font-size: 0.875rem; font-weight: 500; color: var(--muted-foreground); }
+.rail a:hover { color: var(--foreground); }
+.rail a .i { width: 1.125rem; height: 1.125rem; stroke-width: 1.8; }
+.rail a.on { background: var(--tint-strong); color: var(--tint-foreground); }
+.rail a.on .i { stroke-width: 2.2; }
+.rail .sep { height: 1px; background: var(--border); margin: 0.375rem 0.5rem; }
+main { max-width: 88rem; margin: 0 auto; padding: 1.75rem 2rem 4rem 16rem; }
+
+/* PageHeader */
+.page-header { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 1rem 1.5rem; margin-bottom: 1.5rem; }
+.page-header p { margin-top: 0.5rem; color: var(--muted-foreground); max-width: 60ch; }
+.toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.75rem; margin-bottom: 1.25rem; }
+.toolbar-end { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; }
+
+/* Button (cva variants in button.tsx) */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; height: 2.5rem; padding: 0 1.125rem; border-radius: 999px; font-size: 0.875rem; font-weight: 500; white-space: nowrap; }
+.btn.sm { height: 2.125rem; padding: 0 0.875rem; font-size: 0.8125rem; }
+.btn.icon { width: 2.125rem; height: 2.125rem; padding: 0; color: var(--muted-foreground); }
+.btn-default { background: var(--brand); color: #fff; box-shadow: var(--elevation-raised); }
+.btn-outline { background: var(--card); border: 1px solid var(--border); }
+.btn-outline:hover, .btn-ghost:hover { background: var(--accent); }
+.btn-tint { background: var(--tint); color: var(--tint-foreground); }
+.btn .chev { width: 0.875rem; height: 0.875rem; color: var(--muted-foreground); }
+
+/* Badge (badge.tsx) */
+.badge { display: inline-flex; align-items: center; gap: 0.375rem; width: fit-content; padding: 0.125rem 0.625rem; border-radius: 999px; font-size: 0.75rem; font-weight: 500; white-space: nowrap; }
+.badge .i { width: 0.75rem; height: 0.75rem; }
+.badge-neutral { background: var(--secondary); }
+.badge-tint { background: var(--tint); color: var(--tint-foreground); }
+.badge-success { background: rgba(23, 138, 94, 0.12); color: var(--success); }
+.badge-warning { background: rgba(183, 116, 10, 0.14); color: var(--warning); }
+.badge-danger { background: rgba(207, 63, 87, 0.12); color: var(--destructive); }
+.badge-outline { border: 1px solid var(--border); color: var(--muted-foreground); }
+
+/* Segmented (segmented.tsx): the selected pill is a raised card. */
+.seg { display: inline-flex; max-width: 100%; padding: 0.25rem; border-radius: 999px; background: var(--secondary); }
+.seg button { padding: 0.375rem 0.875rem; border-radius: 999px; font-size: 0.8125rem; font-weight: 500; color: var(--muted-foreground); white-space: nowrap; }
+.seg button.on { background: var(--card); color: var(--foreground); box-shadow: var(--elevation-raised); }
+.seg.sm { padding: 0.1875rem; }
+.seg.sm button { padding: 0.25rem 0.75rem; font-size: 0.78rem; }
+.chip { display: inline-flex; align-items: center; gap: 0.375rem; height: 2.125rem; padding: 0 0.5rem 0 0.875rem; border-radius: 999px; background: var(--tint); color: var(--tint-foreground); font-size: 0.8125rem; font-weight: 500; }
+.chip .i { width: 0.875rem; height: 0.875rem; }
+
+/* Panel (states.tsx): white, raised, no border. */
+.panel { border-radius: 1.375rem; background: var(--card); padding: 1.5rem; box-shadow: var(--elevation-raised); min-width: 0; }
+.panel.tinted { background: var(--tint); box-shadow: none; }
+.grid { display: grid; gap: 1.25rem; margin-bottom: 1.25rem; }
+.g4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.g3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.g2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.g21 { grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr); }
+
+/* Metric card */
+.stat .value { font-size: 2rem; line-height: 1.1; margin-top: 0.625rem; }
+.stat .value small { font-family: var(--font-body); font-size: 0.9375rem; font-weight: 500; letter-spacing: 0; color: var(--muted-foreground); margin-left: 0.25rem; }
+.stat .delta { display: flex; align-items: center; gap: 0.375rem; margin-top: 0.625rem; font-size: 0.8125rem; color: var(--muted-foreground); }
+.up-good { color: var(--success); }
+.up-bad { color: var(--destructive); }
+
+/* Card header: question on the left, the one number that answers it on the right. */
+.card-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; margin-bottom: 1.25rem; }
+.card-head .type-label { margin-top: 0.25rem; }
+.figure { text-align: right; flex: none; }
+.figure .type-number { font-size: 1.5rem; line-height: 1.1; }
+.figure .type-label { margin-top: 0.125rem; }
+.card-tools { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.75rem; margin-bottom: 1rem; }
+.legend { display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; font-size: 0.8125rem; color: var(--muted-foreground); }
+.legend span { display: inline-flex; align-items: center; gap: 0.4rem; }
+.legend b { color: var(--foreground); font-weight: 500; font-variant-numeric: tabular-nums; }
+.dot { width: 0.5rem; height: 0.5rem; border-radius: 999px; flex: none; }
+.link { display: inline-flex; align-items: center; gap: 0.25rem; font-size: 0.8125rem; font-weight: 500; color: var(--tint-foreground); }
+.link .i { width: 0.875rem; height: 0.875rem; }
+
+/* Ranked bars: white label inside the fill when it fits, ink label just after a short fill. */
+.bars { display: grid; gap: 0.625rem; }
+.bars-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.125rem; }
+.bar-row { display: grid; grid-template-columns: minmax(0, 1fr) 4.5rem; align-items: center; gap: 0.875rem; }
+.bar { position: relative; height: 2.25rem; border-radius: 0.75rem; background: rgba(236, 238, 242, 0.7); overflow: hidden; }
+.fill { display: flex; height: 100%; border-radius: 0.75rem; overflow: hidden; }
+.fill span { height: 100%; }
+.bar .lbl { position: absolute; inset: 0; display: flex; align-items: center; gap: 0.5rem; padding: 0 0.875rem; font-size: 0.875rem; font-weight: 500; white-space: nowrap; }
+.bar .lbl.on { color: #fff; }
+.bar .lbl .note { font-weight: 400; opacity: 0.8; }
+.bar-total { text-align: right; font-weight: 500; font-variant-numeric: tabular-nums; }
+
+/* Charts: thin lines, faint guides, labels in the muted ink. */
+.chart { width: 100%; height: auto; display: block; overflow: visible; }
+.chart text { font-family: var(--font-body); font-size: 11px; fill: var(--muted-foreground); font-variant-numeric: tabular-nums; }
+.chart .grid-line { stroke: var(--foreground); stroke-opacity: 0.08; }
+
+/* Table (TanStack Table look) */
+.table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+.table th { text-align: left; font-size: 0.8125rem; font-weight: 500; color: var(--muted-foreground); padding: 0 0.75rem 0.625rem; border-bottom: 1px solid var(--border); white-space: nowrap; }
+.table td { padding: 0.8rem 0.75rem; border-bottom: 1px solid var(--border); white-space: nowrap; }
+.table tr:last-child td { border-bottom: 0; }
+.table tbody tr:hover td { background: rgba(236, 238, 242, 0.6); }
+.table td:first-child, .table th:first-child { padding-left: 0; }
+.table td:last-child, .table th:last-child { padding-right: 0; }
+.table .r { text-align: right; }
+.table .trunc { max-width: 18rem; overflow: hidden; text-overflow: ellipsis; color: var(--muted-foreground); }
+.table .go { width: 1.5rem; color: var(--muted-foreground); }
+.who { display: inline-flex; align-items: center; gap: 0.5rem; }
+.mini-avatar { display: grid; place-items: center; width: 1.375rem; height: 1.375rem; border-radius: 999px; font-size: 0.625rem; font-weight: 600; color: #fff; flex: none; }
+.method { display: inline-block; min-width: 2.75rem; text-align: center; padding: 0.0625rem 0.5rem; border-radius: 0.5rem; font-size: 0.72rem; font-weight: 600; background: var(--secondary); }
+.method.post { background: var(--tint); color: var(--tint-foreground); }
+.search { display: inline-flex; align-items: center; gap: 0.5rem; height: 2.125rem; padding: 0 0.875rem; border-radius: 999px; border: 1px solid var(--input); color: var(--muted-foreground); font-size: 0.8125rem; min-width: 14rem; }
+
+@media (max-width: 1100px) {
+  .g4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .g2, .g21, .g3 { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 1023px) {
+  .rail { display: none; }
+  main { padding: 1.75rem 1.5rem 8rem; }
+}
+@media (max-width: 640px) {
+  .g4 { grid-template-columns: minmax(0, 1fr); }
+  main { padding: 1.75rem 1rem 8rem; }
+  .table-wrap { overflow-x: auto; }
+}
+
+/* Stat card: label left, a small trend line right so direction reads at a glance. */
+.stat-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 0.75rem; }
+.spark { width: 5.5rem; height: 1.875rem; flex: none; overflow: visible; }
+.trend { display: inline-flex; align-items: center; gap: 0.2rem; font-weight: 500; color: var(--foreground); }
+.trend .i { width: 0.8rem; height: 0.8rem; stroke-width: 2.4; }
+.trend.good { color: var(--success); }
+.trend.bad { color: var(--destructive); }
+
+/* Hover state, drawn once so reviewers can see what a chart point reveals. */
+.chart-wrap { position: relative; }
+.tooltip { position: absolute; top: 0.5rem; min-width: 9.5rem; padding: 0.625rem 0.75rem; border-radius: 0.75rem; background: var(--card); border: 1px solid var(--border); box-shadow: var(--elevation-floating); font-size: 0.8125rem; }
+.tip-title { font-weight: 500; margin-bottom: 0.375rem; }
+.tip-row { display: flex; align-items: center; gap: 0.5rem; color: var(--muted-foreground); }
+.tip-row b { margin-left: auto; color: var(--foreground); font-weight: 500; font-variant-numeric: tabular-nums; }
+
+/* Switch (switch.tsx) and the toolbar divider. */
+.switch-row { display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.8125rem; font-weight: 500; }
+.switch { position: relative; width: 2.25rem; height: 1.25rem; border-radius: 999px; background: var(--input); flex: none; }
+.switch span { position: absolute; top: 0.125rem; left: 0.125rem; width: 1rem; height: 1rem; border-radius: 999px; background: #fff; box-shadow: 0 1px 2px rgb(20 24 34 / 0.2); }
+.switch.on { background: var(--brand); }
+.switch.on span { left: 1.125rem; }
+.toolbar-sep { width: 1px; height: 1.25rem; background: var(--border); margin: 0 0.25rem; }
+
+/* What already sorted itself out, so the attention list never feels like an alarm. */
+.resolved { display: flex; align-items: center; gap: 0.5rem; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border); font-size: 0.8125rem; color: var(--muted-foreground); }
+.resolved > .i { color: var(--success); }
+.resolved .link { margin-left: auto; }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute"><symbol id="i-calendar" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></symbol><symbol id="i-filter" viewBox="0 0 24 24"><path d="M3 6h18M7 12h10M10 18h4"/></symbol><symbol id="i-chevron-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol><symbol id="i-chevron-right" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol><symbol id="i-external" viewBox="0 0 24 24"><path d="M15 3h6v6M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></symbol><symbol id="i-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></symbol><symbol id="i-activity" viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></symbol><symbol id="i-settings" viewBox="0 0 24 24"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></symbol><symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2m-7.07-17.07 1.41 1.41m11.32 11.32 1.41 1.41M2 12h2m16 0h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></symbol><symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol><symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></symbol><symbol id="i-arrow-up" viewBox="0 0 24 24"><path d="m5 12 7-7 7 7M12 19V5"/></symbol><symbol id="i-arrow-down" viewBox="0 0 24 24"><path d="M12 5v14M19 12l-7 7-7-7"/></symbol><symbol id="i-arrow-left" viewBox="0 0 24 24"><path d="m12 19-7-7 7-7M19 12H5"/></symbol><symbol id="i-rotate" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></symbol><symbol id="i-copy" viewBox="0 0 24 24"><rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></symbol><symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></symbol><symbol id="i-alert" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></symbol><symbol id="i-bot" viewBox="0 0 24 24"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2M20 14h2M15 13v2M9 13v2"/></symbol><symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20M2 12h20"/></symbol><symbol id="i-file" viewBox="0 0 24 24"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4M16 13H8M16 17H8"/></symbol><symbol id="i-database" viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0 0 18 0V5M3 12a9 3 0 0 0 18 0"/></symbol><symbol id="i-workflow" viewBox="0 0 24 24"><rect width="8" height="8" x="3" y="3" rx="2"/><path d="M7 11v4a2 2 0 0 0 2 2h4"/><rect width="8" height="8" x="13" y="13" rx="2"/></symbol><symbol id="i-book" viewBox="0 0 24 24"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></symbol></svg>
+<header class="topbar"><div class="topbar-inner material">
+  <a class="logo" href="#"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="9" width="4.5" height="10" rx="2.25" fill="currentColor" opacity=".55"/><rect x="9.75" y="4" width="4.5" height="15" rx="2.25" fill="currentColor"/><rect x="16.5" y="7" width="4.5" height="12" rx="2.25" fill="currentColor" opacity=".8"/></svg>Cadence</a>
+  <div class="topbar-end">
+    <button class="btn icon pressable" aria-label="Theme"><svg class="i" aria-hidden="true"><use href="#i-sun"/></svg></button>
+    <span class="badge badge-outline">Admin</span>
+    <span class="avatar">SA</span>
+  </div>
+</div></header>
+<nav class="rail material" aria-label="Admin">
+  <a href="#"><svg class="i" aria-hidden="true"><use href="#i-users"/></svg>Clients</a>
+  <a href="#" class="on" aria-current="page"><svg class="i" aria-hidden="true"><use href="#i-activity"/></svg>Observability</a>
+  <div class="sep"></div>
+  <a href="#"><svg class="i" aria-hidden="true"><use href="#i-settings"/></svg>Settings</a>
+</nav>
+<main>
+<header class="page-header"><div><h1 class="type-title">Observability</h1><p>How the server and the AI agents are doing, across every client.</p></div></header>
+<div class="toolbar"><div class="seg" role="radiogroup"><button class="">Overview</button><button class="on">Agents</button><button class="">Server</button></div><div class="toolbar-end"><span class="type-label">Updated 1 min ago</span><span class="switch-row"><span class="switch on"><span></span></span>Auto refresh</span><span class="toolbar-sep"></span><button class="btn sm btn-outline pressable"><svg class="i" aria-hidden="true"><use href="#i-calendar"/></svg>Last 24 hours<svg class="i chev" aria-hidden="true"><use href="#i-chevron-down"/></svg></button><button class="btn sm btn-outline pressable"><svg class="i" aria-hidden="true"><use href="#i-filter"/></svg>Add filter</button></div></div>
+
+<div class="grid g3">
+  <div class="panel stat"><div class="stat-top"><div class="type-label">Agent runs</div><svg class="spark" viewBox="0 0 88 30" aria-hidden="true"><polyline points="0.0,27.0 8.0,21.0 16.0,21.0 24.0,15.0 32.0,21.0 40.0,9.0 48.0,15.0 56.0,3.0 64.0,9.0 72.0,15.0 80.0,21.0 88.0,21.0" fill="none" stroke="var(--brand)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/></svg></div><div class="value type-number">40</div><div class="delta"><span class="trend muted"><svg class="i" aria-hidden="true"><use href="#i-arrow-up"/></svg>8</span> vs previous 24 hours</div></div>
+  <div class="panel stat"><div class="stat-top"><div class="type-label">Model cost</div><svg class="spark" viewBox="0 0 88 30" aria-hidden="true"><polyline points="0.0,27.0 8.0,22.2 16.0,22.2 24.0,12.6 32.0,17.4 40.0,7.8 48.0,12.6 56.0,3.0 64.0,7.8 72.0,17.4 80.0,22.2 88.0,22.2" fill="none" stroke="var(--brand)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/></svg></div><div class="value type-number">$0.58</div><div class="delta"><span class="trend muted"><svg class="i" aria-hidden="true"><use href="#i-arrow-up"/></svg>$0.12</span> vs previous 24 hours</div></div>
+  <div class="panel stat"><div class="stat-top"><div class="type-label">Tokens</div><svg class="spark" viewBox="0 0 88 30" aria-hidden="true"><polyline points="0.0,25.0 3.8,22.0 7.7,22.6 11.5,21.0 15.3,21.4 19.1,18.6 23.0,15.0 26.8,9.0 30.6,11.0 34.4,14.0 38.3,7.0 42.1,3.0 45.9,5.0 49.7,9.0 53.6,13.0 57.4,14.0 61.2,11.0 65.0,15.0 68.9,17.0 72.7,19.0 76.5,21.0 80.3,22.0 84.2,25.0 88.0,27.0" fill="none" stroke="var(--brand)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/></svg></div><div class="value type-number">1.6M</div><div class="delta">1.5M input, 123.4K output</div></div>
+</div>
+<div class="grid g2">
+  <section class="panel"><div class="card-head"><div><h2 class="type-heading">Model usage and cost</h2><p class="type-label">Tokens and cost for each model.</p></div><div class="figure"><div class="type-number">$0.58</div><div class="type-label">Total cost</div></div></div>
+    <table class="table"><thead><tr><th>Model</th><th class="r">Input</th><th class="r">Output</th><th class="r">Cached</th><th class="r">Cost</th></tr></thead><tbody><tr><td><span class="who"><i class="dot" style="background:var(--brand)"></i>claude-opus-5</span></td><td class="r num">1.3M</td><td class="r num">51.0K</td><td class="r num">0</td><td class="r num" style="font-weight:500">$0.41</td></tr><tr><td><span class="who"><i class="dot" style="background:var(--brand-2)"></i>claude-sonnet-5</span></td><td class="r num">152.7K</td><td class="r num">72.3K</td><td class="r num">0</td><td class="r num" style="font-weight:500">$0.15</td></tr><tr><td><span class="who"><i class="dot" style="background:var(--tint-strong)"></i>gpt-4.1-mini</span></td><td class="r num">1.3K</td><td class="r num">43</td><td class="r num">0</td><td class="r num" style="font-weight:500">$0.02</td></tr></tbody></table>
+  </section>
+  <section class="panel"><div class="card-head"><div><h2 class="type-heading">Usage by agent</h2><p class="type-label">Which agents use the most.</p></div><div class="figure"><div class="type-number">1.6M</div><div class="type-label">Total tokens</div></div></div>
+    <div class="card-tools"><div class="seg sm" role="radiogroup"><button class="on">Tokens</button><button class="">Cost</button></div></div>
+    <div class="bars"><div class="bars-head"><div class="legend"><span><i class="dot" style="background:var(--brand)"></i>Input</span><span><i class="dot" style="background:var(--brand-2)"></i>Output</span></div><span class="type-label">Total</span></div><div class="bar-row"><div class="bar"><div class="fill" style="width:100.00%"><span style="width:96.02%;background:var(--brand)"></span><span style="width:3.98%;background:var(--brand-2)"></span></div><div class="lbl on">Audience Researcher</div></div><div class="bar-total">887.7K</div></div><div class="bar-row"><div class="bar"><div class="fill" style="width:56.76%"><span style="width:93.29%;background:var(--brand)"></span><span style="width:6.71%;background:var(--brand-2)"></span></div><div class="lbl on">Growth Consultant</div></div><div class="bar-total">503.9K</div></div><div class="bar-row"><div class="bar"><div class="fill" style="width:21.54%"><span style="width:84.10%;background:var(--brand)"></span><span style="width:15.90%;background:var(--brand-2)"></span></div><div class="lbl" style="left:calc(21.54% + 2px)">Account Manager</div></div><div class="bar-total">191.2K</div></div><div class="bar-row"><div class="bar"><div class="fill" style="width:3.95%"><span style="width:88.89%;background:var(--brand)"></span><span style="width:11.11%;background:var(--brand-2)"></span></div><div class="lbl" style="left:calc(3.95% + 2px)">Brand Analyst</div></div><div class="bar-total">35.1K</div></div></div>
+  </section>
+</div>
+<div class="grid g2">
+  <section class="panel"><div class="card-head"><div><h2 class="type-heading">Runs and errors</h2><p class="type-label">How often each agent ran, and how often it failed.</p></div><div class="figure"><div class="type-number">118</div><div class="type-label">Total runs</div></div></div>
+    <div class="card-tools"><div class="seg sm" role="radiogroup"><button class="on">Agents</button><button class="">Workflows</button><button class="">Tools</button></div></div>
+    <div class="bars"><div class="bars-head"><div class="legend"><span><i class="dot" style="background:var(--brand)"></i>Completed</span><span><i class="dot" style="background:var(--error-fill)"></i>Errors</span></div><span class="type-label">Total</span></div><div class="bar-row"><div class="bar"><div class="fill" style="width:100.00%"><span style="width:96.43%;background:var(--brand)"></span><span style="width:3.57%;background:var(--error-fill)"></span></div><div class="lbl on">Account Manager</div></div><div class="bar-total">28</div></div><div class="bar-row"><div class="bar"><div class="fill" style="width:21.43%"><span style="width:83.33%;background:var(--brand)"></span><span style="width:16.67%;background:var(--error-fill)"></span></div><div class="lbl" style="left:calc(21.43% + 2px)">Brand Analyst</div></div><div class="bar-total">6</div></div><div class="bar-row"><div class="bar"><div class="fill" style="width:10.71%"><span style="width:100.00%;background:var(--brand)"></span></div><div class="lbl" style="left:calc(10.71% + 2px)">Growth Consultant</div></div><div class="bar-total">3</div></div><div class="bar-row"><div class="bar"><div class="fill" style="width:10.71%"><span style="width:100.00%;background:var(--brand)"></span></div><div class="lbl" style="left:calc(10.71% + 2px)">Audience Researcher</div></div><div class="bar-total">3</div></div></div>
+  </section>
+  <section class="panel"><div class="card-head"><div><h2 class="type-heading">Latency</h2><p class="type-label">How long a run takes, per hour.</p></div><div class="figure"><div class="type-number">41.4 s</div><div class="type-label">Typical run</div></div></div>
+    <div class="card-tools"><div class="seg sm" role="radiogroup"><button class="on">Agents</button><button class="">Workflows</button><button class="">Tools</button></div><div class="legend"><span><i class="dot" style="background:var(--brand)"></i>Typical (p50) <b>41.4 s</b></span><span><i class="dot" style="background:var(--brand-2)"></i>Slowest 5% (p95) <b>110.8 s</b></span></div></div>
+    <svg class="chart" viewBox="0 0 460 220" role="img"><line class="grid-line" x1="44" x2="460" y1="196.0" y2="196.0"/><text x="34" y="200.0" text-anchor="end">0 s</text><line class="grid-line" x1="44" x2="460" y1="149.0" y2="149.0"/><text x="34" y="153.0" text-anchor="end">35 s</text><line class="grid-line" x1="44" x2="460" y1="102.0" y2="102.0"/><text x="34" y="106.0" text-anchor="end">70 s</text><line class="grid-line" x1="44" x2="460" y1="55.0" y2="55.0"/><text x="34" y="59.0" text-anchor="end">105 s</text><line class="grid-line" x1="44" x2="460" y1="8.0" y2="8.0"/><text x="34" y="12.0" text-anchor="end">140 s</text><text x="44.0" y="216" text-anchor="middle">00:00</text><text x="116.3" y="216" text-anchor="middle">04:00</text><text x="188.7" y="216" text-anchor="middle">08:00</text><text x="261.0" y="216" text-anchor="middle">12:00</text><text x="333.4" y="216" text-anchor="middle">16:00</text><text x="405.7" y="216" text-anchor="middle">20:00</text><text x="460.0" y="216" text-anchor="middle">Now</text><polyline points="44.0,64.4 62.1,56.3 80.2,48.3 98.3,60.4 116.3,63.1 134.4,37.5 152.5,29.5 170.6,45.6 188.7,55.0 206.8,57.7 224.9,51.0 243.0,40.2 261.0,33.5 279.1,48.3 297.2,56.3 315.3,45.6 333.4,49.6 351.5,53.7 369.6,60.4 387.7,51.0 405.7,45.6 423.8,55.0 441.9,48.3 460.0,56.3" fill="none" stroke="var(--brand-2)" stroke-width="2.25" stroke-linejoin="round" stroke-linecap="round"/><polygon points="44,196 44.0,145.0 62.1,142.3 80.2,139.6 98.3,143.6 116.3,140.9 134.4,136.9 152.5,134.2 170.6,138.3 188.7,140.9 206.8,142.3 224.9,143.6 243.0,139.6 261.0,136.9 279.1,140.9 297.2,142.3 315.3,138.3 333.4,139.6 351.5,142.3 369.6,143.6 387.7,140.9 405.7,139.6 423.8,142.3 441.9,140.9 460.0,143.6 460,196" fill="var(--brand)" fill-opacity="0.12"/><polyline points="44.0,145.0 62.1,142.3 80.2,139.6 98.3,143.6 116.3,140.9 134.4,136.9 152.5,134.2 170.6,138.3 188.7,140.9 206.8,142.3 224.9,143.6 243.0,139.6 261.0,136.9 279.1,140.9 297.2,142.3 315.3,138.3 333.4,139.6 351.5,142.3 369.6,143.6 387.7,140.9 405.7,139.6 423.8,142.3 441.9,140.9 460.0,143.6" fill="none" stroke="var(--brand)" stroke-width="2.25" stroke-linejoin="round" stroke-linecap="round"/></svg>
+  </section>
+</div>
+<div class="grid g2">
+  <section class="panel"><div class="card-head"><div><h2 class="type-heading">Usage over time</h2><p class="type-label">Input and output tokens per hour.</p></div><div class="figure"><div class="type-number">1.6M</div><div class="type-label">Total tokens</div></div></div>
+    <div class="card-tools"><div class="seg sm" role="radiogroup"><button class="on">Tokens</button><button class="">Cost</button></div><div class="legend"><span><i class="dot" style="background:var(--brand)"></i>Input <b>1.5M</b></span><span><i class="dot" style="background:var(--brand-2)"></i>Output <b>123.4K</b></span></div></div>
+    <svg class="chart" viewBox="0 0 460 220" role="img"><line class="grid-line" x1="44" x2="460" y1="196.0" y2="196.0"/><text x="34" y="200.0" text-anchor="end">0K</text><line class="grid-line" x1="44" x2="460" y1="149.0" y2="149.0"/><text x="34" y="153.0" text-anchor="end">40K</text><line class="grid-line" x1="44" x2="460" y1="102.0" y2="102.0"/><text x="34" y="106.0" text-anchor="end">80K</text><line class="grid-line" x1="44" x2="460" y1="55.0" y2="55.0"/><text x="34" y="59.0" text-anchor="end">120K</text><line class="grid-line" x1="44" x2="460" y1="8.0" y2="8.0"/><text x="34" y="12.0" text-anchor="end">160K</text><text x="44.0" y="216" text-anchor="middle">00:00</text><text x="116.3" y="216" text-anchor="middle">04:00</text><text x="188.7" y="216" text-anchor="middle">08:00</text><text x="261.0" y="216" text-anchor="middle">12:00</text><text x="333.4" y="216" text-anchor="middle">16:00</text><text x="405.7" y="216" text-anchor="middle">20:00</text><text x="460.0" y="216" text-anchor="middle">Now</text><polygon points="44,196 44.0,149.0 62.1,131.4 80.2,134.9 98.3,125.5 116.3,127.9 134.4,111.4 152.5,90.2 170.6,55.0 188.7,66.8 206.8,84.4 224.9,43.2 243.0,19.8 261.0,31.5 279.1,55.0 297.2,78.5 315.3,84.4 333.4,66.8 351.5,90.2 369.6,102.0 387.7,113.8 405.7,125.5 423.8,131.4 441.9,149.0 460.0,160.8 460,196" fill="var(--brand)" fill-opacity="0.12"/><polyline points="44.0,149.0 62.1,131.4 80.2,134.9 98.3,125.5 116.3,127.9 134.4,111.4 152.5,90.2 170.6,55.0 188.7,66.8 206.8,84.4 224.9,43.2 243.0,19.8 261.0,31.5 279.1,55.0 297.2,78.5 315.3,84.4 333.4,66.8 351.5,90.2 369.6,102.0 387.7,113.8 405.7,125.5 423.8,131.4 441.9,149.0 460.0,160.8" fill="none" stroke="var(--brand)" stroke-width="2.25" stroke-linejoin="round" stroke-linecap="round"/><polyline points="44.0,192.5 62.1,191.3 80.2,191.3 98.3,190.1 116.3,190.1 134.4,188.9 152.5,186.6 170.6,185.4 188.7,185.4 206.8,186.6 224.9,184.2 243.0,181.9 261.0,183.1 279.1,184.2 297.2,186.6 315.3,186.6 333.4,185.4 351.5,187.8 369.6,188.9 387.7,188.9 405.7,190.1 423.8,191.3 441.9,192.5 460.0,193.7" fill="none" stroke="var(--brand-2)" stroke-width="2.25" stroke-linejoin="round" stroke-linecap="round"/></svg>
+  </section>
+  <section class="panel"><div class="card-head"><div><h2 class="type-heading">Cost by client</h2><p class="type-label">Who the AI spend was for.</p></div><div class="figure"><div class="type-number">$0.58</div><div class="type-label">Total cost</div></div></div>
+    <div class="bars"><div class="bar-row"><div class="bar"><div class="fill" style="width:100.00%"><span style="width:100.00%;background:var(--brand)"></span></div><div class="lbl on">Four Barrel Coffee</div></div><div class="bar-total">$0.22</div></div><div class="bar-row"><div class="bar"><div class="fill" style="width:72.73%"><span style="width:100.00%;background:var(--brand)"></span></div><div class="lbl on">Tartine Bakery</div></div><div class="bar-total">$0.16</div></div><div class="bar-row"><div class="bar"><div class="fill" style="width:54.55%"><span style="width:100.00%;background:var(--brand)"></span></div><div class="lbl on">Meow Meow Tweet</div></div><div class="bar-total">$0.12</div></div><div class="bar-row"><div class="bar"><div class="fill" style="width:36.36%"><span style="width:100.00%;background:var(--brand)"></span></div><div class="lbl on">Don Angie</div></div><div class="bar-total">$0.08</div></div></div>
+  </section>
+</div>
+<section class="panel"><div class="card-head"><div><h2 class="type-heading">Recent runs</h2><p class="type-label">Every agent run, newest first. Open one to see each step.</p></div></div>
+  <div class="table-wrap"><table class="table"><thead><tr><th>Started</th><th>Agent</th><th>Asked to</th><th>Client</th><th>Status</th><th class="r">Cost</th><th></th></tr></thead><tbody><tr><td class="muted num">25 Sep, 1:31 AM</td><td><span class="who"><svg class="i" aria-hidden="true"><use href="#i-bot"/></svg>Account Manager</span></td><td class="trunc">Write the intake questions for Four Barrel Coffee</td><td><span class="who"><span class="mini-avatar" style="background:#8a4b2a">FB</span>Four Barrel Coffee</span></td><td><span class="badge badge-success"><svg class="i" aria-hidden="true"><use href="#i-check"/></svg>OK</span></td><td class="r num">$0.01</td><td class="go"><svg class="i" aria-hidden="true"><use href="#i-chevron-right"/></svg></td></tr><tr><td class="muted num">25 Sep, 1:28 AM</td><td><span class="who"><svg class="i" aria-hidden="true"><use href="#i-bot"/></svg>Audience Researcher</span></td><td class="trunc">Find who buys specialty sourdough in the Mission</td><td><span class="who"><span class="mini-avatar" style="background:#c2410c">TB</span>Tartine Bakery</span></td><td><span class="badge badge-success"><svg class="i" aria-hidden="true"><use href="#i-check"/></svg>OK</span></td><td class="r num">$0.06</td><td class="go"><svg class="i" aria-hidden="true"><use href="#i-chevron-right"/></svg></td></tr><tr><td class="muted num">25 Sep, 1:15 AM</td><td><span class="who"><svg class="i" aria-hidden="true"><use href="#i-bot"/></svg>Brand Analyst</span></td><td class="trunc">Read tartinebakery.com and draft the brand kit</td><td><span class="who"><span class="mini-avatar" style="background:#c2410c">TB</span>Tartine Bakery</span></td><td><span class="badge badge-success"><svg class="i" aria-hidden="true"><use href="#i-check"/></svg>OK</span></td><td class="r num">$0.02</td><td class="go"><svg class="i" aria-hidden="true"><use href="#i-chevron-right"/></svg></td></tr><tr><td class="muted num">25 Sep, 1:04 AM</td><td><span class="who"><svg class="i" aria-hidden="true"><use href="#i-bot"/></svg>Growth Consultant</span></td><td class="trunc">Research competitors near Don Angie</td><td><span class="who"><span class="mini-avatar" style="background:#9f1239">DA</span>Don Angie</span></td><td><span class="badge badge-danger"><svg class="i" aria-hidden="true"><use href="#i-x"/></svg>Error</span></td><td class="r num">$0.19</td><td class="go"><svg class="i" aria-hidden="true"><use href="#i-chevron-right"/></svg></td></tr><tr><td class="muted num">25 Sep, 12:52 AM</td><td><span class="who"><svg class="i" aria-hidden="true"><use href="#i-bot"/></svg>Account Manager</span></td><td class="trunc">Review the answers from Meow Meow Tweet</td><td><span class="who"><span class="mini-avatar" style="background:#0f766e">MM</span>Meow Meow Tweet</span></td><td><span class="badge badge-success"><svg class="i" aria-hidden="true"><use href="#i-check"/></svg>OK</span></td><td class="r num">$0.01</td><td class="go"><svg class="i" aria-hidden="true"><use href="#i-chevron-right"/></svg></td></tr><tr><td class="muted num">25 Sep, 12:40 AM</td><td><span class="who"><svg class="i" aria-hidden="true"><use href="#i-bot"/></svg>Audience Researcher</span></td><td class="trunc">Find the audience for natural deodorant</td><td><span class="who"><span class="mini-avatar" style="background:#0f766e">MM</span>Meow Meow Tweet</span></td><td><span class="badge badge-success"><svg class="i" aria-hidden="true"><use href="#i-check"/></svg>OK</span></td><td class="r num">$0.05</td><td class="go"><svg class="i" aria-hidden="true"><use href="#i-chevron-right"/></svg></td></tr></tbody></table></div>
+  <div style="margin-top:1rem"><a class="link" href="#">All runs<svg class="i" aria-hidden="true"><use href="#i-chevron-right"/></svg></a></div>
+</section>
+</main>
+</body>
+</html>
