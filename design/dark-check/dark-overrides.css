@@ -1,0 +1,80 @@
+/* Proposed dark-mode fixes found by the dark check (design/dark-check/REPORT.md).
+   Proposal only: nothing here touches app.css or an approved screen.
+   Selectors match the specificity pattern already used for :root[data-theme="dark"] .brand-tartine
+   in design/dark-check/build.py's DARK_TOKENS, so each wins over the light-mode rule
+   without !important. */
+
+/* Problem 1: soft-surface panels hard-coded to a light grey/blue, so var(--foreground) text
+   (light in dark mode) lands on a light card and disappears. Seen on S03, S06, S08, S09, S11,
+   S12, S13 (This week / calendar day cells, "Goes out" time, brand-kit preview, table row
+   hover) and the admin client list ("pending" brand card, "just added" row). */
+:root[data-theme="dark"] .day,
+:root[data-theme="dark"] .prefill,
+:root[data-theme="dark"] .day-sep,
+:root[data-theme="dark"] .aud,
+:root[data-theme="dark"] .learn-empty,
+:root[data-theme="dark"] .goes-out,
+:root[data-theme="dark"] .kit-meta,
+:root[data-theme="dark"] .what-next,
+:root[data-theme="dark"] .art,
+:root[data-theme="dark"] .content-table tbody tr:hover,
+:root[data-theme="dark"] .clients-table tbody tr:hover,
+:root[data-theme="dark"] .clients-table tr.new,
+:root[data-theme="dark"] .brand-card.pending {
+  background: var(--secondary);
+}
+
+/* Problem 2: the calendar's weekend columns are hard-coded near-white, so Saturday and Sunday
+   render as solid white blocks in dark mode (S11 month view). */
+:root[data-theme="dark"] .cal-cell:nth-child(7n + 6),
+:root[data-theme="dark"] .cal-cell:nth-child(7n) {
+  background: var(--secondary);
+}
+
+/* Problem 3: warning and error notes use a text colour picked for a light background
+   (#8a5708 / #8a5606 / #6f4a0a / #a3263b), which fails contrast against their own tint on a
+   dark card. Seen on S09 ("Instagram isn't connected"), S11 ("aren't connected" calendar
+   banner), S13 (account error) and the sign-in "why we're asking" notice. */
+:root[data-theme="dark"] .warn-note,
+:root[data-theme="dark"] .cal-alert,
+:root[data-theme="dark"] .notice.warning,
+:root[data-theme="dark"] .waiting p + p {
+  color: var(--warning);
+}
+:root[data-theme="dark"] .acct .inline-error {
+  color: var(--destructive);
+}
+
+/* Problem 4: a brand's accent tokens (--tint, --tint-strong, --tint-foreground, --brand-2) are
+   only re-pointed for dark mode on .brand-tartine. Every other brand (here: Meow Meow Tweet)
+   keeps its light tint, so "Where to post" cards (S13, .platform.on) and the nav rail's active
+   item render a light-pink card with light (dark-mode) text on top: invisible. Add one block
+   per brand class; this is the pattern to repeat for every brand, not just these two. */
+:root[data-theme="dark"] .brand-meow {
+  --tint: #3a1f20;
+  --tint-strong: #4a262a;
+  --tint-foreground: #f2a7a1;
+  --brand-2: #a8564f;
+}
+
+/* Problem 5: the sign-in marketing panel is a fixed light-lilac block (#edecfc, #f7f6fe) with
+   fixed dark-ink text (#231d6e, #4d4a78), so it stays a light island next to a dark page
+   instead of following the theme. */
+:root[data-theme="dark"] .auth-panel {
+  background: var(--secondary);
+}
+:root[data-theme="dark"] .auth-panel .ghost {
+  background: var(--card);
+}
+:root[data-theme="dark"] .auth-panel .say h2 {
+  color: var(--foreground);
+}
+:root[data-theme="dark"] .auth-panel .say p {
+  color: var(--muted-foreground);
+}
+:root[data-theme="dark"] .invite-note .who .avatar-l {
+  background: var(--brand);
+}
+:root[data-theme="dark"] .optional {
+  outline-color: var(--border);
+}

@@ -28,6 +28,7 @@ Load the `vercel-react-best-practices`, `vercel-composition-patterns` and `web-d
 - **Small props across the boundary.** A client island receives the fields it uses, not whole records, unless it passes the record on to another component that needs it all.
 - **Compose, don't configure.** No boolean or "variant" props that switch a component's behaviour. Make two explicit components that share the same inner pieces.
 - **One component per file**, named after what it shows. A page composes them; it does not define them inline.
+- **Forms use react-hook-form with a zod schema** (`zodResolver` from `@hookform/resolvers`), including auth, dialogs and single-field forms. Never hand-rolled `useState` fields and manual checks. Errors show under their field. Pattern: `features/brand-kit/`. Not forms: one-button actions (Approve, Start now, Sign out) and chat inputs that send one message and clear.
 - **Data:** reads come from `lib/api/server.ts` in server components; writes go through `lib/api/actions.ts` from client components via `useServerAction`. Keep the function signatures stable so the real API can replace the bodies.
 - Types the API also uses (`Platform`, `BrandKit`, `PostStatus`, `Role`, ...) are imported from `@social-agent/shared`, never redefined. `lib/types.ts` holds only what the web adds on top, built from the shared types where the shapes match.
 - Never hardcode colours or the product name. Use the tokens in `packages/ui/src/styles/globals.css` and `APP_NAME` from `lib/utils.ts`.
