@@ -22,7 +22,7 @@ export function AuthFrame({
     <div className="grid min-h-dvh lg:grid-cols-[minmax(0,1fr)_minmax(0,1.08fr)]">
       <div className="flex min-w-0 flex-col px-4 pt-4 pb-5 sm:px-8 sm:py-6 lg:px-10 lg:pt-7">
         <header className="flex min-h-10 items-center justify-between gap-4">
-          <Logo />
+          <Logo wordmark />
           {top ? <div className="text-sm text-muted-foreground">{top}</div> : null}
         </header>
         <main id="main" className="flex flex-1 justify-center pt-9 pb-8 sm:pt-20 sm:pb-12 lg:items-center lg:py-12">
