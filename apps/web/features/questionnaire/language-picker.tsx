@@ -1,11 +1,12 @@
 "use client";
 
-import { LoaderCircle, Sparkles } from "lucide-react";
+import { ArrowLeft, LoaderCircle, Sparkles } from "lucide-react";
 import type { Language } from "@social-agent/shared";
 import { startQuestionnaire } from "@/lib/api/actions";
 import { useServerAction } from "@/lib/api/use-server-action";
 import type { QuestionnaireView } from "@/lib/types";
 import { Panel } from "@repo/ui/components/states";
+import { Button } from "@repo/ui/components/button";
 import { ChipReply } from "@/features/questionnaire/chip-reply";
 import { AgentMessage } from "@/features/questionnaire/chat-message";
 import { AnswersPanel, type AnswerRow } from "@/features/questionnaire/answers-panel";
@@ -26,13 +27,28 @@ const PLACEHOLDER_ROWS: AnswerRow[] = [
 ];
 
 /** The questionnaire's first message (S18a): pick the chat language, then the account manager starts asking. */
-export function LanguagePicker({ clientId, onStarted }: { clientId: string; onStarted: (view: QuestionnaireView) => void }) {
+export function LanguagePicker({
+  clientId,
+  onStarted,
+  onBack,
+}: {
+  clientId: string;
+  onStarted: (view: QuestionnaireView) => void;
+  /** Set when reached by stepping back into this step; see `QuestionnaireChat`. */
+  onBack?: () => void;
+}) {
   const start = useServerAction(startQuestionnaire, { onSuccess: onStarted, failure: "Couldn't start the questionnaire." });
 
   return (
     <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_18rem]">
       <Panel className="flex flex-col overflow-hidden p-0 md:p-0">
         <header className="flex items-center gap-3 border-b px-5 py-4 md:px-6 md:py-5">
+          {onBack && (
+            <Button type="button" variant="ghost" size="sm" className="-ml-2 shrink-0" onClick={onBack}>
+              <ArrowLeft aria-hidden />
+              Back
+            </Button>
+          )}
           <span className="grid size-9 shrink-0 place-items-center rounded-full bg-tint text-tint-foreground">
             <Sparkles className="size-4.5" />
           </span>

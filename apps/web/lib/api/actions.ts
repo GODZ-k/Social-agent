@@ -179,6 +179,33 @@ export async function updateClient(id: string, patch: ClientPatch): Promise<Acti
   });
 }
 
+/**
+ * A rescan mid-onboarding (reached by stepping back from connect or the questionnaire): treated
+ * as a genuine first scan, so nothing from the earlier pass carries over. The fresh kit fully
+ * replaces the old one, not a merge; connections are cleared too (not just skipped), so
+ * `onboardingOf` (lib/api/mock/settings.ts) lands back on "connect" and every step runs again in
+ * order — nothing is skipped by a leftover "already connected" or "already skipped" flag.
+ */
+export async function rescanBrandKit(id: string, patch: ClientPatch): Promise<ActionResult<Client>> {
+  return attempt(async () => {
+    await wait(600);
+    const client = await requireClient(id);
+    Object.assign(client, patch);
+    if (patch.brand) client.accent = patch.brand.colors[0]?.hex ?? client.accent;
+    client.kitEditedAt = new Date().toISOString();
+    client.accounts = [];
+    const db = getDb();
+    db.questionnaires[id] = questionnaire.notStarted();
+    // Not `delete`: `submitQuestionnaire` reads `db.research[clientId]!` once the (re-taken)
+    // questionnaire is approved again, so a record has to exist, freshly reset like a first scan's.
+    db.research[id] = research.newResearch(client);
+    const extras = db.extras[id];
+    if (extras) extras.connectSkipped = false;
+    revalidateClient(id);
+    return clone(client);
+  });
+}
+
 async function setBrandStatus(id: string, status: Client["status"]): Promise<BrandCard> {
   const client = await requireClient(id);
   client.status = status;

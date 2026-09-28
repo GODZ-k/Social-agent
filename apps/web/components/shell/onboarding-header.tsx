@@ -1,5 +1,4 @@
 import type { Viewer } from "@/lib/types";
-import { ThemeMenu } from "@repo/ui/components/theme-menu";
 import { TopBarFrame } from "./top-bar-frame";
 import { BarDivider } from "./bar-divider";
 import { BrandBackLink } from "./brand-back-link";
@@ -16,7 +15,6 @@ export function OnboardingHeader({ viewer, backTo }: { viewer: Viewer; backTo?: 
         </>
       )}
       <div className="ml-auto flex shrink-0 items-center gap-2">
-        <ThemeMenu />
         <AccountMenu name={viewer.name} email={viewer.email} />
       </div>
     </TopBarFrame>

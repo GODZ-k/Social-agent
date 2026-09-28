@@ -1,5 +1,4 @@
 import type { Client, Viewer } from "@/lib/types";
-import { ThemeMenu } from "@repo/ui/components/theme-menu";
 import { TopBarFrame } from "./top-bar-frame";
 import { BarDivider } from "./bar-divider";
 import { BrandSwitcher } from "./brand-switcher";
@@ -17,7 +16,6 @@ export function WorkspaceHeader({ viewer, brand, brands }: { viewer: Viewer; bra
       <BrandSwitcher current={current} brands={switchable} />
       <div className="ml-auto flex shrink-0 items-center gap-2">
         <AgentChatButton client={brand} />
-        <ThemeMenu />
         <AccountMenu name={viewer.name} email={viewer.email} backToId={brand.id} />
       </div>
     </TopBarFrame>

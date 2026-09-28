@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Check, LoaderCircle, Mail, X } from "lucide-react";
+import { ArrowLeft, Check, LoaderCircle, Mail, X } from "lucide-react";
 import type { Platform, SocialAccount } from "@social-agent/shared";
 import { sendConnectLink, skipConnecting } from "@/lib/api/actions";
 import { useServerAction } from "@/lib/api/use-server-action";
@@ -28,12 +28,15 @@ export function AdminConnectAccounts({
   platforms,
   initialAccounts,
   onContinue,
+  onBack,
 }: {
   clientId: string;
   personName: string;
   platforms: Platform[];
   initialAccounts: SocialAccount[];
   onContinue: () => void;
+  /** Set when reached by stepping back into this step; see `QuestionnaireChat`. */
+  onBack?: () => void;
 }) {
   const [accounts, setAccounts] = useState(initialAccounts);
   const [lastConnected, setLastConnected] = useState<Platform | null>(null);
@@ -53,6 +56,12 @@ export function AdminConnectAccounts({
 
   return (
     <div className="mx-auto max-w-2xl">
+      {onBack && (
+        <Button type="button" variant="ghost" size="sm" className="-ml-2 mb-2" onClick={onBack}>
+          <ArrowLeft aria-hidden />
+          Back
+        </Button>
+      )}
       <h1 className="type-title">
         {lastConnected ? `${PLATFORM_LABEL[lastConnected]} is connected` : `Connect where ${personName} wants to post`}
       </h1>

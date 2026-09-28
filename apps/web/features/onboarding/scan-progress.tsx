@@ -1,12 +1,13 @@
 "use client";
 
 import { motion } from "motion/react";
-import { Check, Clock } from "lucide-react";
+import { Check, Clock, LoaderCircle } from "lucide-react";
 import { BRAND_SCAN_STEPS } from "@/lib/scan-steps";
 import { spring } from "@repo/ui/lib/motion";
 import { Panel } from "@repo/ui/components/states";
 import { Button } from "@repo/ui/components/button";
 import { cn, prettyUrl } from "@/lib/utils";
+import type { ScanResult } from "@/lib/types";
 
 const KIT_ROWS = [
   { label: "Name", readyFrom: 0 },
@@ -21,7 +22,18 @@ const KIT_ROWS = [
  * Shows the agent's real progress, one named step at a time. Waiting is easier
  * when you can see what is being done and how much is left.
  */
-export function ScanProgress({ url, activeIndex, onChangeAddress }: { url: string; activeIndex: number; onChangeAddress: () => void }) {
+export function ScanProgress({
+  url,
+  activeIndex,
+  preview,
+  onChangeAddress,
+}: {
+  url: string;
+  activeIndex: number;
+  /** The draft kit found so far; each row below reveals its own field once it's ready. */
+  preview: ScanResult | null;
+  onChangeAddress: () => void;
+}) {
   const total = BRAND_SCAN_STEPS.length;
   return (
     <div className="mx-auto max-w-3xl">
@@ -79,22 +91,12 @@ export function ScanProgress({ url, activeIndex, onChangeAddress }: { url: strin
           <h2 className="type-heading">Your brand kit so far</h2>
           <p className="type-label mt-1">Your colours, fonts and how you sound. It fills in as the agent reads, and you can change all of it next.</p>
           <ul className="mt-4 grid gap-3">
-            {KIT_ROWS.map((row) => {
-              const ready = activeIndex > row.readyFrom;
-              return (
-                <li key={row.label} className="flex items-center justify-between gap-3 border-t pt-3 first:border-t-0 first:pt-0">
-                  <span className="type-label">{row.label}</span>
-                  {ready ? (
-                    <span className="flex items-center gap-1.5 text-[0.8125rem] font-medium text-success">
-                      <Check className="size-3.5" strokeWidth={3} />
-                      Found
-                    </span>
-                  ) : (
-                    <span className="skeleton h-4 w-24 rounded-full" />
-                  )}
-                </li>
-              );
-            })}
+            {KIT_ROWS.map((row) => (
+              <li key={row.label} className="flex items-center justify-between gap-3 border-t pt-3 first:border-t-0 first:pt-0">
+                <span className="type-label shrink-0">{row.label}</span>
+                {kitRowStatus(row, activeIndex, preview)}
+              </li>
+            ))}
           </ul>
         </Panel>
       </div>
@@ -110,6 +112,58 @@ export function ScanProgress({ url, activeIndex, onChangeAddress }: { url: strin
       </div>
     </div>
   );
+}
+
+type KitRow = (typeof KIT_ROWS)[number];
+type FoundLabel = Exclude<KitRow["label"], "How you sound">;
+
+function kitRowStatus(row: KitRow, activeIndex: number, preview: ScanResult | null) {
+  if (row.label === "How you sound") {
+    // Voice is worked out from everything else, so it never shows a value here; it's ready by the review screen.
+    return (
+      <span className="flex items-center gap-1.5 text-[0.8125rem] font-medium text-muted-foreground">
+        <LoaderCircle className="size-3.5 animate-spin" />
+        Reading now
+      </span>
+    );
+  }
+  const ready = activeIndex > row.readyFrom;
+  if (!ready || !preview) return <span className="skeleton h-4 w-24 rounded-full" />;
+  return (
+    <span className="flex min-w-0 items-center gap-2">
+      {kitValue(row.label, preview)}
+      <span className="flex shrink-0 items-center gap-1.5 text-[0.8125rem] font-medium text-success">
+        <Check className="size-3.5" strokeWidth={3} />
+        Found
+      </span>
+    </span>
+  );
+}
+
+function kitValue(label: FoundLabel, preview: ScanResult) {
+  switch (label) {
+    case "Name":
+      return <span className="truncate font-medium">{preview.name}</span>;
+    case "Colours":
+      return (
+        <span className="flex shrink-0 gap-1.5">
+          {preview.brand.colors.map((color) => (
+            <span key={color.hex} title={color.hex} className="size-4.5 rounded-md ring-1 ring-border" style={{ background: color.hex }} />
+          ))}
+        </span>
+      );
+    case "Typefaces":
+      return (
+        <span className="truncate">
+          <span className="font-medium">{preview.brand.fonts.heading}</span> for headings, <span className="font-medium">{preview.brand.fonts.body}</span>{" "}
+          for text
+        </span>
+      );
+    case "What you sell":
+      return <span className="truncate">{preview.brand.summary}</span>;
+    case "Who it's for":
+      return <span className="truncate">{preview.brand.audience}</span>;
+  }
 }
 
 /** Each step takes about 15 seconds, matching the "about a minute" estimate on the start screen. */

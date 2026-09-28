@@ -59,7 +59,7 @@ export function OnboardingFlow({ initialUrl, personId }: { initialUrl: string | 
             </div>
           )}
 
-          {step === "scanning" && url && <ScanProgress url={url} activeIndex={scan.step} onChangeAddress={() => setUrl(null)} />}
+          {step === "scanning" && url && <ScanProgress url={url} activeIndex={scan.step} preview={scan.preview} onChangeAddress={() => setUrl(null)} />}
 
           {step === "error" && scan.error && <ScanFailed url={url ?? ""} onRetry={scan.restart} onChangeAddress={() => setUrl(null)} />}
 

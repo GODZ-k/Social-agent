@@ -24,7 +24,7 @@ import { Form } from "@repo/ui/components/form";
 /**
  * Onboarding's review step (S17a): each card is read-only until Edit is tapped, then Cancel/Done
  * swap it back. `personId` set means an admin is building this brand for that client (2026-09-28):
- * the brand is created under them, and the flow continues under `/admin/c/:personId/brand/new`.
+ * the brand is created under them, and the flow continues under `/admin/c/:brandId/brand/new`.
  */
 export function OnboardingBrandKitForm({
   url,

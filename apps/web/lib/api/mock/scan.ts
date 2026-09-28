@@ -27,12 +27,15 @@ export function read(id: string, ownerId: string): Scan | null {
   if (!job || job.ownerId !== ownerId) return null;
   const step = Math.min(Math.floor((Date.now() - job.startedAt) / STEP_MS), BRAND_SCAN_STEPS.length);
   const done = step === BRAND_SCAN_STEPS.length;
+  // draftBrandKit depends only on the url, so the preview exists from the first poll.
+  const preview = draftBrandKit(job.url);
   return {
     id,
     url: job.url,
     step,
     status: done ? "done" : "running",
-    result: done ? draftBrandKit(job.url) : null,
+    result: done ? preview : null,
+    preview,
   };
 }
 

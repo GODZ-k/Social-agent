@@ -1,6 +1,5 @@
 import type { Viewer } from "@/lib/types";
 import { Badge } from "@repo/ui/components/badge";
-import { ThemeMenu } from "@repo/ui/components/theme-menu";
 import { TopBarFrame } from "./top-bar-frame";
 import { BarDivider } from "./bar-divider";
 import { ClientsBackLink } from "./clients-back-link";
@@ -20,7 +19,6 @@ export function AdminOnboardingHeader({ viewer, personName }: { viewer: Viewer; 
       </span>
       <span className="type-label truncate text-foreground max-[560px]:hidden">{personName}&rsquo;s new brand</span>
       <div className="ml-auto flex shrink-0 items-center gap-2">
-        <ThemeMenu />
         <Badge variant="outline" className="border-input text-foreground max-md:hidden">
           Admin
         </Badge>

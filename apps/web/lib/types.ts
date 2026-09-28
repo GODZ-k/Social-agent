@@ -301,6 +301,8 @@ export interface Scan {
   step: number;
   status: "running" | "done";
   result: ScanResult | null;
+  /** The draft kit while the scan runs, so progress can show real values; only `result` means done. */
+  preview: ScanResult | null;
 }
 
 export interface PostPatch {

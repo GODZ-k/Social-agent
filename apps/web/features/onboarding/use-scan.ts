@@ -13,10 +13,12 @@ interface Job {
   key: string;
   step: number;
   result: ScanResult | null;
+  /** The draft kit while the scan runs; only `result` means done. */
+  preview: ScanResult | null;
   error: string | null;
 }
 
-const EMPTY_JOB = { step: 0, result: null, error: null };
+const EMPTY_JOB = { step: 0, result: null, preview: null, error: null };
 
 /**
  * Runs a brand scan the way the real API does: one start call, then a poll
@@ -32,6 +34,7 @@ export function useScan(
   status: ScanStatus;
   step: number;
   result: ScanResult | null;
+  preview: ScanResult | null;
   error: string | null;
   restart: () => void;
 } {
@@ -54,8 +57,8 @@ export function useScan(
       if (cancelled) return;
       if (!read.ok) return report({ error: read.message });
       const scan = read.data;
-      if (scan.status === "done" && scan.result) return report({ step: scan.step, result: scan.result });
-      report({ step: scan.step });
+      if (scan.status === "done" && scan.result) return report({ step: scan.step, result: scan.result, preview: scan.preview });
+      report({ step: scan.step, preview: scan.preview });
       timer = setTimeout(() => void poll(scanId), POLL_MS);
     }
 
@@ -77,6 +80,7 @@ export function useScan(
     status: statusOf(url, current),
     step: current?.step ?? 0,
     result: current?.result ?? null,
+    preview: current?.preview ?? null,
     error: current?.error ?? null,
     restart: () => setAttempt((n) => n + 1),
   };

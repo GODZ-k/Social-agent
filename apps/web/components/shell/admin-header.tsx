@@ -1,6 +1,5 @@
 import type { Viewer } from "@/lib/types";
 import { Badge } from "@repo/ui/components/badge";
-import { ThemeMenu } from "@repo/ui/components/theme-menu";
 import { TopBarFrame } from "./top-bar-frame";
 import { AccountMenu } from "./account-menu";
 
@@ -9,7 +8,6 @@ export function AdminHeader({ viewer }: { viewer: Viewer }) {
   return (
     <TopBarFrame>
       <div className="ml-auto flex shrink-0 items-center gap-2">
-        <ThemeMenu />
         <Badge variant="outline" className="border-input text-foreground">
           Admin
         </Badge>

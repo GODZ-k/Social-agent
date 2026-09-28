@@ -129,7 +129,7 @@ live HTTP verification.
 
 ## 6. Before you start
 
-- [ ] Frontend redesign in progress: read [`HANDOFF.md`](./HANDOFF.md) (owner rules, waves, how agents run, new-machine setup), then `DESIGN_TRACKER.md` section 2 for the live state.
+- [ ] Frontend redesign in progress: read [`HANDOFF.md`](./HANDOFF.md) (owner rules, waves, how agents run, new-machine setup), then `DESIGN_TRACKER.md` section 2 for the live state. Before assuming a live browser check on `apps/web` is blocked by Clerk auth: check for `agent-browser` and a `CLERK_SECRET_KEY` in `apps/web/.env.local` (root `AGENTS.md`, "Design before frontend code" step 5, has the throwaway-sign-in recipe) — both were wrongly assumed missing for most of 2026-09-29 when the key was there the whole time.
 - [ ] Load the `caveman` skill, then the skills for the work (root `AGENTS.md`, "Agent skills").
 - [ ] Read the root `AGENTS.md` and the `AGENTS.md` of the app you are touching.
 - [ ] Load the `mastra` skill if any Mastra file is in scope.

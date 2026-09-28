@@ -1,10 +1,12 @@
+import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { getViewer } from "@/lib/auth/viewer";
-import { getAdminClient, getClient, getOnboarding, getQuestionnaire, getResearch } from "@/lib/api/server";
+import { getAdminClient } from "@/lib/api/server";
 import { AdminOnboardingHeader } from "@/components/shell/admin-onboarding-header";
 import { AdminActingNote } from "@/components/shell/admin-acting-note";
-import { OnboardingFlow } from "@/features/onboarding/onboarding-flow";
-import { OnboardingJourney } from "@/features/onboarding/onboarding-journey";
+import { OnboardingEntry } from "@/features/onboarding/onboarding-entry";
+import { OnboardingLoadingSkeleton } from "@/features/onboarding/onboarding-loading-skeleton";
+import { OnboardingResumingSkeleton } from "@/features/onboarding/onboarding-resuming-skeleton";
 
 // TODO: Cache Components adoption. Refactor this route so this opt-out can be removed.
 // See: https://nextjs.org/docs/app/guides/migrating-to-cache-components
@@ -30,21 +32,18 @@ export default async function NewBrandPage({
   const person = await getAdminClient(personId);
   if (!person) notFound();
   const personName = person.client.name ?? person.client.email;
-  const [brand, onboarding, questionnaire, research] = brandId
-    ? await Promise.all([getClient(brandId), getOnboarding(brandId), getQuestionnaire(brandId), getResearch(brandId)])
-    : [null, null, null, null];
-  if (brandId && !brand) notFound();
 
   return (
     <div className="min-h-dvh">
       <AdminOnboardingHeader viewer={viewer} personName={personName} />
       <AdminActingNote />
       <main className="mx-auto max-w-5xl px-4 pt-8 pb-24 md:px-6 md:pt-12">
-        {brand && onboarding ? (
-          <OnboardingJourney client={brand} onboarding={onboarding} questionnaire={questionnaire} research={research} personName={personName} />
-        ) : (
-          <OnboardingFlow initialUrl="" personId={personId} />
-        )}
+        {/* The header above resolves fast (one lookup); only this fetch is slow, so it gets its own
+            boundary — and its fallback can be chosen by whether `brandId` is present (a fresh visit
+            vs one resuming), which `loading.tsx` itself never gets to see. */}
+        <Suspense fallback={brandId ? <OnboardingResumingSkeleton /> : <OnboardingLoadingSkeleton />}>
+          <OnboardingEntry initialUrl="" clientId={brandId} personId={personId} personName={personName} />
+        </Suspense>
       </main>
     </div>
   );

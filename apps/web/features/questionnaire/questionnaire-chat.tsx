@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { Check, LoaderCircle, Sparkles } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { ArrowLeft, Check, LoaderCircle, Sparkles } from "lucide-react";
 import type { QuestionnaireQuestion } from "@social-agent/shared";
 import { answerQuestion, submitQuestionnaire } from "@/lib/api/actions";
 import { useServerAction } from "@/lib/api/use-server-action";
@@ -20,14 +20,24 @@ export function QuestionnaireChat({
   clientId,
   initial,
   onApproved,
+  onBack,
 }: {
   clientId: string;
   initial: QuestionnaireView | null;
   onApproved: (research: ResearchView) => void;
+  /** Set when reached by stepping back into this step; shows a back button in the chat header
+   * itself so it works even at phone width, where the step's external links row is hidden. */
+  onBack?: () => void;
 }) {
   const [view, setView] = useState(initial);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [note, setNote] = useState<string | null>(null);
+  // The thread now scrolls inside a fixed-height panel instead of growing the whole page, so a
+  // newly-answered question's next one needs an explicit nudge into view.
+  const threadRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    threadRef.current?.scrollTo({ top: threadRef.current.scrollHeight, behavior: "smooth" });
+  }, [view?.session?.answers]);
 
   const answer = useServerAction(answerQuestion, {
     onSuccess: (next) => {
@@ -47,7 +57,7 @@ export function QuestionnaireChat({
     failure: "Couldn't send your answers.",
   });
 
-  if (!view || !view.session) return <LanguagePicker clientId={clientId} onStarted={setView} />;
+  if (!view || !view.session) return <LanguagePicker clientId={clientId} onStarted={setView} onBack={onBack} />;
   const session = view.session;
   const allQuestions = [...session.questions, ...session.followUps];
   const nextQuestion = allQuestions.find((q) => session.answers[q.id] === undefined);
@@ -69,8 +79,17 @@ export function QuestionnaireChat({
 
   return (
     <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_18rem]">
-      <Panel className="flex flex-col overflow-hidden p-0 md:p-0">
-        <header className="flex items-center gap-3 border-b px-5 py-4 md:px-6 md:py-5">
+      {/* Matches AnswersPanel's height (the grid's default row stretch, not a viewport fraction),
+          collared so a long thread doesn't chase the panel's height past a sane cap — past that
+          it scrolls inside instead of growing the page one screen-height per question. */}
+      <Panel className="flex max-h-[46rem] min-h-[28rem] flex-col overflow-hidden p-0 md:p-0">
+        <header className="flex shrink-0 items-center gap-3 border-b px-5 py-4 md:px-6 md:py-5">
+          {onBack && (
+            <Button type="button" variant="ghost" size="sm" className="-ml-2 shrink-0" onClick={onBack}>
+              <ArrowLeft aria-hidden />
+              Back
+            </Button>
+          )}
           <span className="grid size-9 shrink-0 place-items-center rounded-full bg-tint text-tint-foreground">
             <Sparkles className="size-4.5" />
           </span>
@@ -83,7 +102,7 @@ export function QuestionnaireChat({
           </div>
         </header>
 
-        <div className="grid gap-4 p-5 md:p-6" aria-live="polite">
+        <div ref={threadRef} className="grid min-h-0 flex-1 content-start gap-4 overflow-y-auto p-5 md:p-6" aria-live="polite">
           <AgentMessage>
             Hi! I&apos;m your account manager. Your website told me a lot. A few questions fill in what it can&apos;t, like who buys most and
             what you want posts to do. About {allQuestions.length} questions, 5 minutes.
@@ -143,8 +162,15 @@ export function QuestionnaireChat({
 
         {/* Docked below a divider, like the language step's chips, instead of scrolling away inside the thread. */}
         {nextQuestion && (
-          <div className="border-t p-4 md:px-6">
-            <QuestionComposer question={nextQuestion} disabled={answer.isPending} onAnswer={(a) => handleAnswer(nextQuestion.id, a)} />
+          <div className="shrink-0 border-t p-4 md:px-6">
+            {/* Keyed by question id: QuestionComposer's `typing` state starts from the question's kind
+                and must reset to a fresh instance for each new question, not carry the previous kind's value. */}
+            <QuestionComposer
+              key={nextQuestion.id}
+              question={nextQuestion}
+              disabled={answer.isPending}
+              onAnswer={(a) => handleAnswer(nextQuestion.id, a)}
+            />
           </div>
         )}
       </Panel>

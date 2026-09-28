@@ -1,7 +1,6 @@
 import type { Client, Viewer } from "@/lib/types";
 import type { WorkspaceBasePath } from "@/lib/workspace-path";
 import { Badge } from "@repo/ui/components/badge";
-import { ThemeMenu } from "@repo/ui/components/theme-menu";
 import { TopBarFrame } from "./top-bar-frame";
 import { BarDivider } from "./bar-divider";
 import { ClientsBackLink } from "./clients-back-link";
@@ -40,7 +39,6 @@ export function AdminBrandHeader({
       <ClientSwitcher current={current} brands={switchable} basePath={basePath} />
       <div className="ml-auto flex shrink-0 items-center gap-2">
         <AgentChatButton client={brand} basePath={basePath} />
-        <ThemeMenu />
         <Badge variant="outline" className="border-input text-foreground max-md:hidden">
           Admin
         </Badge>
