@@ -2,6 +2,9 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Controller, useForm, useWatch } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { Mail } from "lucide-react";
 import { AUTH_POLICY } from "@/lib/auth/rules";
 import type { AuthResult } from "@/lib/auth/types";
@@ -14,6 +17,11 @@ import { SubmitButton } from "@/components/auth/submit-button";
 import { textLinkClass } from "@/components/auth/text-link";
 import { errorCopy } from "./error-copy";
 import { useAuthSubmit } from "./use-auth-submit";
+
+const formSchema = z.object({
+  code: z.string().length(AUTH_POLICY.codeLength, "Enter the 6-digit code"),
+});
+type ResetCodeValues = z.infer<typeof formSchema>;
 
 /**
  * AUTH-4 "check email" for providers that email a reset code instead of a link.
@@ -32,20 +40,15 @@ export function ResetCodeStep({
 }) {
   const router = useRouter();
   const { pending, error, setError, run } = useAuthSubmit();
-  const [code, setCode] = useState("");
+  const form = useForm<ResetCodeValues>({ resolver: zodResolver(formSchema), defaultValues: { code: "" } });
   const [sentCount, setSentCount] = useState(0);
+  const code = useWatch({ control: form.control, name: "code" });
 
-  function submit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  function onValid(values: ResetCodeValues) {
     run(
-      () => verifyCode(code),
+      () => verifyCode(values.code),
       () => router.push("/reset-password"),
     );
-  }
-
-  function changeCode(value: string) {
-    setCode(value);
-    if (error) setError(null);
   }
 
   const codeError = error?.code === "code_wrong" || error?.code === "code_expired" ? error : null;
@@ -56,14 +59,23 @@ export function ResetCodeStep({
         If an account exists for <b>{email}</b>, we sent a 6-digit code to reset your password. It works for {AUTH_POLICY.codeMinutes} minutes.
       </AuthHeading>
       {error && !codeError ? <Notice tone="error">{errorCopy(error.code)}</Notice> : null}
-      <form className="mt-8 grid gap-4.5" onSubmit={submit} aria-busy={pending}>
-        <CodeField
-          value={code}
-          onValueChange={changeCode}
-          autoFocus
-          disabled={pending}
-          invalid={Boolean(codeError)}
-          message={codeError ? errorCopy(codeError.code) : "You can paste the whole code."}
+      <form className="mt-8 grid gap-4.5" onSubmit={form.handleSubmit(onValid)} noValidate aria-busy={pending}>
+        <Controller
+          control={form.control}
+          name="code"
+          render={({ field, fieldState }) => (
+            <CodeField
+              value={field.value}
+              onValueChange={(value) => {
+                field.onChange(value);
+                if (error) setError(null);
+              }}
+              autoFocus
+              disabled={pending}
+              invalid={!!codeError || !!fieldState.error}
+              message={codeError ? errorCopy(codeError.code) : (fieldState.error?.message ?? "You can paste the whole code.")}
+            />
+          )}
         />
         <SubmitButton pending={pending} disabled={code.length < AUTH_POLICY.codeLength}>
           Continue

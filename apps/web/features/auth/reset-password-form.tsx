@@ -1,8 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import { Controller, useForm, useWatch } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { usePasswordReset } from "@/lib/auth/client";
-import { checkPassword, passwordAllowed } from "@/lib/auth/rules";
+import { AUTH_POLICY, checkPassword, passwordAllowed } from "@/lib/auth/rules";
 import { AuthHeading } from "@/components/auth/auth-heading";
 import { Notice } from "@/components/auth/notice";
 import { PasswordField } from "@/components/auth/password-field";
@@ -13,12 +16,18 @@ import { PasswordChanged } from "./password-changed";
 import { ResetLinkExpired } from "./reset-link-expired";
 import { useAuthSubmit } from "./use-auth-submit";
 
+const schema = z.object({
+  password: z.string().min(AUTH_POLICY.minPasswordLength),
+  signOutOthers: z.boolean(),
+});
+type Values = z.infer<typeof schema>;
+
 /** AUTH-4, second half: choose the new password. Signing out other devices is on unless unticked. */
 export function ResetPasswordForm({ token }: { token?: string }) {
   const { ready, email, canSetPassword, setNewPassword } = usePasswordReset({ token });
   const { pending, error, setError, run } = useAuthSubmit();
-  const [password, setPassword] = useState("");
-  const [signOutOthers, setSignOutOthers] = useState(true);
+  const form = useForm<Values>({ resolver: zodResolver(schema), defaultValues: { password: "", signOutOthers: true } });
+  const password = useWatch({ control: form.control, name: "password" });
   const [changed, setChanged] = useState<{ signedOutOthers: boolean } | null>(null);
 
   if (changed) return <PasswordChanged email={email ?? ""} signedOutOthers={changed.signedOutOthers} />;
@@ -29,18 +38,12 @@ export function ResetPasswordForm({ token }: { token?: string }) {
   const rules = checkPassword(password, email ?? "", leaked);
   const passwordError = error?.code === "password_leaked" || error?.code === "password_too_short" ? error : null;
 
-  function submit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  function submit(values: Values) {
     if (!passwordAllowed(rules)) return;
     run(
-      () => setNewPassword({ password, signOutOtherDevices: signOutOthers }),
-      () => setChanged({ signedOutOthers: signOutOthers }),
+      () => setNewPassword({ password: values.password, signOutOtherDevices: values.signOutOthers }),
+      () => setChanged({ signedOutOthers: values.signOutOthers }),
     );
-  }
-
-  function changePassword(value: string) {
-    setPassword(value);
-    if (passwordError) setError(null);
   }
 
   return (
@@ -55,30 +58,32 @@ export function ResetPasswordForm({ token }: { token?: string }) {
         )}
       </AuthHeading>
       {error && !passwordError ? <Notice tone="error">{errorCopy(error.code)}</Notice> : null}
-      <form className="mt-8 grid gap-4.5" onSubmit={submit} aria-busy={pending}>
+      <form className="mt-8 grid gap-4.5" onSubmit={form.handleSubmit(submit)} aria-busy={pending}>
         {/* Lets password managers save the new password against the right account. */}
         <input type="email" name="username" autoComplete="username" value={email ?? ""} readOnly hidden />
-        <PasswordField
-          id="password"
-          label="New password"
-          autoComplete="new-password"
-          required
-          autoFocus
-          value={password}
-          onChange={(event) => changePassword(event.target.value)}
-          disabled={pending}
-          aria-invalid={passwordError ? true : undefined}
-          message={passwordError ? errorCopy(passwordError.code) : undefined}
-          after={<PasswordRulesList rules={rules} />}
+        <Controller
+          control={form.control}
+          name="password"
+          render={({ field }) => (
+            <PasswordField
+              id="password"
+              label="New password"
+              autoComplete="new-password"
+              autoFocus
+              {...field}
+              onChange={(event) => {
+                field.onChange(event);
+                if (passwordError) setError(null);
+              }}
+              disabled={pending}
+              aria-invalid={passwordError ? true : undefined}
+              message={passwordError ? errorCopy(passwordError.code) : undefined}
+              after={<PasswordRulesList rules={rules} />}
+            />
+          )}
         />
         <label className="flex cursor-pointer items-start gap-2.5 text-sm">
-          <input
-            type="checkbox"
-            name="signOutOthers"
-            checked={signOutOthers}
-            onChange={(event) => setSignOutOthers(event.target.checked)}
-            className="mt-0.5 size-5 shrink-0 cursor-pointer accent-primary"
-          />
+          <input type="checkbox" className="mt-0.5 size-5 shrink-0 cursor-pointer accent-primary" {...form.register("signOutOthers")} />
           <span>
             Sign me out on other devices
             <small className="block text-[0.8125rem] text-muted-foreground">Recommended if you think someone else knows your old password.</small>

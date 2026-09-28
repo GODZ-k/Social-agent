@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { Controller, useForm, useWatch } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { ShieldCheck } from "lucide-react";
 import { AUTH_POLICY } from "@/lib/auth/rules";
 import type { AuthError, AuthResult, AuthStep } from "@/lib/auth/types";
@@ -15,6 +17,9 @@ import { useAuthSubmit } from "./use-auth-submit";
 
 const WRONG = "That code isn't right. Enter the code showing now; it changes every 30 seconds.";
 
+const schema = z.object({ code: z.string().length(AUTH_POLICY.codeLength, "Enter the 6-digit code.") });
+type Values = z.infer<typeof schema>;
+
 /** The authenticator-app code at sign-in. */
 export function AppCodeForm({
   lede,
@@ -26,22 +31,17 @@ export function AppCodeForm({
   onPaused: (error: AuthError) => void;
 }) {
   const { pending, error, setError, run } = useAuthSubmit();
-  const [code, setCode] = useState("");
+  const form = useForm<Values>({ resolver: zodResolver(schema), defaultValues: { code: "" } });
+  const code = useWatch({ control: form.control, name: "code" });
 
-  function submit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  function submit(values: Values) {
     run(
-      () => verify(code),
+      () => verify(values.code),
       undefined,
       (failure) => {
         if (failure.code === "too_many_attempts") onPaused(failure);
       },
     );
-  }
-
-  function changeCode(value: string) {
-    setCode(value);
-    if (error) setError(null);
   }
 
   const wrong = error?.code === "code_wrong";
@@ -52,14 +52,23 @@ export function AppCodeForm({
         {lede}Your password was accepted; this is the second step.
       </AuthHeading>
       {error && !wrong ? <Notice tone="error">{errorCopy(error.code)}</Notice> : null}
-      <form className="mt-8 grid gap-4.5" onSubmit={submit} aria-busy={pending}>
-        <CodeField
-          value={code}
-          onValueChange={changeCode}
-          autoFocus
-          disabled={pending}
-          invalid={wrong}
-          message={wrong ? WRONG : `Open your authenticator app and find ${APP_NAME}.`}
+      <form className="mt-8 grid gap-4.5" onSubmit={form.handleSubmit(submit)} aria-busy={pending}>
+        <Controller
+          control={form.control}
+          name="code"
+          render={({ field }) => (
+            <CodeField
+              value={field.value}
+              onValueChange={(value) => {
+                field.onChange(value);
+                if (error) setError(null);
+              }}
+              autoFocus
+              disabled={pending}
+              invalid={wrong}
+              message={wrong ? WRONG : `Open your authenticator app and find ${APP_NAME}.`}
+            />
+          )}
         />
         <SubmitButton pending={pending} disabled={code.length < AUTH_POLICY.codeLength}>
           Verify and sign in

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Admin: settings, team</title>
+<title>Admin: settings, connect WhatsApp</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..700&family=Instrument+Sans:wght@400..700&display=swap" rel="stylesheet">
@@ -1133,27 +1133,44 @@ body.admin-view .rail { top: 9.25rem; }
 .chan-toggle { display: flex; align-items: center; gap: 0.5rem; min-width: 8rem; font-size: 0.8125rem; color: var(--foreground); cursor: pointer; }
 .chan-toggle .i { width: 0.875rem; height: 0.875rem; color: var(--muted-foreground); }
 .alerts-note { margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border); font-size: 0.8125rem; color: var(--muted-foreground); }
-</style><header class="page-header"><div><h1 class="type-title">Settings</h1><p>Your agency&rsquo;s team and what Cadence emails you about.</p></div><div class="toolbar-end"><button class="btn btn-default pressable"><svg class="i" aria-hidden="true"><use href="#i-user-plus"/></svg>Invite a teammate</button></div></header>
-<div class="set-wrap"><section class="adm-needs set-needs" aria-label="Settings at a glance"><a class="panel need" href="#"><span class="icon-wrap tint"><svg class="i" aria-hidden="true"><use href="#i-users-round"/></svg></span><p class="n">2<small>admins</small></p><p class="type-label detail">Alex Morgan and Priya Shah can sign in as an admin.</p><span class="link">Manage team<svg class="i" aria-hidden="true"><use href="#i-chevron-right"/></svg></span></a><a class="panel need" href="#"><span class="icon-wrap warn"><svg class="i" aria-hidden="true"><use href="#i-mail"/></svg></span><p class="n">1<small>invite pending</small></p><p class="type-label detail">Jordan Lee, invited 2 days ago.</p><span class="link">Resend or cancel<svg class="i" aria-hidden="true"><use href="#i-chevron-right"/></svg></span></a><a class="panel need" href="#"><span class="icon-wrap tint"><svg class="i" aria-hidden="true"><use href="#i-link"/></svg></span><p class="n">1<small>channel connected</small></p><p class="type-label detail">Discord. Add Slack or WhatsApp to route alerts there too.</p><span class="link">Manage channels<svg class="i" aria-hidden="true"><use href="#i-chevron-right"/></svg></span></a></section><nav class="set-tabs" aria-label="Settings sections"><a href="#" class="on"><svg class="i" aria-hidden="true"><use href="#i-users-round"/></svg>Team</a><a href="#"><svg class="i" aria-hidden="true"><use href="#i-bell"/></svg>Notifications</a></nav>
-<section class="panel"><div class="card-head"><div><h2 class="type-heading">Your team</h2><p class="type-label">Everyone at The Scale Agency who can sign in as an admin. Admins see every client.</p></div><div class="figure"><div class="type-number">2</div><div class="type-label">admins</div></div></div>
-  <div class="team-row">
-  <span class="person-avatar">AM</span>
-  <div class="person"><b>Alex Morgan (you)</b><span class="email">alex@thescaleagency.org</span></div>
-  <span class="role"><span class="badge badge-tint">Owner</span></span>
-  <span class="act"></span>
-</div><div class="team-row">
-  <span class="person-avatar">PS</span>
-  <div class="person"><b>Priya Shah</b><span class="email">priya@thescaleagency.org</span></div>
-  <span class="role"><span class="badge badge-neutral">Admin</span></span>
-  <span class="act"><button class="btn btn-ghost sm btn-remove pressable" aria-label="Remove Priya Shah"><svg class="i" aria-hidden="true"><use href="#i-trash"/></svg>Remove</button></span>
-</div><div class="team-row">
-  <span class="person-avatar invited"><svg class="i" aria-hidden="true"><use href="#i-mail"/></svg></span>
-  <div class="person"><b>Jordan Lee</b><span class="email">jordan@thescaleagency.org</span></div>
-  <span class="role"><span class="badge badge-neutral"><svg class="i" aria-hidden="true"><use href="#i-mail"/></svg>Invited</span></span>
-  <span class="act"><span class="pending-note"><svg class="i" aria-hidden="true"><use href="#i-clock"/></svg>Invited 2 days ago</span></span>
+</style><header class="page-header"><div><h1 class="type-title">Settings</h1><p>Your agency&rsquo;s team and what Cadence emails you about.</p></div><div class="toolbar-end"></div></header>
+<div class="set-wrap"><section class="adm-needs set-needs" aria-label="Settings at a glance"><a class="panel need" href="#"><span class="icon-wrap tint"><svg class="i" aria-hidden="true"><use href="#i-users-round"/></svg></span><p class="n">2<small>admins</small></p><p class="type-label detail">Alex Morgan and Priya Shah can sign in as an admin.</p><span class="link">Manage team<svg class="i" aria-hidden="true"><use href="#i-chevron-right"/></svg></span></a><a class="panel need" href="#"><span class="icon-wrap warn"><svg class="i" aria-hidden="true"><use href="#i-mail"/></svg></span><p class="n">1<small>invite pending</small></p><p class="type-label detail">Jordan Lee, invited 2 days ago.</p><span class="link">Resend or cancel<svg class="i" aria-hidden="true"><use href="#i-chevron-right"/></svg></span></a><a class="panel need" href="#"><span class="icon-wrap tint"><svg class="i" aria-hidden="true"><use href="#i-link"/></svg></span><p class="n">1<small>channel connected</small></p><p class="type-label detail">Discord. Add Slack or WhatsApp to route alerts there too.</p><span class="link">Manage channels<svg class="i" aria-hidden="true"><use href="#i-chevron-right"/></svg></span></a></section><nav class="set-tabs" aria-label="Settings sections"><a href="#"><svg class="i" aria-hidden="true"><use href="#i-users-round"/></svg>Team</a><a href="#" class="on"><svg class="i" aria-hidden="true"><use href="#i-bell"/></svg>Notifications</a></nav>
+<section class="channels-panel panel"><div class="card-head"><div><h2 class="type-heading">Channels</h2><p class="type-label">Add somewhere besides email for Cadence to send alerts.</p></div><div class="figure"><div class="type-number">1</div><div class="type-label">connected</div></div></div><div class="email-line"><span class="icon-wrap"><svg class="i" aria-hidden="true"><use href="#i-mail"/></svg></span><span><b>Email</b> is on by default, sent to every admin&rsquo;s own inbox. Turn it off per alert below.</span></div><section class="panel account"><span class="logo-badge" style="background:#5865f2"><svg class="i" aria-hidden="true"><use href="#i-chat"/></svg></span>
+  <div style="flex:1;min-width:12rem"><p style="font-weight:600">Discord</p><p class="chan-detail"><svg class="i" aria-hidden="true"><use href="#i-link"/></svg> Webhook to #cadence-alerts</p></div>
+  <span class="badge badge-success" style="margin-left:auto"><svg class="i" aria-hidden="true"><use href="#i-check"/></svg>Connected</span><button class="btn btn-ghost sm pressable" style="margin-left:0.5rem">Disconnect</button>
+</section><section class="panel account"><span class="logo-badge mono"><svg class="i" aria-hidden="true"><use href="#i-hash"/></svg></span>
+  <div style="flex:1;min-width:12rem"><p style="font-weight:600">Slack</p><p class="chan-detail">Not connected. Paste a webhook URL to route alerts to a channel.</p></div>
+  <button class="btn btn-outline pressable" style="margin-left:auto">Connect Slack</button>
+</section><section class="panel account"><span class="logo-badge mono"><svg class="i" aria-hidden="true"><use href="#i-phone"/></svg></span>
+  <div style="flex:1;min-width:12rem"><p style="font-weight:600">WhatsApp</p><p class="chan-detail">Not connected. Needs a WhatsApp Business number and API token.</p></div>
+  <button class="btn btn-outline pressable" style="margin-left:auto">Connect WhatsApp</button>
+</section></section>
+<section class="panel"><div class="card-head"><div><h2 class="type-heading">Alerts</h2><p class="type-label">Pick which connected channels each kind of alert goes to.</p></div><div class="figure"><div class="type-number">4</div><div class="type-label">kinds</div></div></div>
+  <div class="alert-row"><span class="icon-wrap"><svg class="i" aria-hidden="true"><use href="#i-alert"/></svg></span>
+  <div class="body"><p style="font-weight:500">Observability alerts</p><p class="type-label" style="margin-top:0.25rem">A run fails, a client&rsquo;s connection breaks, or the server needs attention.</p></div>
+  <div class="chan-row"><label class="chan-toggle"><svg class="i" aria-hidden="true"><use href="#i-mail"/></svg><span style="flex:1">Email</span><span class="switch on" role="switch" aria-checked="true"><span></span></span></label><label class="chan-toggle"><svg class="i" aria-hidden="true"><use href="#i-chat"/></svg><span style="flex:1">Discord</span><span class="switch on" role="switch" aria-checked="true"><span></span></span></label></div>
+</div><div class="alert-row"><span class="icon-wrap"><svg class="i" aria-hidden="true"><use href="#i-bell"/></svg></span>
+  <div class="body"><p style="font-weight:500">A new client is onboarded</p><p class="type-label" style="margin-top:0.25rem">Their brand kit is drafted and their first month is ready to check.</p></div>
+  <div class="chan-row"><label class="chan-toggle"><svg class="i" aria-hidden="true"><use href="#i-mail"/></svg><span style="flex:1">Email</span><span class="switch on" role="switch" aria-checked="true"><span></span></span></label><label class="chan-toggle"><svg class="i" aria-hidden="true"><use href="#i-chat"/></svg><span style="flex:1">Discord</span><span class="switch" role="switch" aria-checked="false"><span></span></span></label></div>
+</div><div class="alert-row"><span class="icon-wrap"><svg class="i" aria-hidden="true"><use href="#i-shield"/></svg></span>
+  <div class="body"><p style="font-weight:500">A client&rsquo;s questions are ready to check</p><p class="type-label" style="margin-top:0.25rem">Before their research starts, in case something needs a fix first.</p></div>
+  <div class="chan-row"><label class="chan-toggle"><svg class="i" aria-hidden="true"><use href="#i-mail"/></svg><span style="flex:1">Email</span><span class="switch on" role="switch" aria-checked="true"><span></span></span></label><label class="chan-toggle"><svg class="i" aria-hidden="true"><use href="#i-chat"/></svg><span style="flex:1">Discord</span><span class="switch on" role="switch" aria-checked="true"><span></span></span></label></div>
+</div><div class="alert-row"><span class="icon-wrap"><svg class="i" aria-hidden="true"><use href="#i-mail"/></svg></span>
+  <div class="body"><p style="font-weight:500">Weekly summary across every client</p><p class="type-label" style="margin-top:0.25rem">Monday morning: what shipped, what needs you.</p></div>
+  <div class="chan-row"><label class="chan-toggle"><svg class="i" aria-hidden="true"><use href="#i-mail"/></svg><span style="flex:1">Email</span><span class="switch" role="switch" aria-checked="false"><span></span></span></label><label class="chan-toggle"><svg class="i" aria-hidden="true"><use href="#i-chat"/></svg><span style="flex:1">Discord</span><span class="switch on" role="switch" aria-checked="true"><span></span></span></label></div>
 </div>
-</section></div><nav class="tabbar admin-tabs material" aria-label="Admin" style="grid-template-columns:repeat(3,minmax(0,1fr))"><a href="#"><svg class="i" aria-hidden="true"><use href="#i-users"/></svg>Clients</a><a href="#"><svg class="i" aria-hidden="true"><use href="#i-activity"/></svg>Observability</a><a href="#" class="on" aria-current="page"><svg class="i" aria-hidden="true"><use href="#i-settings"/></svg>Settings</a></nav>
+  <p class="alerts-note">Connect Slack or WhatsApp above and they show up here too. Sign-in and account alerts (new device, two-factor changes) are personal and stay in <b>Your account</b>, from the account menu.</p>
+</section>
+</div><nav class="tabbar admin-tabs material" aria-label="Admin" style="grid-template-columns:repeat(3,minmax(0,1fr))"><a href="#"><svg class="i" aria-hidden="true"><use href="#i-users"/></svg>Clients</a><a href="#"><svg class="i" aria-hidden="true"><use href="#i-activity"/></svg>Observability</a><a href="#" class="on" aria-current="page"><svg class="i" aria-hidden="true"><use href="#i-settings"/></svg>Settings</a></nav>
 </main>
-
+<div class="scrim"></div>
+<div class="dlg" role="dialog" aria-modal="true" aria-labelledby="connect-whatsapp-title">
+  <div class="dlg-body">
+    <div class="dlg-head"><span class="logo-badge" style="background:#25d366;margin-right:0.875rem"><svg class="i" aria-hidden="true"><use href="#i-phone"/></svg></span><div><h2 class="type-heading" id="connect-whatsapp-title">Connect WhatsApp</h2><p class="type-label">Needs a WhatsApp Business API number, not a personal WhatsApp account.</p></div><button class="icon-close" aria-label="Close"><svg class="i" aria-hidden="true"><use href="#i-x"/></svg></button></div>
+    <div class="field"><label>WhatsApp Business number</label><div class="input "><span class="placeholder">+1 415 555 0132</span></div></div><div class="field"><label>API token</label><div class="input "><span class="placeholder">From your WhatsApp Business API provider</span></div></div>
+    <div class="what-next"><p><svg class="i" aria-hidden="true"><use href="#i-shield"/></svg><span>The token only sends Cadence alerts to this number; it can&rsquo;t read your WhatsApp messages.</span></p></div>
+  </div>
+  <div class="dlg-foot"><button class="btn btn-outline pressable">Cancel</button><button class="btn btn-default pressable"><svg class="i" aria-hidden="true"><use href="#i-link"/></svg>Connect WhatsApp</button></div>
+</div>
 </body>
 </html>

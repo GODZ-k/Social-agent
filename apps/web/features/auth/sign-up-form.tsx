@@ -1,10 +1,12 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Controller, useForm, useWatch } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { authCapabilities, BotCheck, useSignUpFlow } from "@/lib/auth/client";
 import { withRedirect } from "@/lib/auth/redirect";
-import { checkPassword, passwordAllowed } from "@/lib/auth/rules";
+import { AUTH_POLICY, checkPassword, passwordAllowed } from "@/lib/auth/rules";
 import { APP_NAME } from "@/lib/utils";
 import { AuthHeading } from "@/components/auth/auth-heading";
 import { GoogleButton } from "@/components/auth/google-button";
@@ -19,6 +21,13 @@ import { useAuthSubmit } from "./use-auth-submit";
 
 const PASSWORD_ERRORS = new Set(["password_too_short", "password_leaked"]);
 
+const formSchema = z.object({
+  name: z.string().trim().min(1, "Enter your name"),
+  email: z.string().trim().min(1, "Enter your email").pipe(z.email("Enter a valid email")),
+  password: z.string().min(AUTH_POLICY.minPasswordLength, "At least 10 characters"),
+});
+type SignUpValues = z.infer<typeof formSchema>;
+
 /**
  * AUTH-2. Always continues to the code step, even for an email that already has
  * an account, so the page never tells anyone which emails are registered.
@@ -27,27 +36,21 @@ export function SignUpForm({ redirectTo, site }: { redirectTo: string; site?: Re
   const router = useRouter();
   const { signUpWithPassword, signUpWithGoogle } = useSignUpFlow({ redirectTo });
   const { pending, error, setError, run } = useAuthSubmit();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const form = useForm<SignUpValues>({ resolver: zodResolver(formSchema), defaultValues: { name: "", email: "", password: "" } });
+  const email = useWatch({ control: form.control, name: "email" });
+  const password = useWatch({ control: form.control, name: "password" });
 
   const passwordError = error && PASSWORD_ERRORS.has(error.code) ? error : null;
   const leaked = passwordError?.code === "password_leaked" ? true : undefined;
   const rules = checkPassword(password, email, leaked);
   const emailTaken = error?.code === "email_in_use";
 
-  function submit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  function onValid(values: SignUpValues) {
     if (!passwordAllowed(rules)) return;
-    const name = String(new FormData(event.currentTarget).get("name") ?? "");
     run(
-      () => signUpWithPassword({ name, email: email.trim(), password }),
+      () => signUpWithPassword(values),
       () => router.push(withRedirect("/verify", redirectTo)),
     );
-  }
-
-  function changePassword(value: string) {
-    setPassword(value);
-    if (passwordError) setError(null);
   }
 
   const passwordRules = <PasswordRulesList rules={rules} />;
@@ -57,42 +60,70 @@ export function SignUpForm({ redirectTo, site }: { redirectTo: string; site?: Re
       <AuthHeading title="Create your account">Next you paste your website, and {APP_NAME} drafts a brand kit you can edit.</AuthHeading>
       {site}
       {error && !passwordError && !emailTaken ? <Notice tone="error">{errorCopy(error.code)}</Notice> : null}
-      <form className="mt-8 grid gap-4.5" onSubmit={submit} aria-busy={pending}>
+      <form className="mt-8 grid gap-4.5" onSubmit={form.handleSubmit(onValid)} noValidate aria-busy={pending}>
         {authCapabilities.google ? <GoogleButton label="Sign up with Google" onClick={() => run(signUpWithGoogle)} disabled={pending} /> : null}
-        <TextField id="name" label="Your name" autoComplete="name" required disabled={pending} />
-        <TextField
-          id="email"
-          label="Email"
-          type="email"
-          inputMode="email"
-          autoComplete="email"
-          spellCheck={false}
-          autoCapitalize="off"
-          required
-          value={email}
-          onChange={(event) => setEmail(event.target.value)}
-          disabled={pending}
-          aria-invalid={emailTaken || undefined}
-          message={
-            emailTaken ? (
-              <>
-                This email already has an account. <TextLink href={withRedirect("/sign-in", redirectTo)}>Sign in</TextLink> or{" "}
-                <TextLink href={withRedirect("/forgot-password", redirectTo)}>reset your password</TextLink>.
-              </>
-            ) : undefined
-          }
+        <Controller
+          control={form.control}
+          name="name"
+          render={({ field, fieldState }) => (
+            <TextField
+              id="name"
+              label="Your name"
+              autoComplete="name"
+              {...field}
+              disabled={pending}
+              aria-invalid={!!fieldState.error || undefined}
+              message={fieldState.error?.message}
+            />
+          )}
         />
-        <PasswordField
-          id="password"
-          label="Password"
-          autoComplete="new-password"
-          required
-          value={password}
-          onChange={(event) => changePassword(event.target.value)}
-          disabled={pending}
-          aria-invalid={passwordError ? true : undefined}
-          message={passwordError ? errorCopy(passwordError.code) : undefined}
-          after={passwordRules}
+        <Controller
+          control={form.control}
+          name="email"
+          render={({ field, fieldState }) => (
+            <TextField
+              id="email"
+              label="Email"
+              type="email"
+              inputMode="email"
+              autoComplete="email"
+              spellCheck={false}
+              autoCapitalize="off"
+              {...field}
+              disabled={pending}
+              aria-invalid={emailTaken || !!fieldState.error || undefined}
+              message={
+                emailTaken ? (
+                  <>
+                    This email already has an account. <TextLink href={withRedirect("/sign-in", redirectTo)}>Sign in</TextLink> or{" "}
+                    <TextLink href={withRedirect("/forgot-password", redirectTo)}>reset your password</TextLink>.
+                  </>
+                ) : (
+                  fieldState.error?.message
+                )
+              }
+            />
+          )}
+        />
+        <Controller
+          control={form.control}
+          name="password"
+          render={({ field, fieldState }) => (
+            <PasswordField
+              id="password"
+              label="Password"
+              autoComplete="new-password"
+              {...field}
+              onChange={(event) => {
+                field.onChange(event);
+                if (passwordError) setError(null);
+              }}
+              disabled={pending}
+              aria-invalid={!!passwordError || !!fieldState.error || undefined}
+              message={passwordError ? errorCopy(passwordError.code) : fieldState.error?.message}
+              after={passwordRules}
+            />
+          )}
         />
         {/* Empty until Clerk needs a challenge; without this it still claims a full gap on both sides and doubles the space before the button. */}
         <div className="-my-2.25">

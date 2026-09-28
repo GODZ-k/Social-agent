@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { Controller, useForm, useWatch } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { Smartphone } from "lucide-react";
 import { Button } from "@repo/ui/components/button";
 import { AUTH_POLICY } from "@/lib/auth/rules";
@@ -15,6 +17,9 @@ import { errorCopy } from "./error-copy";
 import { SetupProgress } from "./setup-progress";
 import { useAuthSubmit } from "./use-auth-submit";
 
+const schema = z.object({ code: z.string().length(AUTH_POLICY.codeLength, "Enter the 6-digit code.") });
+type Values = z.infer<typeof schema>;
+
 /** Groups the key in fours so it is easier to type into an app by hand. */
 function groupKey(secret: string): string {
   return secret.match(/.{1,4}/g)?.join(" ") ?? secret;
@@ -26,16 +31,11 @@ function groupKey(secret: string): string {
  */
 export function ConnectAppStep({ setup, confirm, onConfirmed }: { setup: AuthenticatorSetup; confirm: (code: string) => Promise<AuthResult<string[]>>; onConfirmed: (codes: string[]) => void }) {
   const { pending, error, setError, run } = useAuthSubmit();
-  const [code, setCode] = useState("");
+  const form = useForm<Values>({ resolver: zodResolver(schema), defaultValues: { code: "" } });
+  const code = useWatch({ control: form.control, name: "code" });
 
-  function submit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    run(() => confirm(code), onConfirmed);
-  }
-
-  function changeCode(value: string) {
-    setCode(value);
-    if (error) setError(null);
+  function submit(values: Values) {
+    run(() => confirm(values.code), onConfirmed);
   }
 
   const wrong = error?.code === "code_wrong";
@@ -76,17 +76,26 @@ export function ConnectAppStep({ setup, confirm, onConfirmed }: { setup: Authent
         <p className="text-[0.8125rem] leading-[1.45] text-muted-foreground">Time-based, 6 digits. Keep this key private; it works like a password.</p>
       </div>
       {error && !wrong ? <Notice tone="error">{errorCopy(error.code)}</Notice> : null}
-      <form className="mt-8 grid gap-4.5" onSubmit={submit} aria-busy={pending}>
-        <CodeField
-          value={code}
-          onValueChange={changeCode}
-          disabled={pending}
-          invalid={wrong}
-          message={
-            wrong
-              ? "That code didn't match. Enter the code showing now, and check that your phone sets its time automatically."
-              : "The code changes every 30 seconds. Enter the one showing now."
-          }
+      <form className="mt-8 grid gap-4.5" onSubmit={form.handleSubmit(submit)} aria-busy={pending}>
+        <Controller
+          control={form.control}
+          name="code"
+          render={({ field }) => (
+            <CodeField
+              value={field.value}
+              onValueChange={(value) => {
+                field.onChange(value);
+                if (error) setError(null);
+              }}
+              disabled={pending}
+              invalid={wrong}
+              message={
+                wrong
+                  ? "That code didn't match. Enter the code showing now, and check that your phone sets its time automatically."
+                  : "The code changes every 30 seconds. Enter the one showing now."
+              }
+            />
+          )}
         />
         <SubmitButton pending={pending} disabled={code.length < AUTH_POLICY.codeLength}>
           Turn on two-factor

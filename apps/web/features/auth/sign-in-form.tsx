@@ -1,7 +1,9 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Controller, useForm, useWatch } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { Button } from "@repo/ui/components/button";
 import { authCapabilities, useSignInFlow } from "@/lib/auth/client";
 import { withRedirect } from "@/lib/auth/redirect";
@@ -24,12 +26,19 @@ const NEXT_SCREEN: Record<Exclude<AuthStep, "done">, string> = {
   "set-up-two-factor": "/two-factor/setup",
 };
 
+const formSchema = z.object({
+  email: z.string().trim().min(1, "Enter your email").pipe(z.email("Enter a valid email")),
+  password: z.string().min(1, "Enter your password"),
+});
+type SignInValues = z.infer<typeof formSchema>;
+
 /** AUTH-1 and AUTH-6: email and password, and the pause after too many wrong tries. Never says which field was wrong. */
 export function SignInForm({ redirectTo, sessionEnded }: { redirectTo: string; sessionEnded: boolean }) {
   const router = useRouter();
   const { signInWithPassword, signInWithGoogle } = useSignInFlow({ redirectTo });
   const { pending, error, setError, run } = useAuthSubmit();
-  const [email, setEmail] = useState("");
+  const form = useForm<SignInValues>({ resolver: zodResolver(formSchema), defaultValues: { email: "", password: "" } });
+  const email = useWatch({ control: form.control, name: "email" });
 
   if (error?.code === "too_many_attempts") {
     const back = (
@@ -40,12 +49,9 @@ export function SignInForm({ redirectTo, sessionEnded }: { redirectTo: string; s
     return <SignInPaused email={email} seconds={error.retryAfterSeconds} back={back} />;
   }
 
-  function submit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const form = new FormData(event.currentTarget);
-    const password = String(form.get("password") ?? "");
+  function onValid(values: SignInValues) {
     run(
-      () => signInWithPassword({ email: email.trim(), password }),
+      () => signInWithPassword(values),
       (step) => {
         if (step !== "done") router.push(withRedirect(NEXT_SCREEN[step], redirectTo));
       },
@@ -65,30 +71,43 @@ export function SignInForm({ redirectTo, sessionEnded }: { redirectTo: string; s
         </Notice>
       ) : null}
       {error && !wrong ? <Notice tone="error">{errorCopy(error.code)}</Notice> : null}
-      <form className="mt-8 grid gap-4.5" onSubmit={submit} aria-busy={pending}>
+      <form className="mt-8 grid gap-4.5" onSubmit={form.handleSubmit(onValid)} noValidate aria-busy={pending}>
         {authCapabilities.google && !pending ? <GoogleButton label="Continue with Google" onClick={() => run(signInWithGoogle)} /> : null}
-        <TextField
-          id="email"
-          label="Email"
-          type="email"
-          inputMode="email"
-          autoComplete="email"
-          spellCheck={false}
-          autoCapitalize="off"
-          placeholder="you@business.com"
-          required
-          value={email}
-          onChange={(event) => setEmail(event.target.value)}
-          disabled={pending}
+        <Controller
+          control={form.control}
+          name="email"
+          render={({ field, fieldState }) => (
+            <TextField
+              id="email"
+              label="Email"
+              type="email"
+              inputMode="email"
+              autoComplete="email"
+              spellCheck={false}
+              autoCapitalize="off"
+              placeholder="you@business.com"
+              {...field}
+              disabled={pending}
+              aria-invalid={!!fieldState.error || undefined}
+              message={fieldState.error?.message}
+            />
+          )}
         />
-        <PasswordField
-          id="password"
-          label="Password"
-          autoComplete="current-password"
-          required
-          disabled={pending}
-          aria-invalid={wrong || undefined}
-          labelAside={<TextLink href={resetHref}>Forgot password?</TextLink>}
+        <Controller
+          control={form.control}
+          name="password"
+          render={({ field, fieldState }) => (
+            <PasswordField
+              id="password"
+              label="Password"
+              autoComplete="current-password"
+              {...field}
+              disabled={pending}
+              aria-invalid={wrong || !!fieldState.error || undefined}
+              message={fieldState.error?.message}
+              labelAside={<TextLink href={resetHref}>Forgot password?</TextLink>}
+            />
+          )}
         />
         <SubmitButton pending={pending} pendingLabel="Signing in">
           Sign in

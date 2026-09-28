@@ -2,6 +2,9 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Controller, useForm, useWatch } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { Mail } from "lucide-react";
 import { useEmailVerification } from "@/lib/auth/client";
 import { withRedirect } from "@/lib/auth/redirect";
@@ -17,23 +20,29 @@ import { errorCopy } from "./error-copy";
 import { FlowEnded } from "./flow-ended";
 import { useAuthSubmit } from "./use-auth-submit";
 
+const formSchema = z.object({
+  code: z.string().length(AUTH_POLICY.codeLength, "Enter the 6-digit code"),
+});
+type VerifyValues = z.infer<typeof formSchema>;
+
 /** AUTH-3: the 6-digit code after sign-up, or after a sign-in from a new device. */
 export function VerifyEmailForm({ redirectTo }: { redirectTo: string }) {
   const router = useRouter();
   const { ready, hasPending, email, verify, resend } = useEmailVerification({ redirectTo });
   const { pending, error, setError, run } = useAuthSubmit();
-  const [code, setCode] = useState("");
+  const form = useForm<VerifyValues>({ resolver: zodResolver(formSchema), defaultValues: { code: "" } });
   const [sentCount, setSentCount] = useState(0);
+  const code = useWatch({ control: form.control, name: "code" });
 
   if (!ready) return <div className="skeleton h-80 w-full" role="status" aria-label="Loading" />;
   if (!hasPending) return <FlowEnded />;
 
   const expired = error?.code === "code_expired";
+  const codeWrong = error?.code === "code_wrong";
 
-  function submit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  function onValid(values: VerifyValues) {
     run(
-      () => verify(code),
+      () => verify(values.code),
       (step) => {
         if (step === "two-factor") router.push(withRedirect("/two-factor", redirectTo));
       },
@@ -41,13 +50,8 @@ export function VerifyEmailForm({ redirectTo }: { redirectTo: string }) {
   }
 
   function sendAgain() {
-    setCode("");
+    form.setValue("code", "");
     run(resend, () => setSentCount((count) => count + 1));
-  }
-
-  function changeCode(value: string) {
-    setCode(value);
-    if (error?.code === "code_wrong") setError(null);
   }
 
   const lede = expired ? (
@@ -67,7 +71,7 @@ export function VerifyEmailForm({ redirectTo }: { redirectTo: string }) {
       </AuthHeading>
       {expired ? <Notice tone="warning">{errorCopy("code_expired")}</Notice> : null}
       {sentCount > 0 && !error ? <Notice tone="success">New code sent to {email}. Codes from earlier emails no longer work.</Notice> : null}
-      {error && error.code !== "code_wrong" && !expired ? <Notice tone="error">{errorCopy(error.code)}</Notice> : null}
+      {error && !codeWrong && !expired ? <Notice tone="error">{errorCopy(error.code)}</Notice> : null}
       {expired ? (
         <div className="mt-6">
           <SubmitButton type="button" pending={pending} onClick={sendAgain}>
@@ -75,14 +79,23 @@ export function VerifyEmailForm({ redirectTo }: { redirectTo: string }) {
           </SubmitButton>
         </div>
       ) : (
-        <form className="mt-8 grid gap-4.5" onSubmit={submit} aria-busy={pending}>
-          <CodeField
-            value={code}
-            onValueChange={changeCode}
-            autoFocus
-            disabled={pending}
-            invalid={error?.code === "code_wrong"}
-            message={error?.code === "code_wrong" ? errorCopy("code_wrong") : "You can paste the whole code."}
+        <form className="mt-8 grid gap-4.5" onSubmit={form.handleSubmit(onValid)} noValidate aria-busy={pending}>
+          <Controller
+            control={form.control}
+            name="code"
+            render={({ field, fieldState }) => (
+              <CodeField
+                value={field.value}
+                onValueChange={(value) => {
+                  field.onChange(value);
+                  if (codeWrong) setError(null);
+                }}
+                autoFocus
+                disabled={pending}
+                invalid={codeWrong || !!fieldState.error}
+                message={codeWrong ? errorCopy("code_wrong") : (fieldState.error?.message ?? "You can paste the whole code.")}
+              />
+            )}
           />
           <SubmitButton pending={pending} disabled={code.length < AUTH_POLICY.codeLength}>
             Verify email
