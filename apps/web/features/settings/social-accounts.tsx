@@ -1,30 +1,40 @@
-import type { Platform } from "@social-agent/shared";
-import type { Client } from "@/lib/types";
+import type { SocialAccountRow } from "@/lib/types";
 import { AccountRow } from "@/features/settings/account-row";
+import { AccountsWaitingBanner } from "@/features/settings/accounts-waiting-banner";
+import { ConnectionPromisePanel } from "@/features/settings/connection-promise-panel";
 
-const ALL_PLATFORMS: Platform[] = ["instagram", "facebook", "tiktok", "linkedin"];
-
-/**
- * One row per network. The status line always says what the state means for
- * publishing, because that is the only reason anyone comes to this screen.
- */
-export function SocialAccounts({ client }: { client: Client }) {
-  // Networks the strategy posts to come first: those are the ones that matter.
-  const platforms = [...ALL_PLATFORMS].sort(
-    (a, b) => Number(client.platforms.includes(b)) - Number(client.platforms.includes(a)),
-  );
+/** Grouped by the posting plan (owner decision, S14): planned platforms first, since publishing depends on them. */
+export function SocialAccounts({ brandId, accounts }: { brandId: string; accounts: SocialAccountRow[] }) {
+  const planned = accounts.filter((a) => a.inPlan);
+  const unplanned = accounts.filter((a) => !a.inPlan);
 
   return (
-    <ul className="grid gap-3">
-      {platforms.map((platform) => (
-        <AccountRow
-          key={platform}
-          clientId={client.id}
-          platform={platform}
-          planned={client.platforms.includes(platform)}
-          account={client.accounts.find((a) => a.platform === platform) ?? null}
-        />
-      ))}
-    </ul>
+    <div className="grid max-w-3xl gap-3">
+      <AccountsWaitingBanner accounts={accounts} />
+
+      {planned.length > 0 && (
+        <>
+          <p className="mt-1 text-sm font-semibold">In your posting plan</p>
+          <ul className="grid gap-3">
+            {planned.map((account) => (
+              <AccountRow key={account.platform} clientId={brandId} account={account} />
+            ))}
+          </ul>
+        </>
+      )}
+
+      {unplanned.length > 0 && (
+        <>
+          <p className="mt-1 text-sm font-semibold">Not in your plan</p>
+          <ul className="grid gap-3">
+            {unplanned.map((account) => (
+              <AccountRow key={account.platform} clientId={brandId} account={account} />
+            ))}
+          </ul>
+        </>
+      )}
+
+      <ConnectionPromisePanel />
+    </div>
   );
 }

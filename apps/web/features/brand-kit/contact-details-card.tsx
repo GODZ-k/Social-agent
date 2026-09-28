@@ -88,9 +88,9 @@ export function ContactDetailsCard({
           <KvRow label="Opening hours">
             {hours || <span className="text-muted-foreground">Not on your site. Add them if customers can visit you.</span>}
           </KvRow>
+          <p className="type-label mt-2.5">Posts use these exactly as written here. The agent never makes them up.</p>
         </div>
       )}
-      <p className="type-label mt-2.5">Posts use these exactly as written here. The agent never makes them up.</p>
     </EditableCard>
   );
 }

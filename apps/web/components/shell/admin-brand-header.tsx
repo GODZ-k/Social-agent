@@ -44,7 +44,7 @@ export function AdminBrandHeader({
         <Badge variant="outline" className="border-input text-foreground max-md:hidden">
           Admin
         </Badge>
-        <AccountMenu name={viewer.name} email={viewer.email} />
+        <AccountMenu name={viewer.name} email={viewer.email} backToId={brand.id} />
       </div>
     </TopBarFrame>
   );

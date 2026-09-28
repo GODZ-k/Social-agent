@@ -16,11 +16,11 @@ const BOTTLENECK_LABEL: Record<GrowthBrief["bottleneck"]["kind"], string> = {
 
 /** The one line of "why", from the research, with a link to see all of it (S21). */
 export function WhyThisPlan({
-  clientId,
+  brandId,
   research,
   basePath = "/c",
 }: {
-  clientId: string;
+  brandId: string;
   research: ResearchView | null;
   basePath?: WorkspaceBasePath;
 }) {
@@ -36,7 +36,7 @@ export function WhyThisPlan({
         </p>
       </div>
       <Button variant="ghost" size="sm" asChild className="shrink-0">
-        <Link href={workspaceHref(basePath, clientId, "/strategy/research")}>
+        <Link href={workspaceHref(basePath, brandId, "/strategy/research")}>
           See the research
           <ArrowRight />
         </Link>

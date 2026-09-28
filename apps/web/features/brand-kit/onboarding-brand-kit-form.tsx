@@ -26,7 +26,20 @@ import { Form } from "@repo/ui/components/form";
  * swap it back. `personId` set means an admin is building this brand for that client (2026-09-28):
  * the brand is created under them, and the flow continues under `/admin/c/:personId/brand/new`.
  */
-export function OnboardingBrandKitForm({ url, scan, personId }: { url: string; scan: ScanResult; personId?: string }) {
+export function OnboardingBrandKitForm({
+  url,
+  scan,
+  personId,
+  heading = "Here's what we found",
+  description = "Your brand kit: your colours, fonts and how you sound. Every post starts from it, so fix anything that isn't right.",
+}: {
+  url: string;
+  scan: ScanResult;
+  personId?: string;
+  /** FL-1 (manual entry) shows its own copy here instead of the scan's "here's what we found". */
+  heading?: string;
+  description?: string;
+}) {
   const router = useRouter();
   // Platforms the scan found linked on the site start ticked; the owner can still change any of them.
   const signalPlatforms = Object.keys(scan.platformSignals ?? {}) as Platform[];
@@ -43,16 +56,14 @@ export function OnboardingBrandKitForm({ url, scan, personId }: { url: string; s
     success: (client) => `${client.name} added`,
     failure: "Couldn't save the brand.",
     onSuccess: (client) =>
-      router.push(personId ? `/admin/c/${personId}/brand/new?clientId=${client.id}` : `/onboarding?clientId=${client.id}`),
+      router.push(personId ? `/admin/c/${personId}/brand/new?brandId=${client.id}` : `/onboarding?clientId=${client.id}`),
   });
 
   return (
     <div className="brand-scope" style={brandStyle(preview.brand.colors[0]!.hex)}>
       <div className="mb-8 max-w-[40rem]">
-        <h1 className="type-title">Here&apos;s what we found</h1>
-        <p className="mt-2 text-muted-foreground">
-          Your brand kit: your colours, fonts and how you sound. Every post starts from it, so fix anything that isn&apos;t right.
-        </p>
+        <h1 className="type-title">{heading}</h1>
+        <p className="mt-2 text-muted-foreground">{description}</p>
       </div>
 
       <Form {...form}>

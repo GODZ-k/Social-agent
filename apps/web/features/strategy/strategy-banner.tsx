@@ -39,7 +39,7 @@ export function StrategyBanner({
       ) : (
         <StrategyStartedBanner strategy={strategy} onAskForChanges={() => handleOpenChange(true)} basePath={basePath} />
       )}
-      <AskForChangesDialog clientId={strategy.clientId} open={open} onOpenChange={handleOpenChange} />
+      <AskForChangesDialog brandId={strategy.clientId} open={open} onOpenChange={handleOpenChange} />
     </>
   );
 }

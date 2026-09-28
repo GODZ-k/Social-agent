@@ -21,7 +21,7 @@ import { RejectToast } from "./reject-toast";
 import { useApprovalShortcuts } from "./use-approval-shortcuts";
 
 interface Props {
-  clientId: string;
+  brandId: string;
   queue: PostView[];
   brand: BrandKit;
   strategy: Strategy | null;
@@ -29,7 +29,7 @@ interface Props {
   basePath?: WorkspaceBasePath;
 }
 
-export function ApprovalStack({ clientId, queue, brand, strategy, accounts, basePath = "/c" }: Props) {
+export function ApprovalStack({ brandId, queue, brand, strategy, accounts, basePath = "/c" }: Props) {
   // The card leaves the moment it is swiped; the revalidated route catches up when the action resolves.
   const [visibleQueue, removeOptimistically] = useOptimistic(queue, (state, postId: string) =>
     state.filter((p) => p.id !== postId),
@@ -40,6 +40,10 @@ export function ApprovalStack({ clientId, queue, brand, strategy, accounts, base
   const [sessionTotal, setSessionTotal] = useState(0);
   if (visibleQueue.length > sessionTotal) setSessionTotal(visibleQueue.length);
   const done = sessionTotal - visibleQueue.length;
+
+  // What each decision turned into, for the empty queue's "what happens next" (ST-4). Like
+  // `sessionTotal`, this is session-only bookkeeping and isn't reconciled if a decision is undone.
+  const [decided, setDecided] = useState<{ approved: PostView[]; changes: number }>({ approved: [], changes: 0 });
 
   const top = visibleQueue[0];
   const topCard = useRef<SwipeCardHandle>(null);
@@ -72,6 +76,7 @@ export function ApprovalStack({ clientId, queue, brand, strategy, accounts, base
         return;
       }
       if (decision === "approved") {
+        setDecided((d) => ({ ...d, approved: [...d.approved, result.data.post] }));
         const waits = result.data.post.state === "waiting_for_connection";
         toast(waits ? `Approved. It waits for ${PLATFORM_LABEL[result.data.post.platform]}.` : "Approved and scheduled.", {
           action: { label: "Undo", onClick: () => undo(postId) },
@@ -93,6 +98,7 @@ export function ApprovalStack({ clientId, queue, brand, strategy, accounts, base
         toast.error(`Couldn't send that. ${result.message}`);
         return;
       }
+      setDecided((d) => ({ ...d, changes: d.changes + 1 }));
       toast("Sent to the agent. It comes back for another look.", { action: { label: "Undo", onClick: () => undo(postId) } });
     });
   }
@@ -123,7 +129,7 @@ export function ApprovalStack({ clientId, queue, brand, strategy, accounts, base
       <AnimatePresence mode="wait" initial={false}>
         {!top ? (
           <motion.div key="empty" initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} transition={spring.smooth}>
-            <EmptyQueue clientId={clientId} done={done} basePath={basePath} />
+            <EmptyQueue brandId={brandId} done={done} approved={decided.approved} changesCount={decided.changes} basePath={basePath} />
           </motion.div>
         ) : (
           <motion.div

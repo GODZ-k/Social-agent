@@ -137,7 +137,8 @@ html {
   --tint: color-mix(in srgb, var(--brand) 16%, var(--card));
   --tint-strong: color-mix(in srgb, var(--brand) 28%, var(--card));
   --brand-ink: var(--brand-ink-dark, #a9a3ff);
-  --tint-foreground: color-mix(in srgb, var(--brand-ink) 70%, var(--foreground));
+  /* Less brand-ink than light's 80%: more near-white foreground lifts the text off the dark tint. */
+  --tint-foreground: color-mix(in srgb, var(--brand-ink) 55%, var(--foreground));
 }
 
 @theme inline {

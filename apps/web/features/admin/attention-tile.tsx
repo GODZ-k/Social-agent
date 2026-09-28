@@ -6,6 +6,8 @@ const TONE_CLASS = {
   bad: "bg-destructive/12 text-destructive",
   warning: "bg-warning/14 text-warning",
   clear: "bg-secondary text-muted-foreground",
+  /** Informational, not a problem: settings tiles that just point somewhere (ADM-7). */
+  tint: "bg-tint text-tint-foreground",
 } as const;
 
 /**
@@ -23,7 +25,7 @@ export function AttentionTile({
   linkLabel,
 }: {
   icon: LucideIcon;
-  tone: "warning" | "bad" | "clear";
+  tone: keyof typeof TONE_CLASS;
   count: number;
   label: string;
   detail: string;

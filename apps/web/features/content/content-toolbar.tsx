@@ -41,6 +41,7 @@ export function ContentToolbar({
           { value: "needs_approval", label: "Needs approval", count: counts.needs_approval ?? 0 },
           { value: "scheduled", label: "Scheduled", count: counts.scheduled ?? 0 },
           { value: "published", label: "Published", count: counts.published ?? 0 },
+          { value: "failed", label: "Didn't go out", count: counts.failed ?? 0 },
           { value: "draft", label: "Drafts", count: counts.draft ?? 0 },
         ]}
       />

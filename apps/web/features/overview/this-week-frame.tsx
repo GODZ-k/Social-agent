@@ -6,12 +6,12 @@ import { Button } from "@repo/ui/components/button";
 
 /** The panel frame, shared with the skeleton so the header never jumps. */
 export function ThisWeekFrame({
-  clientId,
+  brandId,
   subtitle,
   children,
   basePath = "/c",
 }: {
-  clientId: string;
+  brandId: string;
   subtitle?: string;
   children: React.ReactNode;
   basePath?: WorkspaceBasePath;
@@ -24,7 +24,7 @@ export function ThisWeekFrame({
           {subtitle && <p className="type-label mt-1">{subtitle}</p>}
         </div>
         <Button asChild variant="outline" size="sm">
-          <Link href={workspaceHref(basePath, clientId, "/calendar")}>
+          <Link href={workspaceHref(basePath, brandId, "/calendar")}>
             <CalendarDays /> Open calendar <ArrowRight />
           </Link>
         </Button>

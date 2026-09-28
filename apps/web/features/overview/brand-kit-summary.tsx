@@ -6,11 +6,11 @@ import { Panel } from "@repo/ui/components/states";
 
 export function BrandKitSummary({
   brand,
-  clientId,
+  brandId,
   basePath = "/c",
 }: {
   brand: BrandKit;
-  clientId: string;
+  brandId: string;
   basePath?: WorkspaceBasePath;
 }) {
   return (
@@ -35,7 +35,7 @@ export function BrandKitSummary({
             </div>
           </div>
           <p className="mt-5">
-            <Link href={workspaceHref(basePath, clientId, "/settings?tab=brand")} className="inline-flex items-center gap-0.5 font-medium text-tint-foreground hover:underline">
+            <Link href={workspaceHref(basePath, brandId, "/settings?tab=brand")} className="inline-flex items-center gap-0.5 font-medium text-tint-foreground hover:underline">
               Edit the brand kit <ChevronRight className="size-3.5" />
             </Link>
           </p>

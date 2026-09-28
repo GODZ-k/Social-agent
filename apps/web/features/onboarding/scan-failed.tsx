@@ -25,7 +25,6 @@ export function ScanFailed({ url, onRetry, onChangeAddress }: { url: string; onR
           </Button>
         </FailOption>
         <FailOption icon={Pencil} title="Fill in the brand kit yourself" detail="About 5 minutes. You can add the website later.">
-          {/* TODO: FL-1, the manual brand-kit form, is not designed yet. */}
           <Button variant="outline" asChild>
             <Link href="/onboarding/manual">Fill it in</Link>
           </Button>

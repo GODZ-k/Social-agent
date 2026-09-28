@@ -24,11 +24,11 @@ function toggledRequest(current: string, suggestion: string): string {
 
 /** S20b: what to change, as a chip or in the owner's own words. A redraft gets a fresh 30 minutes. */
 export function AskForChangesDialog({
-  clientId,
+  brandId,
   open,
   onOpenChange,
 }: {
-  clientId: string;
+  brandId: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
@@ -49,7 +49,7 @@ export function AskForChangesDialog({
   }
 
   function submit(values: Values) {
-    ask.run(clientId, values.request);
+    ask.run(brandId, values.request);
   }
 
   return (

@@ -5,6 +5,7 @@ import type { Client, PostView } from "@/lib/types";
 import { workspaceHref, type WorkspaceBasePath } from "@/lib/workspace-path";
 import { PLATFORM_LABEL, PlatformIcon } from "@repo/ui/components/social/platform";
 import { Button } from "@repo/ui/components/button";
+import { FailedNextStep } from "./failed-next-step";
 
 const listFormat = new Intl.ListFormat("en", { type: "conjunction" });
 
@@ -26,12 +27,17 @@ interface Step {
 export function NextStep({
   client,
   reviewPosts,
+  failedPosts = [],
   basePath = "/c",
 }: {
   client: Client;
   reviewPosts: PostView[];
+  /** Posts the network refused (FL-2): these come before every other next step. */
+  failedPosts?: PostView[];
   basePath?: WorkspaceBasePath;
 }) {
+  if (failedPosts.length > 0) return <FailedNextStep posts={failedPosts} client={client} basePath={basePath} />;
+
   const step = nextStep(client, reviewPosts, basePath);
 
   return (

@@ -4,7 +4,9 @@ import { parseISO } from "date-fns";
 import type { Platform } from "@social-agent/shared";
 import { getViewer } from "@/lib/auth/viewer";
 import { getDb } from "./mock/db";
+import * as account from "./mock/account";
 import * as admin from "./mock/admin";
+import * as agencySettings from "./mock/agency-settings";
 import { report } from "./mock/analytics";
 import { settleResearch } from "./mock/brand-flow";
 import * as obs from "./mock/observability";
@@ -13,8 +15,10 @@ import * as questionnaire from "./mock/questionnaire";
 import * as settings from "./mock/settings";
 import * as strategies from "./mock/strategy";
 import type {
+  AccountView,
   AdminClientRow,
   AdminClientView,
+  AgencySettingsView,
   AgentRunDetail,
   Analytics,
   AnalyticsRange,
@@ -213,6 +217,14 @@ export const getAnalyticsReport = cache(async (clientId: string, range: Analytic
   return report(db, client, range, benchmark);
 });
 
+/* Account */
+
+/** The signed-in person's own details, password age and open sessions (BA-2). */
+export const getAccount = cache(async (): Promise<AccountView> => {
+  const viewer = await getViewer();
+  return account.accountOf(viewer);
+});
+
 /* Settings */
 
 export const listSocialAccounts = cache(async (clientId: string): Promise<SocialAccountRow[]> => {
@@ -250,6 +262,17 @@ export const getAdminClient = cache(async (clientId: string): Promise<AdminClien
     brands: clone(active),
     archivedBrands: archived.map((c) => admin.brandCardOf(db, c)),
     pendingScan: admin.pendingScanFor(clientId),
+  };
+});
+
+/** Team and Notifications (ADM-7), agency-wide. Empty for anyone but an admin. */
+export const getAgencySettings = cache(async (): Promise<AgencySettingsView | null> => {
+  if (!(await isAdmin())) return null;
+  const db = getDb();
+  return {
+    team: clone(db.team),
+    channels: clone(db.channels),
+    alerts: clone(agencySettings.alertsOf(db)),
   };
 });
 

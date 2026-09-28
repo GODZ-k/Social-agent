@@ -1,21 +1,40 @@
+import Link from "next/link";
 import type { Learning } from "@/lib/types";
+import { workspaceHref, type WorkspaceBasePath } from "@/lib/workspace-path";
 import { Panel } from "@repo/ui/components/states";
-import { LearningItem } from "@/features/strategy/learning-item";
+import { Button } from "@repo/ui/components/button";
 import { RegenerateStrategyButton } from "@/features/strategy/regenerate-button";
+import { LearnedRow } from "./learned-row";
 
-export function LearnedPanel({ clientId, learnings }: { clientId: string; learnings: Learning[] }) {
+export function LearnedPanel({
+  brandId,
+  learnings,
+  basePath = "/c",
+}: {
+  brandId: string;
+  learnings: Learning[];
+  basePath?: WorkspaceBasePath;
+}) {
   return (
-    <Panel aria-labelledby="learned-heading" className="bg-tint shadow-none">
-      <div className="mb-5 flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h2 id="learned-heading" className="type-heading text-tint-foreground">What the agent learned</h2>
-          <p className="mt-1 text-tint-foreground/80">These findings go into the next version of the strategy.</p>
-        </div>
-        <RegenerateStrategyButton clientId={clientId} variant="default" idleLabel="Rewrite the strategy" busyLabel="Rewriting the strategy" />
-      </div>
-      <ul className="grid gap-x-8 gap-y-5 md:grid-cols-2">
-        {learnings.map((l) => <LearningItem key={l.id} learning={l} />)}
+    <Panel id="learned" aria-labelledby="learned-heading">
+      <h2 id="learned-heading" className="type-heading">
+        What the agent learned
+      </h2>
+      <p className="type-label mt-0.5">From your own results. Each finding changes the strategy going forward.</p>
+      <ul className="mt-3 grid">
+        {learnings.map((learning) => (
+          <LearnedRow key={learning.id} learning={learning} />
+        ))}
       </ul>
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-border pt-4">
+        <p className="type-label">Posts you already approved stay as they are.</p>
+        <div className="flex flex-wrap gap-2">
+          <RegenerateStrategyButton brandId={brandId} variant="outline" idleLabel="Ask for changes" busyLabel="Asking" />
+          <Button asChild>
+            <Link href={workspaceHref(basePath, brandId, "/strategy")}>See the updated strategy</Link>
+          </Button>
+        </div>
+      </div>
     </Panel>
   );
 }

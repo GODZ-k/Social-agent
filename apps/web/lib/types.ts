@@ -25,7 +25,12 @@ import type {
 // Types the API shares live in @social-agent/shared. This file holds only what the web adds on top.
 
 /** A brand workspace as the mock serves it: the API's Brand without the fields the UI reads through other calls. */
-export type Client = Omit<Brand, "createdBy" | "questionnaire" | "questionnaireApprovedAt">;
+export type Client = Omit<Brand, "createdBy" | "questionnaire" | "questionnaireApprovedAt"> & {
+  /** When the last scan (initial or "read again") produced this brand kit. Mock-only until the API records it. */
+  kitScannedAt: string;
+  /** When the owner last hand-edited a brand-kit field. Mock-only until the API records it. */
+  kitEditedAt: string;
+};
 
 export interface ContentPillar {
   id: string;
@@ -396,6 +401,29 @@ export interface Preferences {
   approvalEmails: boolean;
 }
 
+/** One place the person is signed in, for the account page's "Where you're signed in". */
+export interface DeviceSession {
+  id: string;
+  device: string;
+  browser: string;
+  location: string;
+  lastActiveAt: string;
+  current: boolean;
+}
+
+/** The name and email shown and edited on the account page. */
+export interface AccountDetails {
+  name: string;
+  email: string;
+}
+
+/** The account page's read: details, when the password last changed, and open sessions. */
+export interface AccountView {
+  details: AccountDetails;
+  passwordChangedAt: string;
+  sessions: DeviceSession[];
+}
+
 /** A brand in the "Your brands" list and the brand switcher. */
 export interface BrandCard {
   id: string;
@@ -434,6 +462,51 @@ export interface AdminClientView {
   brands: Client[];
   archivedBrands: BrandCard[];
   pendingScan: PendingScan | null;
+}
+
+/* Agency settings (ADM-7): the agency's own team and where Cadence sends alerts. Agency-wide, not per-brand. */
+
+export type AgencyRole = "owner" | "admin";
+
+/** Someone who can sign in as an admin. The owner can't be removed. */
+export interface TeamMember {
+  id: string;
+  name: string;
+  email: string;
+  imageUrl: string | null;
+  role: AgencyRole;
+  status: "active" | "invited";
+  invitedAt: string;
+}
+
+export type AlertChannelKind = "email" | "discord" | "slack" | "whatsapp";
+
+/** Every channel but email, which is always on and has no row of its own. */
+export type ConnectableChannelKind = Exclude<AlertChannelKind, "email">;
+
+/** A place Cadence can send alerts. Email is always connected and can't be disconnected. */
+export interface NotificationChannel {
+  kind: AlertChannelKind;
+  connected: boolean;
+  /** What the channel row's second line says: where it's routed, or how to connect it. */
+  detail: string;
+}
+
+export type AlertKind = "observability" | "new_client" | "questionnaire_ready" | "weekly_summary";
+
+/** One kind of alert, with an on/off switch for each channel currently connected. */
+export interface AlertRow {
+  kind: AlertKind;
+  label: string;
+  description: string;
+  routing: Partial<Record<AlertChannelKind, boolean>>;
+}
+
+/** Team and Notifications, as the admin settings page reads them (ADM-7). */
+export interface AgencySettingsView {
+  team: TeamMember[];
+  channels: NotificationChannel[];
+  alerts: AlertRow[];
 }
 
 /* Observability (mock only until the exporter and Sentry exist) */

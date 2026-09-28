@@ -5,8 +5,9 @@
  */
 import { addDays, addHours, addMinutes, startOfDay, subDays, subMinutes } from "date-fns";
 import type { ConnectError, Language, Platform, PostFormat, PostStatus } from "@social-agent/shared";
-import type { Analytics, Client, Learning, Post, Strategy, StrategyVersion } from "@/lib/types";
+import type { AlertRow, Analytics, Client, Learning, NotificationChannel, Post, Strategy, StrategyVersion, TeamMember } from "@/lib/types";
 import { buildPeople, failedScans, OWNERS, type FailedScan, type MockPerson } from "./seed-people";
+import { buildAlerts, buildChannels, buildTeam } from "./seed-agency-settings";
 import { buildQuestionnaires, type QuestionnaireRecord } from "./questionnaire";
 import { buildResearch, type ResearchRecord } from "./research";
 import { AUTO_START_MINUTES } from "./strategy";
@@ -26,8 +27,8 @@ const today = startOfDay(now);
 
 export const handleFor = (name: string) => "@" + name.toLowerCase().replace(/[^a-z0-9]+/g, "");
 
-type ClientSeed = Omit<Client, "accounts" | "preferences" | "status" | "business"> &
-  Partial<Pick<Client, "status" | "business">> & {
+type ClientSeed = Omit<Client, "accounts" | "preferences" | "status" | "business" | "kitScannedAt" | "kitEditedAt"> &
+  Partial<Pick<Client, "status" | "business" | "kitScannedAt" | "kitEditedAt">> & {
     connected: Platform[];
     expired?: Platform[];
     timezone: string;
@@ -294,6 +295,9 @@ const clients: Client[] = seedClients.map(({ connected, expired = [], timezone, 
     connectedAt: client.createdAt,
   })),
   preferences: { timezone, approvalEmails: true, chatLanguage: "en" },
+  // The scan that built the kit, and the owner's last hand-edit; both default to when the brand was created.
+  kitScannedAt: client.kitScannedAt ?? client.createdAt,
+  kitEditedAt: client.kitEditedAt ?? client.createdAt,
 }));
 
 /** Per-brand onboarding and connection details the Brand record does not carry. */
@@ -669,6 +673,11 @@ export interface SeedData {
   decisions: Record<string, DecisionSnapshot>;
   /** Frontend error ids marked as fixed on the observability screen. */
   fixedErrors: string[];
+  /** The agency's own team, who can sign in as an admin (ADM-7). Not `people`, which are clients. */
+  team: TeamMember[];
+  /** Where Cadence sends alerts, agency-wide (ADM-7). */
+  channels: NotificationChannel[];
+  alerts: AlertRow[];
 }
 
 /** A fresh, unshared copy every time, so one store never leaks into another. */
@@ -687,6 +696,9 @@ export function buildSeed(): SeedData {
     failedScans: structuredClone(failedScans),
     decisions: {},
     fixedErrors: [],
+    team: buildTeam(),
+    channels: buildChannels(),
+    alerts: buildAlerts(),
   };
 }
 

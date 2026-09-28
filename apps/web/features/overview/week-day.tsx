@@ -12,26 +12,26 @@ import { WeekPostChip } from "./week-post-chip";
 export function WeekDay({
   day,
   brand,
-  clientId,
+  brandId,
   basePath = "/c",
 }: {
   day: CalendarDay;
   brand: BrandKit;
-  clientId: string;
+  brandId: string;
   basePath?: WorkspaceBasePath;
 }) {
   const date = parseISO(day.date);
   const today = isToday(date);
 
   return (
-    <div className={cn("flex items-start gap-3 rounded-2xl p-3 lg:flex-col lg:gap-2", today ? "bg-tint" : "bg-secondary/60")}>
-      <div className="flex w-14 shrink-0 flex-col lg:w-full lg:flex-row lg:items-baseline lg:justify-between">
+    <div className={cn("flex items-start gap-3 rounded-2xl p-3 md:flex-col md:gap-2", today ? "bg-tint" : "bg-secondary/60")}>
+      <div className="flex w-14 shrink-0 flex-col md:w-full md:flex-row md:items-baseline md:justify-between">
         <span className={cn("type-label", today && "text-tint-foreground")}>{today ? "Today" : format(date, "EEE")}</span>
         <span className={cn("type-number text-lg", today && "text-tint-foreground")}>{format(date, "d")}</span>
       </div>
-      <div className="grid min-w-0 flex-1 gap-2">
+      <div className="grid min-w-0 flex-1 gap-2 w-full">
         {day.posts.length > 0 ? (
-          day.posts.map((post) => <WeekPostChip key={post.id} post={post} brand={brand} href={workspaceHref(basePath, clientId, `?post=${post.id}`)} />)
+          day.posts.map((post) => <WeekPostChip key={post.id} post={post} brand={brand} href={workspaceHref(basePath, brandId, `?post=${post.id}`)} />)
         ) : day.freeBestTimes.length > 0 ? (
           day.freeBestTimes.map((slot) => (
             <p

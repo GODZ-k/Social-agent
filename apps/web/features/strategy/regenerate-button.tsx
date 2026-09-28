@@ -4,19 +4,19 @@ import { RefreshButton } from "./refresh-button";
 import { useRegenerateStrategy } from "./use-regenerate-strategy";
 
 export function RegenerateStrategyButton({
-  clientId,
+  brandId,
   disabled,
   idleLabel,
   busyLabel,
   variant,
 }: {
-  clientId: string;
+  brandId: string;
   disabled?: boolean;
   idleLabel: string;
   busyLabel: string;
   variant?: "outline" | "default";
 }) {
-  const { regenerate, isPending } = useRegenerateStrategy(clientId);
+  const { regenerate, isPending } = useRegenerateStrategy(brandId);
   return (
     <RefreshButton
       isPending={isPending}

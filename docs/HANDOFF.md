@@ -1,6 +1,9 @@
 # Handoff
 
-*How a new machine or a new Claude session picks up the frontend redesign where it stopped. Written 2026-09-27. Read this after `docs/MEMORY.md`, then open `docs/DESIGN_TRACKER.md` section 2 for the live state.*
+*How a new machine or a new Claude session picks up the frontend redesign where it stopped. Written 2026-09-27, last updated 2026-09-29 for a machine switch. Read this after `docs/MEMORY.md`, then open `docs/DESIGN_TRACKER.md` section 2 for the live state.*
+
+> [!IMPORTANT]
+> **Before you leave this machine:** 223 files are staged (not committed — nothing here commits itself, only the owner does). Commit and push them, or none of wave 2's work moves to the new machine. Then read section 2a below for what git does not carry (`.superpowers/`, `graft/`, env files) and copy those by hand.
 
 ## 1. Where the work stands
 
@@ -9,11 +12,12 @@
 - **Waves:** the work runs in waves. The temporary "Waves" table in `docs/DESIGN_TRACKER.md` section 2 lists every task, its model and its status. Erase that table when every wave is done.
   - Wave 0 (foundation, auth, last designs): done.
   - Wave 1 (onboarding, review and approvals, overview and content, strategy, admin and observability): coded.
-  - Wave 1b (make every wave 1 page match its design exactly): was running when this was written. Check the tracker for what finished.
-  - Wave 2 (calendar and analytics, settings, brands and account, system states, missing flows, dark mode fixes, forms moved to react-hook-form): waits for the owner's go.
-  - Wave 3 (one code-simplifier pass, type check, lint, build, browser check at 1440 and 390 in light and dark, then pages go to the owner as "build in review"): after wave 2.
+  - Wave 1b (make every wave 1 page match its design exactly): done, 4 small items left open for the owner (tracker section 2).
+  - Wave 2 (calendar and analytics, settings, brands and account, system states, missing flows, dark mode fixes, forms moved to react-hook-form): **done as of 2026-09-29.** Every item in scope (S11–S16, BA-1, BA-2, ST-1 to ST-5, FL-1 to FL-5, ADM-7, DK-1, the react-hook-form pass) is coded, `tsc`/`eslint` clean, and marked `build in review` in tracker section 4. Nothing in the whole tracker is still `not coded` except EM-1 to EM-8 (the 8 transactional emails — a separate deliverable, never in any wave's scope).
+  - Wave 3 (one code-simplifier pass, type check, lint, build, browser check at 1440 and 390 in light and dark, then pages go to the owner as "build in review"): **partially started 2026-09-29.** Each wave-2 agent ran its own `code-simplifier` pass on its own files already. Whole-app `tsc --noEmit` (with `.next/types` cleared) and `eslint --max-warnings 0` are clean. A full `next build` was run and is clean (45/45 routes) — it caught one real bug no type-check or lint pass could (see "Known issues to carry"). The browser check (1440/390, light/dark) has **not** been done — no session this whole redesign has had a working browser tool until right at the end (see the `agent-browser` note below); if the new machine doesn't have it either, this step still needs a human or a `next-dev-loop`-equipped session.
   - Wave 4 (the owner's build review changes; Stitch uploads when the owner says so).
-- **Waiting on the owner:** the go for each wave, the four auth questions in tracker section 2, and the Stitch uploads.
+- **Waiting on the owner:** the wave 3 browser check, the four auth questions in tracker section 2, the round-3 design-compare open items (tracker section 2), and the Stitch uploads.
+- **A working browser tool exists now:** as of 2026-09-29, `agent-browser` (CLI, drives a real Chrome) plus Next.js's built-in `/_next/mcp` endpoint were both live on the machine this was written on — see the `next-dev-loop` skill. Every prior session this whole redesign had neither, so verification was type-check/lint/build plus reading diffs against the design source by hand. Check whether the new machine has `agent-browser` installed (`agent-browser --version`, needs >= 0.31.1) before assuming you still have to work blind; if it's there, do the wave 3 browser check properly instead of skipping it again.
 
 ## 2. Owner rules (these were in the local agent memory; they apply to every session)
 
@@ -68,11 +72,14 @@
 3. Install the Claude Code plugins: `superpowers`, `code-simplifier` and `claude-code-setup` (claude-plugins-official), and `claude-mem` (marketplace `thedotmack/claude-mem`).
 4. Install the user-level skills: the caveman pack (`caveman`, `cavecrew`, `caveman-review`, `caveman-stats`, `safe-refactor`, `surgical-patch`, `verify-and-stop`, `investigate-first`, `lean-build`, `migration` and the rest) and `graft`. The repo skills in `.agents/skills` come with the repo; link them into `.claude/skills` as the root `AGENTS.md` describes.
 5. Build the code graph: `graft build`. The `graft/` folder is git-ignored. `graft build --deep` adds summaries but needs `GRAFT_API_KEY`.
-6. Start a session and say: "Read docs/HANDOFF.md and docs/DESIGN_TRACKER.md section 2, then continue."
+6. Install `agent-browser` for real browser verification (`npm i -g agent-browser@latest`, needs >= 0.31.1) — without it you're back to type-check/lint/build plus reading diffs by hand, like every session before 2026-09-29 had to. Load the `next-dev-loop` skill for how to use it against a running `next dev`.
+7. Start a session and say: "Read docs/HANDOFF.md and docs/DESIGN_TRACKER.md section 2, then continue."
 
 ## 5. Known issues to carry
 
 - **Google sign-in:** the Clerk future API ignores `signIn.sso()` while an unfinished sign-in is pending, so the sign-in and sign-up hooks reset any unfinished attempt when the page mounts (`lib/auth/clerk/flows.ts`). The pages Google returns to are public in `proxy.ts`.
-- **Lint:** one warning in `useInvite` (`react-hooks/set-state-in-effect`), left for the wave 3 clean-up.
-- **Types:** stale `.next/types` errors about the old catch-all sign-in and sign-up routes clear on the next build.
+- **Lint:** 3 pre-existing warnings, none new since (`lib/auth/clerk/flows.ts` one `react-hooks/set-state-in-effect`, `lib/auth/viewer.ts` two `turbo/no-undeclared-env-vars`), left for the wave 3 clean-up.
+- **Types:** stale `.next/types` errors about old catch-all routes clear on the next build; `rm -rf .next/types` before trusting a `tsc` run after a route-tree change.
 - **Chat posts:** a post opened from the agent chat on calendar, analytics, approvals or settings needs the same `?post=` review panel wiring (wave 3).
+- **The mock DB is stale-shape-prone, on purpose.** `lib/api/mock/db.ts`'s `getDb()` caches `SeedData` on `globalThis.__cadenceMockDb` so it survives `next dev` hot-reloads — deliberate, so in-session mutations (approvals, connections, edits) persist while you iterate. The cost: adding a new top-level field to `SeedData` (`lib/api/mock/seed.ts`) does not retroactively populate the already-in-memory object; existing records read that field as `undefined` until the dev server process is fully restarted (not just hot-reloaded). This has bitten twice this session (a `date-fns` crash on the settings page from two new `Client` fields, then `alertsOf()`'s `db.channels.filter` crashing on ADM-7's new `team`/`channels`/`alerts` fields). If a page that reads a recently-added seed field crashes with "Cannot read properties of undefined", restart the dev server before looking for a code bug — the seed code is usually already correct.
+- **A file that only re-exports a client component still needs its own `"use client"` directive.** Next.js 16's Turbopack build checks the re-exporting file, not the file it points to. Bit the admin mirror's `error.tsx` (`export { default } from "@/app/c/[brandId]/error"`), which broke every route under `/admin/c/:brandId/...` until a bare `"use client";` was added above the export. `tsc --noEmit` and `eslint` both missed it — only `next build` (or `get_compilation_issues` over `/_next/mcp`) catches it. Worth a proactive `grep -rL "use client" $(grep -rl "^export { default } from" app)` sweep after any route-tree rename.

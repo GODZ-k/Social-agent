@@ -6,6 +6,7 @@ import { inviteClientSchema } from "@social-agent/shared";
 import type { InviteClientInput, Language, Platform, QuestionnaireSubmitResponse } from "@social-agent/shared";
 import { getViewer } from "@/lib/auth/viewer";
 import { addBrand, getDb, recounted, removeClient } from "./mock/db";
+import * as account from "./mock/account";
 import * as admin from "./mock/admin";
 import { newClient, settleResearch } from "./mock/brand-flow";
 import * as posts from "./mock/posts";
@@ -17,11 +18,17 @@ import * as settings from "./mock/settings";
 import * as strategies from "./mock/strategy";
 import { fail, ok, type ActionResult } from "./result";
 import type {
+  AccountDetails,
   AdminClientRow,
+  AlertChannelKind,
+  AlertKind,
+  AlertRow,
   BrandCard,
   Client,
   ClientPatch,
+  ConnectableChannelKind,
   NewClientInput,
+  NotificationChannel,
   OnboardingState,
   Post,
   PostPatch,
@@ -33,6 +40,7 @@ import type {
   ReviewResult,
   Scan,
   Strategy,
+  TeamMember,
 } from "@/lib/types";
 
 /**
@@ -87,6 +95,10 @@ function revalidateAdmin() {
   revalidatePath("/admin", "layout");
 }
 
+function revalidateAgencySettings() {
+  revalidatePath("/admin/settings", "layout");
+}
+
 /** Runs an action body and turns any thrown error into a result. */
 async function attempt<T>(body: () => Promise<T>): Promise<ActionResult<T>> {
   try {
@@ -95,6 +107,28 @@ async function attempt<T>(body: () => Promise<T>): Promise<ActionResult<T>> {
   } catch (error) {
     return fail(error instanceof Error ? error.message : "Something went wrong.");
   }
+}
+
+/* Account (BA-2) */
+
+export async function updateAccountDetails(input: AccountDetails): Promise<ActionResult<AccountDetails>> {
+  return attempt(async () => {
+    await getViewer();
+    await wait(500);
+    const saved = account.saveDetails(input);
+    revalidatePath("/account");
+    return saved;
+  });
+}
+
+export async function signOutOtherDevices(): Promise<ActionResult<null>> {
+  return attempt(async () => {
+    await getViewer();
+    await wait(500);
+    account.signOutOthers();
+    revalidatePath("/account");
+    return null;
+  });
 }
 
 /* Scan and brand */
@@ -136,6 +170,10 @@ export async function updateClient(id: string, patch: ClientPatch): Promise<Acti
     Object.assign(client, patch);
     // The workspace accent always follows the first brand colour.
     if (patch.brand) client.accent = patch.brand.colors[0]?.hex ?? client.accent;
+    // The kit's "last edited" date only moves when a kit field (not preferences) changed.
+    if (patch.name || patch.industry || patch.brand || patch.business || patch.platforms) {
+      client.kitEditedAt = new Date().toISOString();
+    }
     revalidateClient(id);
     return clone(client);
   });
@@ -701,5 +739,104 @@ export async function markFrontendErrorFixed(errorId: string): Promise<ActionRes
     if (!fixed.includes(errorId)) fixed.push(errorId);
     revalidatePath("/admin/observability", "layout");
     return null;
+  });
+}
+
+/* Agency settings (ADM-7): the agency's own team and where Cadence sends alerts. */
+
+/** Invites a teammate as an admin. They show up as Invited until they sign in. */
+export async function inviteTeammate(input: { name: string; email: string }): Promise<ActionResult<TeamMember>> {
+  return attempt(async () => {
+    await requireAdmin();
+    await wait(700);
+    const email = input.email.trim().toLowerCase();
+    const db = getDb();
+    if (db.team.some((m) => m.email === email)) throw new Error("That email is already on your team.");
+    const member: TeamMember = {
+      id: `team_${Date.now().toString(36)}`,
+      name: input.name.trim(),
+      email,
+      imageUrl: null,
+      role: "admin",
+      status: "invited",
+      invitedAt: new Date().toISOString(),
+    };
+    db.team.push(member);
+    revalidateAgencySettings();
+    return clone(member);
+  });
+}
+
+/** The owner can't be removed. */
+export async function removeTeammate(memberId: string): Promise<ActionResult<null>> {
+  return attempt(async () => {
+    await requireAdmin();
+    await wait(500);
+    const db = getDb();
+    const member = db.team.find((m) => m.id === memberId);
+    if (!member) throw new Error("This teammate no longer exists.");
+    if (member.role === "owner") throw new Error("The owner can't be removed.");
+    db.team = db.team.filter((m) => m.id !== memberId);
+    revalidateAgencySettings();
+    return null;
+  });
+}
+
+function requireChannel(kind: AlertChannelKind): NotificationChannel {
+  const channel = getDb().channels.find((c) => c.kind === kind);
+  if (!channel) throw new Error("That channel isn't available.");
+  return channel;
+}
+
+export async function connectSlack(webhookUrl: string): Promise<ActionResult<NotificationChannel>> {
+  return attempt(async () => {
+    await requireAdmin();
+    if (!webhookUrl.trim()) throw new Error("Paste the webhook URL.");
+    await wait(900);
+    const channel = requireChannel("slack");
+    channel.connected = true;
+    channel.detail = "Webhook connected.";
+    revalidateAgencySettings();
+    return clone(channel);
+  });
+}
+
+export async function connectWhatsApp(phoneNumber: string, apiToken: string): Promise<ActionResult<NotificationChannel>> {
+  return attempt(async () => {
+    await requireAdmin();
+    if (!apiToken.trim()) throw new Error("Enter the API token.");
+    await wait(900);
+    const channel = requireChannel("whatsapp");
+    channel.connected = true;
+    channel.detail = `Sends to ${phoneNumber.trim()}`;
+    revalidateAgencySettings();
+    return clone(channel);
+  });
+}
+
+/** Email can't be disconnected; the type keeps that out of reach here. */
+export async function disconnectChannel(kind: ConnectableChannelKind): Promise<ActionResult<NotificationChannel>> {
+  return attempt(async () => {
+    await requireAdmin();
+    await wait(400);
+    const channel = requireChannel(kind);
+    channel.connected = false;
+    channel.detail = kind === "discord" ? "Not connected. Paste a webhook URL to route alerts to a channel." : "Not connected.";
+    revalidateAgencySettings();
+    return clone(channel);
+  });
+}
+
+/** One switch in the Alerts panel: this alert, routed to this channel, on or off. */
+export async function setAlertRouting(alertKind: AlertKind, channel: AlertChannelKind, on: boolean): Promise<ActionResult<AlertRow>> {
+  return attempt(async () => {
+    await requireAdmin();
+    await wait(250);
+    const db = getDb();
+    const alert = db.alerts.find((a) => a.kind === alertKind);
+    if (!alert) throw new Error("That alert no longer exists.");
+    alert.routing = { ...alert.routing, [channel]: on };
+    revalidateAgencySettings();
+    return clone(alert);
   });
 }

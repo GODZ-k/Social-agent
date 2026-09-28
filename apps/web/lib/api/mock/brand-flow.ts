@@ -12,6 +12,7 @@ const slugOf = (name: string) => name.toLowerCase().replace(/[^a-z0-9]+/g, "-").
 
 export function newClient(db: SeedData, input: NewClientInput, ownerId: string): Client {
   const slug = slugOf(input.name) || `brand-${db.clients.length + 1}`;
+  const now = new Date().toISOString();
   return {
     id: db.clients.some((c) => c.id === slug) ? `${slug}-${Date.now().toString(36)}` : slug,
     ownerId,
@@ -26,7 +27,10 @@ export function newClient(db: SeedData, input: NewClientInput, ownerId: string):
     platforms: input.platforms,
     accounts: [],
     preferences: { timezone: "Asia/Kolkata", approvalEmails: true, chatLanguage: "en" },
-    createdAt: new Date().toISOString(),
+    createdAt: now,
+    // The onboarding scan just built this kit, so both read the same moment.
+    kitScannedAt: now,
+    kitEditedAt: now,
     stats: { followers: 0, followersDelta: 0, engagementRate: 0, engagementDelta: 0, scheduled: 0, pendingApprovals: 0 },
   };
 }

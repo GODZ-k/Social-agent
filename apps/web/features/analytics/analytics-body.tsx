@@ -1,61 +1,62 @@
-import { Suspense } from "react";
-import Link from "next/link";
-import { ChartNoAxesCombined } from "lucide-react";
-import { getAnalytics } from "@/lib/api/server";
-import type { BrandKit } from "@social-agent/shared";
-import { workspaceHref, type WorkspaceBasePath } from "@/lib/workspace-path";
-import { EmptyState, SkeletonRows } from "@repo/ui/components/states";
-import { PanelBoundary } from "@repo/ui/components/error-boundary";
-import { Button } from "@repo/ui/components/button";
-import { TrendPanel } from "./trend-panel";
-import { FormatPanel } from "./format-panel";
-import { PillarPanel } from "./pillar-panel";
-import { TopPosts } from "./top-posts";
+import { format, parseISO } from "date-fns";
+import { getAnalyticsReport, listReviewQueue } from "@/lib/api/server";
+import type { AnalyticsRange, AnalyticsReport, Client } from "@/lib/types";
+import { PLATFORM_LABEL } from "@repo/ui/components/social/platform";
+import type { WorkspaceBasePath } from "@/lib/workspace-path";
+import { AnalyticsEmpty } from "./analytics-empty";
+import { RangeToggle } from "./range-toggle";
+import { SummaryBanner } from "./summary-banner";
+import { KpiRow } from "./kpi-row";
+import { DayByDayPanel } from "./day-by-day-panel";
+import { PostsPanel } from "./posts-panel";
+import { ComparisonSection } from "./comparison-section";
 import { LearnedSection } from "./learned-section";
+import { listFormat, postsLabel } from "./report-format";
 
-/**
- * Reads the analytics and decides between the empty state and the charts.
- * The two panels below the charts read their own data and stream in behind
- * their own boundaries, so a slow or failed one never holds the charts back.
- */
+/** Reads the analytics report and shows the empty state, the first week, or a full month's verdict. */
 export async function AnalyticsBody({
-  clientId,
-  brand,
+  brandId,
+  client,
   basePath = "/c",
+  range,
 }: {
-  clientId: string;
-  brand: BrandKit;
+  brandId: string;
+  client: Client;
   basePath?: WorkspaceBasePath;
+  range: AnalyticsRange;
 }) {
-  const analytics = await getAnalytics(clientId);
-  if (!analytics || analytics.series.length === 0) {
-    return (
-      <EmptyState
-        icon={<ChartNoAxesCombined />}
-        title="No results yet"
-        description="Numbers show up here about a day after the first post is published."
-        action={<Button asChild><Link href={workspaceHref(basePath, clientId, "/approvals")}>Review waiting posts</Link></Button>}
-      />
-    );
+  const report = await getAnalyticsReport(brandId, range);
+  if (!report || report.phase === "empty") {
+    const reviewPosts = await listReviewQueue(brandId);
+    return <AnalyticsEmpty client={client} reviewPosts={reviewPosts} basePath={basePath} />;
   }
+
+  const period = periodLabel(report);
 
   return (
     <div className="grid gap-5">
-      <TrendPanel series={analytics.series} />
-      <div className="grid gap-5 lg:grid-cols-2">
-        <FormatPanel byFormat={analytics.byFormat} />
-        <PillarPanel byPillar={analytics.byPillar} />
+      <div className="-mt-1 flex flex-wrap items-center justify-between gap-3">
+        <p className="type-label">{period}</p>
+        <RangeToggle range={report.range} />
       </div>
-      <PanelBoundary label="Best performing posts">
-        <Suspense fallback={<SkeletonRows rows={1} className="[&>*]:h-80" />}>
-          <TopPosts clientId={clientId} brand={brand} />
-        </Suspense>
-      </PanelBoundary>
-      <PanelBoundary label="What the agent learned">
-        <Suspense fallback={<SkeletonRows rows={1} className="[&>*]:h-48" />}>
-          <LearnedSection clientId={clientId} />
-        </Suspense>
-      </PanelBoundary>
+      {report.phase === "month" && <SummaryBanner report={report} />}
+      <KpiRow report={report} />
+      <DayByDayPanel report={report} />
+      <PostsPanel report={report} brand={client.brand} />
+      <ComparisonSection report={report} />
+      <LearnedSection report={report} brandId={brandId} basePath={basePath} />
     </div>
   );
+}
+
+function periodLabel(report: AnalyticsReport): string {
+  const from = format(parseISO(report.from), "d MMMM");
+  const to = format(parseISO(report.to), "d MMMM");
+  const posts = postsLabel(report.postCount);
+  if (report.phase === "first_week") {
+    return `${from} to ${to}, ${posts} so far.`;
+  }
+  const platforms = report.platforms.map((p) => PLATFORM_LABEL[p]);
+  const where = platforms.length ? ` on ${listFormat.format(platforms)}` : "";
+  return `${from} to ${to}, ${posts}${where}. Compared with small shops like yours, from your research.`;
 }

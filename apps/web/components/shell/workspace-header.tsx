@@ -18,7 +18,7 @@ export function WorkspaceHeader({ viewer, brand, brands }: { viewer: Viewer; bra
       <div className="ml-auto flex shrink-0 items-center gap-2">
         <AgentChatButton client={brand} />
         <ThemeMenu />
-        <AccountMenu name={viewer.name} email={viewer.email} />
+        <AccountMenu name={viewer.name} email={viewer.email} backToId={brand.id} />
       </div>
     </TopBarFrame>
   );

@@ -50,6 +50,13 @@ export function startNow(strategy: Strategy, viewerId: string): Strategy {
   return Object.assign(strategy, { status: "active", activatedAt: new Date().toISOString(), approvedBy: viewerId });
 }
 
+/** FL-5: the strategist's note on a redraft, read from the owner's change note when there is
+ * one, or a generic line when the redraft came from learnings alone (not an owner request). */
+export function strategistNoteFor(strategy: Strategy): string {
+  if (strategy.changeNote) return strategy.changeNote;
+  return "Your results since the last version changed what the agent leads with; everything else stays the same.";
+}
+
 /** Shift the mix toward the leading pillar, as the agent would after a good month. */
 export function shiftMixTowardLeader(strategy: Strategy) {
   const [lead, ...rest] = strategy.pillars;

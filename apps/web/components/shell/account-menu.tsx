@@ -8,7 +8,16 @@ import { ThemeChoice } from "./theme-choice";
 import { AccountAvatar } from "./account-avatar";
 
 /** Who is signed in, their account, the theme and signing out. The theme lives here, not in the bar. */
-export function AccountMenu({ name, email }: { name: string; email: string }) {
+export function AccountMenu({
+  name,
+  email,
+  backToId,
+}: {
+  name: string;
+  email: string;
+  /** The brand this menu is opened from, if any, so the account page can link back to it. */
+  backToId?: string;
+}) {
   const [signingOut, startSignOut] = useTransition();
 
   const trigger = (
@@ -31,7 +40,7 @@ export function AccountMenu({ name, email }: { name: string; email: string }) {
         </div>
       </div>
       <HeaderMenuSeparator />
-      <HeaderMenuItem href="/account">
+      <HeaderMenuItem href={backToId ? `/account?from=${backToId}` : "/account"}>
         <UserCog aria-hidden />
         <HeaderMenuItemText title="Manage account" detail="Name, email, password and sign-in" />
       </HeaderMenuItem>

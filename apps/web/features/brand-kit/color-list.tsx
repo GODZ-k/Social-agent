@@ -8,7 +8,7 @@ import { Button } from "@repo/ui/components/button";
 import { Input } from "@repo/ui/components/input";
 import { FormControl, FormField, FormItem, FormMessage } from "@repo/ui/components/form";
 
-export function ColorList({ control }: { control: Control<Values> }) {
+export function ColorList({ control, max = 6 }: { control: Control<Values>; max?: number }) {
   const colors = useFieldArray({ control, name: "colors" });
 
   return (
@@ -36,7 +36,7 @@ export function ColorList({ control }: { control: Control<Values> }) {
           </li>
         ))}
       </ul>
-      {colors.fields.length < 6 && (
+      {colors.fields.length < max && (
         <Button type="button" variant="secondary" size="sm" className="w-fit" onClick={() => colors.append({ name: "New colour", hex: "#888888" })}>
           <Plus /> Add a colour
         </Button>

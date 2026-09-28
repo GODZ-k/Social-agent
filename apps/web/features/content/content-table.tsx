@@ -9,9 +9,31 @@ import { FORMAT_NAME } from "@repo/ui/components/social/format-badge";
 import { Button } from "@repo/ui/components/button";
 import { PostStateBadge } from "./post-state-badge";
 import { formatDetail, relativeDayLabel } from "./format-post";
+import { DraftingTableRow } from "./drafting-table-row";
+import { FailedTableRow } from "./failed-table-row";
+import { NewBadge } from "./new-badge";
+import type { DraftingSlot } from "./use-generate-posts";
 
-/** The wide-screen list: one row per post, soonest first. Cards below 900px carry the same rows. */
-export function ContentTable({ posts, brand, pathname }: { posts: PostView[]; brand: BrandKit; pathname: string }) {
+/** The wide-screen list: one row per post, soonest first, plus the batch still drafting
+ * appended under a "New drafts" divider (FL-4). Cards below 900px carry the same rows. */
+export function ContentTable({
+  posts,
+  brand,
+  pathname,
+  newIds = new Set(),
+  draftingSlots = [],
+}: {
+  posts: PostView[];
+  brand: BrandKit;
+  pathname: string;
+  newIds?: Set<string>;
+  draftingSlots?: DraftingSlot[];
+}) {
+  // Posts the network refused stay at the top until they're fixed (FL-2); everything else keeps
+  // the soonest-first order it already came in.
+  const failed = posts.filter((post) => post.state === "failed");
+  const rest = posts.filter((post) => post.state !== "failed");
+
   return (
     <div className="hidden overflow-hidden rounded-xl bg-card shadow-raised min-[900px]:block">
       <table className="w-full border-collapse text-sm">
@@ -25,7 +47,17 @@ export function ContentTable({ posts, brand, pathname }: { posts: PostView[]; br
           </tr>
         </thead>
         <tbody>
-          {posts.map((post) => {
+          {failed.map((post) => (
+            <FailedTableRow key={post.id} post={post} brand={brand} pathname={pathname} />
+          ))}
+          {failed.length > 0 && rest.length > 0 && (
+            <tr>
+              <td colSpan={5} className="px-5 py-2 text-xs font-medium text-muted-foreground">
+                Coming up
+              </td>
+            </tr>
+          )}
+          {rest.map((post) => {
             const href = `${pathname}?post=${post.id}`;
             const when = post.scheduledFor ?? post.publishedAt;
             const detail = formatDetail(post);
@@ -36,7 +68,10 @@ export function ContentTable({ posts, brand, pathname }: { posts: PostView[]; br
                   <Link href={href} scroll={false} className="flex min-w-0 items-center gap-3.5 after:absolute after:inset-0">
                     <PostArt post={post} brand={brand} fixedAspect="aspect-square" className="w-11 shrink-0 rounded-md" />
                     <span className="min-w-0">
-                      <span className="block truncate font-medium">{post.hook}</span>
+                      <span className="block truncate font-medium">
+                        {post.hook}
+                        {newIds.has(post.id) && <NewBadge />}
+                      </span>
                       <span className="type-label truncate">Theme: {post.theme}</span>
                     </span>
                   </Link>
@@ -79,6 +114,18 @@ export function ContentTable({ posts, brand, pathname }: { posts: PostView[]; br
               </tr>
             );
           })}
+          {draftingSlots.length > 0 && (
+            <>
+              <tr>
+                <td colSpan={5} className="px-5 py-2 text-xs font-medium text-muted-foreground">
+                  New drafts
+                </td>
+              </tr>
+              {draftingSlots.map((slot) => (
+                <DraftingTableRow key={slot.id} slot={slot} />
+              ))}
+            </>
+          )}
         </tbody>
       </table>
     </div>

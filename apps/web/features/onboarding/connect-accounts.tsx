@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Check, Clock, LoaderCircle, X } from "lucide-react";
+import { ArrowRight, Check, Clock, LoaderCircle, X } from "lucide-react";
 import type { Platform, SocialAccount } from "@social-agent/shared";
 import { skipConnecting } from "@/lib/api/actions";
 import { useServerAction } from "@/lib/api/use-server-action";
@@ -101,6 +101,7 @@ export function ConnectAccounts({
             )}
             <Button size="lg" className="ml-auto" onClick={onContinue}>
               Continue
+              <ArrowRight />
             </Button>
           </>
         )}
