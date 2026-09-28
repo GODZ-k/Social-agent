@@ -1,13 +1,9 @@
 import type { Platform, PostFormat, PostStatus } from "./types";
-import { Badge } from "../badge";
+import { PLATFORM_LABEL } from "./platform-names";
+import { POST_STATUS, StatusBadge } from "./status-badge";
 import { cn } from "../../lib/utils";
 
-export const PLATFORM_LABEL: Record<Platform, string> = {
-  instagram: "Instagram",
-  facebook: "Facebook",
-  linkedin: "LinkedIn",
-  tiktok: "TikTok",
-};
+export { PLATFORM_LABEL };
 
 export const FORMAT_LABEL: Record<PostFormat, string> = {
   image: "Image",
@@ -54,20 +50,9 @@ export function PlatformIcon({ platform, className }: { platform: Platform; clas
   );
 }
 
-const STATUS: Record<PostStatus, { label: string; variant: React.ComponentProps<typeof Badge>["variant"] }> = {
-  draft: { label: "Draft", variant: "neutral" },
-  in_review: { label: "Needs approval", variant: "warning" },
-  approved: { label: "Approved", variant: "success" },
-  scheduled: { label: "Scheduled", variant: "tint" },
-  published: { label: "Published", variant: "success" },
-  rejected: { label: "Rejected", variant: "danger" },
-};
-
 export const STATUS_LABEL = Object.fromEntries(
-  Object.entries(STATUS).map(([k, v]) => [k, v.label]),
+  Object.entries(POST_STATUS).map(([status, { label }]) => [status, label]),
 ) as Record<PostStatus, string>;
 
-export function StatusBadge({ status }: { status: PostStatus }) {
-  const { label, variant } = STATUS[status];
-  return <Badge variant={variant}>{label}</Badge>;
-}
+// Kept here so existing imports keep working; the badge lives in ./status-badge.
+export { StatusBadge };

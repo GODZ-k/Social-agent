@@ -4,6 +4,7 @@ import { useState } from "react";
 import dynamic from "next/dynamic";
 import { Sparkles } from "lucide-react";
 import type { Client } from "@/lib/types";
+import type { WorkspaceBasePath } from "@/lib/workspace-path";
 import { Button } from "@repo/ui/components/button";
 
 // The chat panel pulls in the AI client; load it only when someone opens it.
@@ -11,7 +12,7 @@ const AgentChat = dynamic(() => import("@/features/agent/agent-chat").then((m) =
   ssr: false,
 });
 
-export function AgentChatButton({ client }: { client?: Client }) {
+export function AgentChatButton({ client, basePath = "/c" }: { client?: Client; basePath?: WorkspaceBasePath }) {
   const [chatOpen, setChatOpen] = useState(false);
   const [chatMounted, setChatMounted] = useState(false);
 
@@ -24,12 +25,12 @@ export function AgentChatButton({ client }: { client?: Client }) {
           setChatMounted(true);
           setChatOpen(true);
         }}
-        className="max-sm:size-8.5 max-sm:px-0"
+        className="max-[560px]:size-9 max-[560px]:px-0"
       >
         <Sparkles />
-        <span className="max-sm:sr-only">Ask the agent</span>
+        <span className="max-[560px]:sr-only">Ask the agent</span>
       </Button>
-      {chatMounted && <AgentChat open={chatOpen} onOpenChange={setChatOpen} client={client} />}
+      {chatMounted && <AgentChat open={chatOpen} onOpenChange={setChatOpen} client={client} basePath={basePath} />}
     </>
   );
 }

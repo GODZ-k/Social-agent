@@ -9,12 +9,21 @@
  */
 import { generateMessageId, type ConnectConnectionAdapter, type UIMessage } from "@tanstack/ai-react";
 import { EventType, type StreamChunk } from "@tanstack/ai/client";
-import type { Client } from "@/lib/types";
+import { format, parseISO } from "date-fns";
+import type { Client, PostView } from "@/lib/types";
+import { PLATFORM_LABEL } from "@repo/ui/components/social/platform";
+
+const listFormat = new Intl.ListFormat("en", { type: "conjunction" });
+
+/** Matches a question about what's waiting on the owner, in the chat and in the mock reply. */
+export const APPROVAL_INTENT = /(approve|review|waiting|pending)/i;
 
 /** What the mock knows about the open workspace. Set by the chat panel. */
 let context: Client | undefined;
-export const setAgentContext = (client: Client | undefined) => {
+let reviewPosts: PostView[] = [];
+export const setAgentContext = (client: Client | undefined, posts: PostView[] = []) => {
   context = client;
+  reviewPosts = posts;
 };
 
 function delay(ms: number, signal?: AbortSignal) {
@@ -46,11 +55,18 @@ function reply(question: string): string {
   if (/(when|time|schedule|often|cadence)/.test(q)) {
     return `${name} has ${context.stats.scheduled} posts queued. I'm posting when their followers have been most active over the last four weeks, which is weekday mornings and Thursday evenings. You can move any post from the calendar.`;
   }
-  if (/(approve|review|waiting|pending)/.test(q)) {
-    const n = context.stats.pendingApprovals;
-    return n > 0
-      ? `${n} ${n === 1 ? "post is" : "posts are"} waiting for you in Approvals. Each one says why I made it. Nothing is published until you approve it.`
-      : `Nothing is waiting on you for ${name} right now. I'll send the next batch for approval before anything new is scheduled.`;
+  if (APPROVAL_INTENT.test(q)) {
+    if (reviewPosts.length === 0) {
+      return `Nothing is waiting on you for ${name} right now. I'll send the next batch for approval before anything new is scheduled.`;
+    }
+    const first = reviewPosts[0]!;
+    const when = first.scheduledFor ? parseISO(first.scheduledFor) : null;
+    const unconnected = context.platforms.filter((p) => context!.accounts.find((a) => a.platform === p)?.status !== "connected");
+    const whenLine = when ? ` The first goes out ${format(when, "EEE")} at ${format(when, "h:mm a")}.` : "";
+    const platformsLine = unconnected.length
+      ? ` ${listFormat.format(unconnected.map((p) => PLATFORM_LABEL[p]))} still ${unconnected.length === 1 ? "needs" : "need"} connecting before ${unconnected.length === 1 ? "it" : "these"} can publish.`
+      : "";
+    return `${reviewPosts.length} ${reviewPosts.length === 1 ? "post needs" : "posts need"} your approval.${whenLine}${platformsLine} Tap a post to see it.`;
   }
   if (/(idea|write|draft|caption|post about)/.test(q)) {
     return `Here's one in ${name}'s voice (${context.brand.voice.slice(0, 2).join(", ").toLowerCase()}): open on a close-up with no intro, put the one-line hook on screen for the first two seconds, and end the caption with a question. If you like the direction, use "Draft 6 more posts" in Content and I'll write them up properly.`;

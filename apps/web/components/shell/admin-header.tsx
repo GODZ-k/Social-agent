@@ -1,0 +1,20 @@
+import type { Viewer } from "@/lib/types";
+import { Badge } from "@repo/ui/components/badge";
+import { ThemeMenu } from "@repo/ui/components/theme-menu";
+import { TopBarFrame } from "./top-bar-frame";
+import { AccountMenu } from "./account-menu";
+
+/** The agency's own area. No switcher and no "Ask the agent": the agent works per brand. */
+export function AdminHeader({ viewer }: { viewer: Viewer }) {
+  return (
+    <TopBarFrame>
+      <div className="ml-auto flex shrink-0 items-center gap-2">
+        <ThemeMenu />
+        <Badge variant="outline" className="border-input text-foreground">
+          Admin
+        </Badge>
+        <AccountMenu name={viewer.name} email={viewer.email} />
+      </div>
+    </TopBarFrame>
+  );
+}

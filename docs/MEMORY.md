@@ -129,6 +129,7 @@ live HTTP verification.
 
 ## 6. Before you start
 
+- [ ] Frontend redesign in progress: read [`HANDOFF.md`](./HANDOFF.md) (owner rules, waves, how agents run, new-machine setup), then `DESIGN_TRACKER.md` section 2 for the live state.
 - [ ] Load the `caveman` skill, then the skills for the work (root `AGENTS.md`, "Agent skills").
 - [ ] Read the root `AGENTS.md` and the `AGENTS.md` of the app you are touching.
 - [ ] Load the `mastra` skill if any Mastra file is in scope.

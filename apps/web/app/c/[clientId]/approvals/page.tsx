@@ -1,29 +1,45 @@
 import { notFound } from "next/navigation";
-import { PageHeader } from "@repo/ui/components/states";
 import { ApprovalStack } from "@/features/approvals/approval-stack";
-import { getClient, getStrategy, listPosts } from "@/lib/api/server";
-
+import { ReviewPostSheet } from "@/features/post/review-post-sheet";
+import { getClient, getStrategy, listReviewQueue, listSocialAccounts } from "@/lib/api/server";
+import type { WorkspaceBasePath } from "@/lib/workspace-path";
 
 // TODO: Cache Components adoption. Refactor this route so this opt-out can be removed.
 // See: https://nextjs.org/docs/app/guides/migrating-to-cache-components
 export const instant = false;
 
-export default async function ApprovalsPage({ params }: { params: Promise<{ clientId: string }> }) {
+export default async function ApprovalsPage({
+  params,
+  searchParams,
+  basePath = "/c",
+}: {
+  params: Promise<{ clientId: string }>;
+  searchParams: Promise<{ post?: string }>;
+  basePath?: WorkspaceBasePath;
+}) {
   const { clientId } = await params;
-  const [client, posts, strategy] = await Promise.all([getClient(clientId), listPosts(clientId), getStrategy(clientId)]);
+  const { post: postId } = await searchParams;
+  const [client, queue, strategy, accounts] = await Promise.all([
+    getClient(clientId),
+    listReviewQueue(clientId),
+    getStrategy(clientId),
+    listSocialAccounts(clientId),
+  ]);
   if (!client) notFound();
-
-  const queue = posts
-    .filter((p) => p.status === "in_review")
-    .sort((a, b) => (a.scheduledFor ?? "").localeCompare(b.scheduledFor ?? ""));
 
   return (
     <>
-      <PageHeader
-        title="Approvals"
-        description="Read each post, then swipe right to approve or left to reject. Nothing is published without you."
-      />
-      <ApprovalStack clientId={clientId} queue={queue} brand={client.brand} strategy={strategy} />
+      {/* The subtitle is desktop-only: the tablet and phone layout fits the whole stack on one screen. */}
+      <header className="mb-7 flex flex-wrap items-end justify-between gap-x-6 gap-y-4">
+        <div className="min-w-0 max-w-[60ch]">
+          <h1 className="type-title">Approvals</h1>
+          <p className="mt-2 hidden text-muted-foreground lg:block">
+            Swipe right to approve, left to reject. Nothing is published without you.
+          </p>
+        </div>
+      </header>
+      <ApprovalStack clientId={clientId} queue={queue} brand={client.brand} strategy={strategy} accounts={accounts} basePath={basePath} />
+      {postId && <ReviewPostSheet postId={postId} />}
     </>
   );
 }

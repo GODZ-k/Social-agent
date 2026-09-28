@@ -1,21 +1,31 @@
 import type {
+  AdminClient,
   AudienceSegment,
   Brand,
   BrandKit,
   BrandPatch,
+  BrandStatus,
+  BusinessInfo,
+  ConnectError,
+  Language,
   LearningImpact,
+  LoopStage,
   NewBrandInput,
   Platform,
   PostArt,
   PostFormat,
   PostStatus,
+  QuestionnaireState,
+  Research,
+  ResearchStatus,
   Role,
+  StrategyStatus,
 } from "@social-agent/shared";
 
 // Types the API shares live in @social-agent/shared. This file holds only what the web adds on top.
 
-/** A brand workspace as the mock serves it: the API's Brand without the fields the UI does not read yet. */
-export type Client = Omit<Brand, "createdBy" | "status" | "business" | "questionnaire" | "questionnaireApprovedAt">;
+/** A brand workspace as the mock serves it: the API's Brand without the fields the UI reads through other calls. */
+export type Client = Omit<Brand, "createdBy" | "questionnaire" | "questionnaireApprovedAt">;
 
 export interface ContentPillar {
   id: string;
@@ -30,12 +40,22 @@ export interface Learning {
   insight: string;
   evidence: string;
   impact: LearningImpact;
+  /** What the agent changes in the plan because of it. */
+  change?: string;
 }
 
 export interface Strategy {
   clientId: string;
   version: number;
+  status: StrategyStatus;
   generatedAt: string;
+  /** A draft starts on its own at this moment, 30 minutes after it was drafted. */
+  autoStartsAt: string;
+  activatedAt: string | null;
+  /** Who pressed "Start now". Null when the strategy started on its own. */
+  approvedBy: string | null;
+  /** What the owner asked to change; null on a first version or a rewrite from learnings. */
+  changeNote: string | null;
   goal: string;
   pillars: ContentPillar[];
   cadence: { platform: Platform; perWeek: number; bestTimes: string[] }[];
@@ -43,12 +63,20 @@ export interface Strategy {
   learnings: Learning[];
 }
 
+/** One row of the strategy's version history. */
+export type StrategyVersion = Pick<
+  Strategy,
+  "version" | "status" | "generatedAt" | "activatedAt" | "approvedBy" | "changeNote"
+>;
+
 export interface PostMetrics {
   reach: number;
   likes: number;
   comments: number;
   saves: number;
   shares: number;
+  /** Followers gained from this post, where the network reports it. */
+  follows?: number;
 }
 
 export interface Post {
@@ -71,9 +99,81 @@ export interface Post {
   mediaUrl?: string | null;
   art: PostArt;
   durationSec?: number;
+  /** A carousel's slide count. */
+  slides?: number;
   /** Why the agent made this post. Shown to the approver. */
   aiNote: string;
   metrics?: PostMetrics;
+  /** Set when someone approved it. An admin's approval reads "approved by the agency" to the client. */
+  approval?: { at: string; byAgency: boolean } | null;
+  /** The optional reason given with a reject; it feeds the learnings. */
+  rejectReason?: string | null;
+  /** What the owner asked the agent to change. */
+  changeRequest?: string | null;
+  /** Set when the network refused the post at publish time. */
+  failure?: { reason: string; at: string } | null;
+}
+
+/**
+ * Where a post stands, as the owner reads it. `waiting_for_connection` is an
+ * approved post whose account is not connected; `failed` is one the network refused.
+ */
+export type PostState =
+  | "draft"
+  | "needs_approval"
+  | "waiting_for_connection"
+  | "scheduled"
+  | "published"
+  | "failed"
+  | "rejected";
+
+/** A post as every read returns it: the record plus what the UI shows without another lookup. */
+export interface PostView extends Post {
+  state: PostState;
+  /** The content pillar's name. */
+  theme: string;
+}
+
+export interface ContentFilters {
+  state?: PostState;
+  platform?: Platform;
+}
+
+export interface ThisWeek {
+  /** Monday 00:00 and Sunday 23:59 of the current week. */
+  from: string;
+  to: string;
+  posts: PostView[];
+  counts: Partial<Record<PostState, number>>;
+}
+
+/** What approving, rejecting or asking for changes returns: the post, and the next one waiting. */
+export interface ReviewResult {
+  post: PostView;
+  nextPostId: string | null;
+}
+
+/** A good moment to post, for the date and time picker. */
+export interface BestTimeSlot {
+  platform: Platform;
+  /** 24 hour "HH:mm". */
+  time: string;
+  /** "7:30am". */
+  label: string;
+}
+
+export interface CalendarDay {
+  /** "YYYY-MM-DD". */
+  date: string;
+  posts: PostView[];
+  /** Best times on this day with nothing planned yet. Past days have none. */
+  freeBestTimes: BestTimeSlot[];
+}
+
+export interface CalendarMonth {
+  /** "YYYY-MM". */
+  month: string;
+  days: CalendarDay[];
 }
 
 export interface AnalyticsPoint {
@@ -90,16 +190,68 @@ export interface Analytics {
   byPillar: { pillarId: string; name: string; reach: number }[];
 }
 
+export type AnalyticsRange = 7 | 30 | 90;
+
+/** How a number compares with small shops like this one. */
+export type Verdict = "very_good" | "good" | "usual" | "below" | "too_early";
+
+export interface AnalyticsTotal {
+  key: "reach" | "saves" | "interactions" | "followers";
+  value: number;
+  /** The same number for the period before, when there was one. */
+  previous: number | null;
+  /** What similar shops get in the same period, from research. Null when unknown. */
+  benchmark: number | null;
+  verdict: Verdict;
+}
+
+export interface AnalyticsDay {
+  date: string;
+  reach: number;
+  saves: number;
+  follows: number;
+  /** The networks a post went out on that day. */
+  postedOn: Platform[];
+}
+
+export interface AnalyticsBreakdown {
+  posts: number;
+  reach: number;
+  saves: number;
+  /** Likes, comments and shares per 100 people reached. */
+  engagementRate: number;
+}
+
+export interface AnalyticsReport {
+  clientId: string;
+  /** `empty` before the first post goes out; `first_week` until seven days of results. */
+  phase: "empty" | "first_week" | "month";
+  range: AnalyticsRange;
+  from: string;
+  to: string;
+  postCount: number;
+  platforms: Platform[];
+  totals: AnalyticsTotal[];
+  followers: { from: number; to: number };
+  days: AnalyticsDay[];
+  bestPosts: PostView[];
+  worstPosts: PostView[];
+  byFormat: (AnalyticsBreakdown & { format: PostFormat })[];
+  byPlatform: (AnalyticsBreakdown & { platform: Platform })[];
+  byTheme: (AnalyticsBreakdown & { pillarId: string; name: string })[];
+  learnings: Learning[];
+}
+
 export interface BrandScanStep {
   id: string;
   label: string;
   detail: string;
 }
 
-export type NewClientInput = Pick<NewBrandInput, "name" | "url" | "industry" | "brand" | "platforms">;
+export type NewClientInput = Pick<NewBrandInput, "name" | "url" | "industry" | "brand" | "platforms" | "business">;
 
 /** The parts of a client its owner can change in Settings. */
-export type ClientPatch = Omit<BrandPatch, "business">;
+export type ClientPatch = Omit<BrandPatch, "questionnaire">;
 
 /** The signed-in person, resolved on the server from Clerk. */
 export interface Viewer {
@@ -109,11 +261,31 @@ export interface Viewer {
   email: string;
 }
 
+/** Where a scanned fact came from ("Found on your About page"); a field with no entry shows no caption. */
+export interface ScanSources {
+  summary?: string;
+  audience?: string;
+  colors?: string;
+  email?: string;
+  address?: string;
+}
+
+/** A platform the scan found linked on the site, with the handle it read. */
+export interface PlatformSignal {
+  handle: string;
+  source: string;
+}
+
 /** The mock scan's result. The API's ScanResult has optional name and industry; this comes off with the mock. */
 export interface ScanResult {
   name: string;
   industry: string;
   brand: BrandKit;
+  /** Phone, email, address, hours; missing ones read "Not on your site" in the review. */
+  business?: BusinessInfo;
+  sources?: ScanSources;
+  /** Keyed by platform; a platform with no entry was not found on the site. */
+  platformSignals?: Partial<Record<Platform, PlatformSignal>>;
 }
 
 /** A brand scan job: started once, then polled until it is done. */
@@ -134,4 +306,398 @@ export interface PostPatch {
   /** A data URL in the mock. The real API takes an upload and returns a hosted URL. */
   mediaUrl?: string | null;
   scheduledFor?: string | null;
+}
+
+/* Onboarding */
+
+/** One platform's account, as onboarding and Settings show it. */
+export type ConnectionState = "connected" | "expired" | "not_connected" | "connect_failed";
+
+export type OnboardingStep = "brand_kit" | "connect" | "questionnaire" | "research" | "done";
+
+export interface OnboardingState {
+  clientId: string;
+  /** The first step not finished yet. */
+  step: OnboardingStep;
+  platforms: Platform[];
+  connections: { platform: Platform; state: ConnectionState }[];
+  /** True once the owner chose "Skip, connect later". */
+  connectSkipped: boolean;
+  questionnaire: QuestionnaireState["status"];
+  research: ResearchStatus | null;
+}
+
+/* Questionnaire */
+
+/**
+ * One answer as the screen gives it. The action turns it into the API's text:
+ * "Something else" and "Not quite, let me fix it" become an `other:` answer.
+ */
+export type QuestionAnswer =
+  | { kind: "option"; value: string }
+  | { kind: "text"; text: string }
+  | { kind: "confirm" }
+  | { kind: "other"; text: string }
+  | { kind: "not_sure" };
+
+export interface QuestionnaireSummaryItem {
+  questionId: string;
+  question: string;
+  /** The answer in words, as the summary shows it. */
+  answer: string;
+  followUp: boolean;
+  /** Who gave this answer; "agency" when an admin answered for the client (2026-09-28). */
+  answeredBy: "agency" | "client";
+}
+
+export interface QuestionnaireView extends QuestionnaireState {
+  summary: QuestionnaireSummaryItem[];
+  /** Every question and follow-up's short row label ("You sell", "Posts should" …), keyed by question id. */
+  labels: Record<string, string>;
+  /** Required questions, follow-ups included, that have no answer yet. */
+  unanswered: string[];
+}
+
+/* Research */
+
+export interface ResearchSource {
+  url: string;
+  title: string;
+  kind: "website" | "reviews" | "answers" | "search" | "similar_brand";
+  /** What the agent took from it. */
+  note: string;
+}
+
+export interface ResearchView extends Research {
+  sources: ResearchSource[];
+  /** Every stored version, newest first. While a re-run is going the current one stays readable. */
+  versions: { version: number; createdAt: string }[];
+}
+
+/* Settings */
+
+export interface SocialAccountRow {
+  platform: Platform;
+  inPlan: boolean;
+  state: ConnectionState;
+  handle: string | null;
+  connectedAt: string | null;
+  /** When the network's access runs out. */
+  expiresAt: string | null;
+  /** Approved posts held until this account is connected again. */
+  postsWaiting: number;
+  connectError: ConnectError | null;
+}
+
+export interface Preferences {
+  timezone: string;
+  postLanguage: Language;
+  chatLanguage: Language;
+  approvalEmails: boolean;
+}
+
+/** A brand in the "Your brands" list and the brand switcher. */
+export interface BrandCard {
+  id: string;
+  name: string;
+  url: string;
+  accent: string;
+  status: BrandStatus;
+  stage: LoopStage;
+  pendingApprovals: number;
+}
+
+/* Admin */
+
+export interface AdminClientRow extends AdminClient {
+  brands: BrandCard[];
+  postsToApprove: number;
+  expiredConnections: { brandId: string; brandName: string; platform: Platform; expiredAt: string }[];
+  failedRuns: { kind: "research" | "scan"; brandName: string; at: string }[];
+  lastActivity: { at: string | null; what: string };
+  invitedAt: string | null;
+  lastSignedInAt: string | null;
+  /** Something above needs the admin; these rows come first. */
+  needsYou: boolean;
+}
+
+/** A scan the admin read before this session, waiting to be checked; persists across visits until they check it. */
+export interface PendingScan {
+  brandName: string;
+  url: string;
+  readAt: string;
+  result: ScanResult;
+}
+
+export interface AdminClientView {
+  client: AdminClientRow;
+  brands: Client[];
+  archivedBrands: BrandCard[];
+  pendingScan: PendingScan | null;
+}
+
+/* Observability (mock only until the exporter and Sentry exist) */
+
+/** How far back an observability read looks. The toolbar's date range picker. */
+export type ObsRange = "24h" | "7d" | "30d";
+
+export const OBS_RANGE_LABEL: Record<ObsRange, string> = {
+  "24h": "Last 24 hours",
+  "7d": "Last 7 days",
+  "30d": "Last 30 days",
+};
+
+/** The one filter the toolbar's "Add filter" offers: narrow every panel to one brand. */
+export interface ObsFilter {
+  brandId: string | null;
+  /** Which past release the Frontend tab's release check compares, from its "All releases" dropdown. */
+  releaseId?: string | null;
+}
+
+export interface Trend {
+  value: number;
+  previous: number;
+}
+
+export interface HourlyCount {
+  at: string;
+  count: number;
+  errors: number;
+}
+
+export interface AttentionItem {
+  id: string;
+  kind: "frontend_error" | "agent_run" | "slow_route";
+  title: string;
+  detail: string;
+  at: string;
+  /** The id of the error, run or route to open. */
+  targetId: string;
+}
+
+export interface ObsOverview {
+  checkedAt: string;
+  headline: { title: string; detail: string };
+  apiErrorRate: Trend;
+  /** `hourly` is the raw count of people who hit an error, one entry per hour, for the tile's sparkline. */
+  peopleWithError: { count: number; of: number; newErrors: number; hourly: number[] };
+  aiCost: Trend;
+  /** `hourly` is the run count, one entry per hour, for the tile's sparkline. */
+  agentRuns: { total: number; failed: number; hourly: number[] };
+  requests: HourlyCount[];
+  aiCostByDay: { date: string; cost: number }[];
+  topClientsByCost: { brandId: string; name: string; cost: number }[];
+  attention: AttentionItem[];
+  clearedOnTheirOwn: number;
+}
+
+export type RunKind = "agent" | "workflow" | "tool";
+
+export interface AgentRunRow {
+  id: string;
+  startedAt: string;
+  agent: string;
+  task: string;
+  brandId: string;
+  brandName: string;
+  status: "ok" | "error" | "running";
+  cost: number;
+}
+
+/** A p50/p95 latency figure with its per-hour series, for one run kind or the whole window. */
+export interface LatencyStat {
+  p50: number;
+  p95: number;
+  hourly: { at: string; p50: number; p95: number }[];
+}
+
+export interface ObsAgents {
+  /** `hourly` is the run count, one entry per hour, for the KPI tile's sparkline. */
+  runs: Trend & { hourly: number[] };
+  /** `hourly` is the cost, one entry per hour, for the KPI tile's sparkline. */
+  cost: Trend & { hourly: number[] };
+  tokens: { input: number; output: number };
+  models: { model: string; input: number; output: number; cached: number; cost: number }[];
+  byAgent: { agent: string; input: number; output: number; cost: number }[];
+  runsByName: { name: string; kind: RunKind; completed: number; errors: number }[];
+  latency: LatencyStat;
+  /** The same latency figure, split by run kind, for the Latency panel's Agents/Workflows/Tools toggle. */
+  latencyByKind: Record<RunKind, LatencyStat>;
+  tokensHourly: { at: string; input: number; output: number }[];
+  /** For the Usage over time panel's Cost view. */
+  costHourly: { at: string; cost: number }[];
+  costByClient: { brandId: string; name: string; cost: number }[];
+  recentRuns: AgentRunRow[];
+}
+
+export interface RunStep {
+  id: string;
+  name: string;
+  type: "step" | "agent" | "tool";
+  /** Offset from the run's start. */
+  startMs: number;
+  durationMs: number;
+  cost: number;
+  status: "ok" | "failed";
+  tries: { used: number; allowed: number };
+  error: string | null;
+  input: Record<string, string>;
+  output: Record<string, string>;
+}
+
+export interface AgentRunDetail extends AgentRunRow {
+  workflow: string;
+  /** Why the run started, in words. */
+  trigger: string;
+  problem: { title: string; advice: string } | null;
+  durationMs: number;
+  tokens: { input: number; output: number };
+  modelCalls: number;
+  steps: RunStep[];
+  traceId: string;
+  costByAgent: { agent: string; cost: number }[];
+}
+
+export interface RouteRow {
+  method: "GET" | "POST" | "PATCH" | "DELETE";
+  path: string;
+  requests: number;
+  errors: number;
+  p95Ms: number;
+}
+
+export interface JobQueueRow {
+  name: string;
+  note: string;
+  waiting: number;
+  running: number;
+  longestWaitMs: number;
+  done: number;
+  failed: number;
+}
+
+export interface ServiceRow {
+  name: string;
+  note: string;
+  calls: number;
+  failed: number;
+  p95Ms: number;
+}
+
+export interface ServerErrorGroup {
+  id: string;
+  message: string;
+  route: string;
+  times: number;
+  clients: number;
+  lastSeenAt: string;
+  traceId: string;
+}
+
+export interface SlowRequest {
+  method: RouteRow["method"];
+  path: string;
+  waitedOn: string;
+  tookMs: number;
+  brandId: string;
+  brandName: string;
+  at: string;
+  traceId: string;
+}
+
+export type LogLevel = "info" | "warning" | "error";
+
+export interface LogRow {
+  id: string;
+  at: string;
+  level: LogLevel;
+  message: string;
+  traceId: string;
+}
+
+export interface ObsServer {
+  requests: Trend;
+  serverErrors: { rate: number; count: number };
+  p95Ms: Trend;
+  uptime30d: number;
+  hourly: (HourlyCount & { p50: number; p95: number })[];
+  routes: RouteRow[];
+  jobs: JobQueueRow[];
+  services: ServiceRow[];
+  errorGroups: ServerErrorGroup[];
+  slowRequests: SlowRequest[];
+  logs: LogRow[];
+}
+
+export interface Release {
+  id: string;
+  at: string;
+  commit: string;
+}
+
+export interface FrontendErrorRow {
+  id: string;
+  message: string;
+  page: string;
+  /** What the person saw, in words. */
+  effect: string;
+  status: "unresolved" | "fixed";
+  newInRelease: boolean;
+  people: number;
+  times: number;
+  firstSeenAt: string;
+  lastSeenAt: string;
+  traceId: string;
+}
+
+export interface FailedActionRow {
+  action: string;
+  reason: string | null;
+  tried: number;
+  failed: number;
+}
+
+export interface FailedApiCallRow {
+  method: RouteRow["method"];
+  path: string;
+  doing: string;
+  /** An HTTP status, or "timeout". */
+  status: number | "timeout";
+  failed: number;
+  people: number;
+  traceId: string;
+}
+
+export interface ObsFrontend {
+  release: Release;
+  releaseCheck: {
+    verdict: "better" | "same" | "worse";
+    title: string;
+    detail: string;
+    before: number;
+    since: number;
+  };
+  /** Recent releases, newest first, for the toolbar's "All releases" dropdown. `release` is `releases[0]` unless a past one was picked. */
+  releases: Release[];
+  peopleWithError: { count: number; of: number; previous: number };
+  errorFreeSessions: Trend;
+  failedApiCalls: { count: number; of: number };
+  failedActions: { count: number; of: number };
+  sessionsWithError: { at: string; count: number }[];
+  errorsByPage: { page: string; people: number }[];
+  errors: FrontendErrorRow[];
+  hiddenNoise: number;
+  actions: FailedActionRow[];
+  apiCalls: FailedApiCallRow[];
+}
+
+export interface FrontendErrorDetail extends FrontendErrorRow {
+  release: Release;
+  hourly: { at: string; count: number }[];
+  steps: { at: string; kind: "navigation" | "request" | "click" | "error"; text: string; status?: number; traceId?: string }[];
+  stack: { frame: string; file: string; line: number; column: number }[];
+  foldedLibraryLines: number;
+  devices: { desktop: number; phone: number };
+  browsers: { name: string; times: number }[];
+  clients: { brandId: string; name: string; times: number; lastAt: string }[];
 }

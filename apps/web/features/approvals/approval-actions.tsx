@@ -1,23 +1,45 @@
 "use client";
 
 import { Check, Pencil, X } from "lucide-react";
-import { RoundAction } from "./round-action";
+import { Button } from "@repo/ui/components/button";
 
 interface Props {
   onReject: () => void;
-  onEdit: () => void;
+  onAsk: () => void;
   onApprove: () => void;
 }
 
-export function ApprovalActions({ onReject, onEdit, onApprove }: Props) {
+const kbd = "inline-grid size-6 min-w-6 place-items-center rounded-md border bg-card text-[0.72rem] font-semibold text-muted-foreground";
+
+export function ApprovalActions({ onReject, onAsk, onApprove }: Props) {
   return (
     <>
-      <div className="mt-6 flex items-center gap-4">
-        <RoundAction label="Reject" tone="reject" onClick={onReject}><X strokeWidth={2.6} /></RoundAction>
-        <RoundAction label="Edit before deciding" tone="neutral" small onClick={onEdit}><Pencil /></RoundAction>
-        <RoundAction label="Approve" tone="approve" onClick={onApprove}><Check strokeWidth={2.6} /></RoundAction>
+      <div className="mt-6 grid w-full grid-cols-2 gap-2 sm:grid-cols-[1fr_1.3fr_1fr]">
+        <Button
+          type="button"
+          size="lg"
+          variant="outline"
+          className="col-start-1 row-start-1 text-destructive sm:col-auto sm:row-auto sm:px-3"
+          onClick={onReject}
+        >
+          <X /> Reject
+        </Button>
+        <Button type="button" size="lg" variant="outline" className="col-span-2 sm:col-auto sm:px-3" onClick={onAsk}>
+          <Pencil /> Ask for changes
+        </Button>
+        <Button
+          type="button"
+          size="lg"
+          className="col-start-2 row-start-1 bg-success text-white hover:brightness-105 sm:col-auto sm:row-auto sm:px-3"
+          onClick={onApprove}
+        >
+          <Check /> Approve
+        </Button>
       </div>
-      <p className="type-label mt-4 hidden text-center lg:block">Arrow keys decide, E edits, Space enlarges the image.</p>
+      <p className="mt-4 hidden items-center justify-center gap-1.5 text-[0.8125rem] text-muted-foreground lg:flex">
+        <kbd className={kbd}>&larr;</kbd> reject <kbd className={kbd}>&rarr;</kbd> approve <kbd className={kbd}>E</kbd> ask for changes{" "}
+        <kbd className={kbd}>Space</kbd><span>full post</span>
+      </p>
     </>
   );
 }

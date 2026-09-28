@@ -1,0 +1,8 @@
+You build the approved **calendar and analytics** pages in `apps/web` (Round 2 of coding the Cadence redesign). First read the shared rules file and follow it exactly: `docs/handoff/briefs/round2-common.md`.
+
+## Your screens (tracker section 4.3)
+- S11 calendar (`/c/[clientId]/calendar`): month grid with status edges (amber needs approval, blue scheduled, dashed blue waiting for a connection, green published), free best times as dashed slots, coloured platform labels on every post, legend, month navigation, not-connected banner; drag to move on desktop with Undo (moving never approves; `reschedulePost`); day popover (sheet on phone) with "Review post", "Change time" and "Ask the agent for a post" on a free slot (`draftPostForSlot`); phone: one-line summary, folded colour key, week picker and agenda, empty weeks folded to one line. Opening a post uses `?post=<id>` and `ReviewPostSheet` from `@/features/post/review-post-sheet` (another agent builds it; if missing, keep the import and check before you finish). Mocks: `design/web-v2/screens-s11/`.
+- S12 analytics (`/c/[clientId]/analytics`): empty, first week and a month (`getAnalyticsReport`): every number judged in plain words against the benchmark, summary line, day-by-day chart with post dots (a separate narrow chart on phone), best and worst posts with platform and format, by format, platform and theme, what the agent learned with "What changes". Mocks: `screens-s12/`. Charts: existing `@repo/ui/components/social/charts` or TanStack Charts (read its installed types first).
+
+## Your files
+`apps/web/app/c/[clientId]/calendar/**`, `apps/web/app/c/[clientId]/analytics/**`, `apps/web/features/calendar/**`, `apps/web/features/analytics/**`.

@@ -1,107 +1,88 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useTable } from "@tanstack/react-table";
+import { usePathname } from "next/navigation";
 import { LayoutGrid } from "lucide-react";
-import type { BrandKit, PostStatus } from "@social-agent/shared";
-import type { Post, Strategy } from "@/lib/types";
+import type { BrandKit, Platform } from "@social-agent/shared";
+import type { PostState, PostView } from "@/lib/types";
 import { EmptyState } from "@repo/ui/components/states";
-import { LazyPostSheet } from "@/features/post/lazy-post-sheet";
-import { buildColumns, features } from "./columns";
 import { ContentToolbar, type StatusFilter } from "./content-toolbar";
-import { Pagination } from "./pagination";
-import { PostsCards } from "./posts-cards";
-import { PostsTable } from "./posts-table";
-import { usePostRows } from "./use-post-rows";
+import { ReviewBanner } from "./review-banner";
+import { ContentTable } from "./content-table";
+import { ContentCards } from "./content-cards";
 
 /** `children` is the button that drafts the first batch, shown when the client has no posts. */
 export function ContentView({
   posts,
-  strategy,
   brand,
   children,
 }: {
-  posts: Post[];
-  strategy: Strategy | null;
+  posts: PostView[];
   brand: BrandKit;
   children: React.ReactNode;
 }) {
+  const pathname = usePathname();
   const [status, setStatus] = useState<StatusFilter>("");
-  const [openId, setOpenId] = useState<string | null>(null);
+  const [platform, setPlatform] = useState<Platform | "">("");
+  const [search, setSearch] = useState("");
 
-  const rows = usePostRows(posts, strategy);
-  const columns = useMemo(() => buildColumns(brand), [brand]);
-
-  const table = useTable({
-    features,
-    columns,
-    data: rows,
-    getRowId: (row) => row.id,
-    globalFilterFn: "includesString",
-    initialState: { pagination: { pageIndex: 0, pageSize: 10 }, sorting: [{ id: "when", desc: true }] },
-  });
+  const platforms = useMemo(() => [...new Set(posts.map((p) => p.platform))], [posts]);
 
   const counts = useMemo(() => {
-    const c: Partial<Record<PostStatus, number>> = {};
-    for (const r of rows) c[r.status] = (c[r.status] ?? 0) + 1;
+    const c: Partial<Record<PostState, number>> = {};
+    for (const p of posts) c[p.state] = (c[p.state] ?? 0) + 1;
     return c;
-  }, [rows]);
+  }, [posts]);
 
-  function changeStatus(next: StatusFilter) {
-    setStatus(next);
-    // An empty value removes the filter (built-in filter fns auto-remove on falsy).
-    table.getColumn("status")?.setFilterValue(next);
-    table.setPageIndex(0);
-  }
+  const visible = useMemo(() => {
+    const term = search.trim().toLowerCase();
+    return posts.filter(
+      (p) =>
+        (!status || p.state === status) &&
+        (!platform || p.platform === platform) &&
+        (!term || p.hook.toLowerCase().includes(term) || p.theme.toLowerCase().includes(term)),
+    );
+  }, [posts, status, platform, search]);
 
-  function changeSearch(value: string) {
-    table.setGlobalFilter(value);
-    table.setPageIndex(0);
-  }
-
-  const visible = table.getRowModel().rows;
-  const openPost = posts.find((p) => p.id === openId) ?? null;
-  const { pageIndex } = table.state.pagination;
+  const needsApproval = counts.needs_approval ?? 0;
+  const firstVisible = visible[0];
 
   return (
     <>
+      {status === "needs_approval" && needsApproval > 0 && firstVisible && (
+        <ReviewBanner count={needsApproval} href={`${pathname}?post=${firstVisible.id}`} />
+      )}
+
       <ContentToolbar
         status={status}
-        onStatusChange={changeStatus}
-        total={rows.length}
+        onStatusChange={setStatus}
+        platform={platform}
+        onPlatformChange={setPlatform}
+        platforms={platforms}
+        total={posts.length}
         counts={counts}
-        search={String(table.state.globalFilter ?? "")}
-        onSearchChange={changeSearch}
+        search={search}
+        onSearchChange={setSearch}
       />
 
-      {visible.length === 0 && (
+      {visible.length === 0 ? (
         <EmptyState
           icon={<LayoutGrid />}
-          title={rows.length === 0 ? "No posts yet" : "No posts match"}
+          title={posts.length === 0 ? "No posts yet" : "No posts match"}
           description={
-            rows.length === 0
+            posts.length === 0
               ? "The agent drafts posts from the strategy. Ask for a first batch and they'll appear here for approval."
               : "Try a different status or clear the search."
           }
-          action={rows.length === 0 ? children : undefined}
+          action={posts.length === 0 ? children : undefined}
         />
-      )}
-
-      {visible.length > 0 && (
+      ) : (
         <>
-          <PostsTable table={table} onOpen={setOpenId} />
-          <PostsCards posts={visible.map((row) => row.original)} brand={brand} onOpen={setOpenId} />
-          <Pagination
-            page={pageIndex + 1}
-            pages={table.getPageCount()}
-            total={table.getPrePaginatedRowModel().rows.length}
-            onPrev={table.getCanPreviousPage() ? () => table.previousPage() : undefined}
-            onNext={table.getCanNextPage() ? () => table.nextPage() : undefined}
-          />
+          <ContentTable posts={visible} brand={brand} pathname={pathname} />
+          <ContentCards posts={visible} brand={brand} pathname={pathname} />
+          <p className="type-label mt-4">Soonest first. Reach and saves appear on each post a day after it&rsquo;s published.</p>
         </>
       )}
-
-      <LazyPostSheet post={openPost} brand={brand} strategy={strategy} onClose={() => setOpenId(null)} />
     </>
   );
 }

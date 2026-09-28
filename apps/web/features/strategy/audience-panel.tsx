@@ -4,15 +4,16 @@ import { Panel } from "@repo/ui/components/states";
 export function AudiencePanel({ audience }: { audience: Strategy["audience"] }) {
   return (
     <Panel aria-labelledby="audience-heading">
-      <h2 id="audience-heading" className="type-heading mb-5">Who it&apos;s talking to</h2>
-      <dl className="grid gap-4">
+      <h2 id="audience-heading" className="type-heading">Who it talks to</h2>
+      <p className="type-label mt-1 mb-5">From your research.</p>
+      <ul className="grid gap-4 lg:grid-cols-3">
         {audience.map((a) => (
-          <div key={a.segment}>
-            <dt className="type-label">{a.segment}</dt>
-            <dd>{a.note}</dd>
-          </div>
+          <li key={a.segment} className="rounded-xl bg-secondary/60 p-4">
+            <p className="font-semibold">{a.segment}</p>
+            <p className="type-label mt-1">{a.note}</p>
+          </li>
         ))}
-      </dl>
+      </ul>
     </Panel>
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { readScan, startScan } from "@/lib/api/actions";
+import { addBrandForClient, readScan, startScan } from "@/lib/api/actions";
 import type { ScanResult } from "@/lib/types";
 
 const POLL_MS = 700;
@@ -24,7 +24,11 @@ const EMPTY_JOB = { step: 0, result: null, error: null };
  * so a new url or a restart begins from step 0 without touching state in the
  * effect body.
  */
-export function useScan(url: string | null): {
+export function useScan(
+  url: string | null,
+  /** Set when an admin is scanning for a client's new brand, instead of their own. */
+  personId?: string,
+): {
   status: ScanStatus;
   step: number;
   result: ScanResult | null;
@@ -55,17 +59,18 @@ export function useScan(url: string | null): {
       timer = setTimeout(() => void poll(scanId), POLL_MS);
     }
 
-    void startScan(url).then((started) => {
+    const started = personId ? addBrandForClient(personId, url) : startScan(url);
+    void started.then((result) => {
       if (cancelled) return;
-      if (!started.ok) return report({ error: started.message });
-      void poll(started.data.scanId);
+      if (!result.ok) return report({ error: result.message });
+      void poll(result.data.scanId);
     });
 
     return () => {
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [url, key]);
+  }, [url, key, personId]);
 
   const current = job?.key === key ? job : null;
   return {

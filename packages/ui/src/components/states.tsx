@@ -22,6 +22,32 @@ export function PageHeader({
   );
 }
 
+/**
+ * Like `PageHeader`, but the actions never drop to their own row: title and actions share one
+ * row at every width, and the description hides below `lg` instead of wrapping under them.
+ * For a header whose action must stay reachable next to the title on a phone (admin's Clients
+ * page); everywhere else keeps the default `PageHeader`.
+ */
+export function PageHeaderInline({
+  title,
+  description,
+  actions,
+}: {
+  title: string;
+  description?: string;
+  actions?: React.ReactNode;
+}) {
+  return (
+    <header className="mb-7 flex flex-nowrap items-end justify-between gap-x-4 gap-y-4">
+      <div className="min-w-0 max-w-[60ch]">
+        <h1 className="type-title">{title}</h1>
+        {description && <p className="mt-2 hidden text-muted-foreground lg:block">{description}</p>}
+      </div>
+      {actions && <div className="flex shrink-0 flex-wrap items-center gap-2.5">{actions}</div>}
+    </header>
+  );
+}
+
 export function Panel({ className, ...props }: React.ComponentProps<"section">) {
   return <section className={cn("rounded-xl bg-card p-5 shadow-raised md:p-6", className)} {...props} />;
 }

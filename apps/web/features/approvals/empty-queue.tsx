@@ -1,9 +1,18 @@
 import Link from "next/link";
 import { PartyPopper } from "lucide-react";
+import { workspaceHref, type WorkspaceBasePath } from "@/lib/workspace-path";
 import { Button } from "@repo/ui/components/button";
 import { EmptyState } from "@repo/ui/components/states";
 
-export function EmptyQueue({ clientId, done }: { clientId: string; done: number }) {
+export function EmptyQueue({
+  clientId,
+  done,
+  basePath = "/c",
+}: {
+  clientId: string;
+  done: number;
+  basePath?: WorkspaceBasePath;
+}) {
   return (
     <EmptyState
       icon={<PartyPopper />}
@@ -13,7 +22,7 @@ export function EmptyQueue({ clientId, done }: { clientId: string; done: number 
           ? `You went through ${done} ${done === 1 ? "post" : "posts"}. Approved ones are on the calendar.`
           : "New drafts from the agent will show up here before anything is scheduled."
       }
-      action={<Button asChild><Link href={`/c/${clientId}/calendar`}>Open calendar</Link></Button>}
+      action={<Button asChild><Link href={workspaceHref(basePath, clientId, "/calendar")}>Open calendar</Link></Button>}
     />
   );
 }

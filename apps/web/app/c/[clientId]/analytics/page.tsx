@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { getClient } from "@/lib/api/server";
 import { AnalyticsBody } from "@/features/analytics/analytics-body";
+import type { WorkspaceBasePath } from "@/lib/workspace-path";
 import { PageHeader, SkeletonRows } from "@repo/ui/components/states";
 
 
@@ -9,7 +10,13 @@ import { PageHeader, SkeletonRows } from "@repo/ui/components/states";
 // See: https://nextjs.org/docs/app/guides/migrating-to-cache-components
 export const instant = false;
 
-export default async function AnalyticsPage({ params }: { params: Promise<{ clientId: string }> }) {
+export default async function AnalyticsPage({
+  params,
+  basePath = "/c",
+}: {
+  params: Promise<{ clientId: string }>;
+  basePath?: WorkspaceBasePath;
+}) {
   const { clientId } = await params;
   const client = await getClient(clientId);
   if (!client) notFound();
@@ -18,7 +25,7 @@ export default async function AnalyticsPage({ params }: { params: Promise<{ clie
     <>
       <PageHeader title="Analytics" description="How published posts performed over the last 30 days, and what the agent took from it." />
       <Suspense fallback={<SkeletonRows rows={2} className="[&>*]:h-72" />}>
-        <AnalyticsBody clientId={clientId} brand={client.brand} />
+        <AnalyticsBody clientId={clientId} brand={client.brand} basePath={basePath} />
       </Suspense>
     </>
   );

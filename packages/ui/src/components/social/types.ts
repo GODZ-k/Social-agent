@@ -34,6 +34,8 @@ export interface Post {
   /** Procedural artwork seed: layout variant + index into the brand colours. */
   art: { variant: number; colorIndex: number };
   durationSec?: number;
+  /** A carousel's slide count. */
+  slides?: number;
   /** Why the agent made this post. */
   aiNote: string;
 }

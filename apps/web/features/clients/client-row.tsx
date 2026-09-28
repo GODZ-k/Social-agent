@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import type { Client } from "@/lib/types";
 import { brandStyle, formatCompact, prettyUrl } from "@/lib/utils";
+import { workspaceHref, type WorkspaceBasePath } from "@/lib/workspace-path";
 import { Badge } from "@repo/ui/components/badge";
 import { ClientAvatar } from "@repo/ui/components/social/client-avatar";
 import { LoopTicks } from "@repo/ui/components/social/loop-track";
@@ -9,11 +10,11 @@ import { stageInfo } from "@repo/ui/components/social/loop-stages";
 import { PlatformIcon } from "@repo/ui/components/social/platform";
 import { ClientStat } from "./client-stat";
 
-export function ClientRow({ client }: { client: Client }) {
+export function ClientRow({ client, basePath = "/c" }: { client: Client; basePath?: WorkspaceBasePath }) {
   const { stats } = client;
   return (
     <Link
-      href={`/c/${client.id}`}
+      href={workspaceHref(basePath, client.id)}
       // Each row carries its own brand, so the ticks and badges are in the client's colour.
       style={brandStyle(client.accent)}
       className="brand-scope pressable group grid grid-cols-[auto_1fr_auto] items-center gap-x-4 gap-y-3 rounded-xl bg-card p-4 shadow-raised hover:shadow-floating md:grid-cols-[auto_minmax(0,1.4fr)_minmax(0,1fr)_auto_auto] md:gap-x-6 md:p-5"

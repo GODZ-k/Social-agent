@@ -1,7 +1,19 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 
 // Everything is private except the pages you need in order to get in.
-const isPublicRoute = createRouteMatcher(["/sign-in(.*)", "/sign-up(.*)"]);
+// A Google sign-in, a code check or a second step lands on these before the session exists.
+// Setting up and managing two-factor stay private.
+const isPublicRoute = createRouteMatcher([
+  "/sign-in(.*)",
+  "/sign-up(.*)",
+  "/sso-callback(.*)",
+  "/verify(.*)",
+  "/forgot-password(.*)",
+  "/reset-password(.*)",
+  "/invite(.*)",
+  "/two-factor",
+  "/two-factor/lost-access",
+]);
 
 // Next.js 16 calls this file `proxy.ts` (it was `middleware.ts` before).
 export default clerkMiddleware(async (auth, request) => {

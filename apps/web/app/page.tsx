@@ -12,18 +12,20 @@ export const instant = false;
 
 export default async function ClientsPage() {
   const [viewer, clients] = await Promise.all([getViewer(), listClients()]);
-  const isAdmin = viewer.role === "admin";
+
+  // The agency's own area now lives at /admin/clients; this page is the client view only.
+  if (viewer.role === "admin") redirect("/admin/clients");
 
   // Someone with a single brand has nothing to choose between: take them straight to it.
-  if (!isAdmin && clients.length === 1) redirect(`/c/${clients[0]!.id}`);
+  if (clients.length === 1) redirect(`/c/${clients[0]!.id}`);
 
   return (
     <div className="min-h-dvh">
       <TopBar viewer={viewer} />
       <main className="mx-auto max-w-5xl px-4 pt-14 pb-24 md:px-6 md:pt-24">
-        <ClientsHero isAdmin={isAdmin} />
+        <ClientsHero isAdmin={false} />
         {/* A new account has no brands yet, so there is no empty list to show: the URL field is the page. */}
-        {(isAdmin || clients.length > 0) && <ClientList clients={clients} isAdmin={isAdmin} />}
+        {clients.length > 0 && <ClientList clients={clients} isAdmin={false} />}
       </main>
     </div>
   );

@@ -197,6 +197,28 @@ html {
     text-size-adjust: 100%;
   }
 
+  /* A thin, quiet scrollbar in the theme's own colours, light and dark. */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+  /* Safari still reads the WebKit pseudo-elements. */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    border: 2px solid transparent;
+    border-radius: 9999px;
+    background: var(--border) padding-box;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--muted-foreground) padding-box;
+  }
+
   body {
     overflow-x: clip;
     @apply bg-background font-sans text-foreground antialiased;

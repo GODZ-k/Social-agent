@@ -1,7 +1,16 @@
 import type { Client } from "@/lib/types";
+import type { WorkspaceBasePath } from "@/lib/workspace-path";
 import { ClientRow } from "./client-row";
 
-export function ClientList({ clients, isAdmin }: { clients: Client[]; isAdmin: boolean }) {
+export function ClientList({
+  clients,
+  isAdmin,
+  basePath = "/c",
+}: {
+  clients: Client[];
+  isAdmin: boolean;
+  basePath?: WorkspaceBasePath;
+}) {
   return (
     <section className="mt-16 md:mt-24" aria-labelledby="clients-heading">
       <div className="mb-4 flex items-baseline justify-between">
@@ -14,7 +23,7 @@ export function ClientList({ clients, isAdmin }: { clients: Client[]; isAdmin: b
       <ul className="grid gap-3">
         {clients.map((client) => (
           <li key={client.id}>
-            <ClientRow client={client} />
+            <ClientRow client={client} basePath={basePath} />
           </li>
         ))}
       </ul>

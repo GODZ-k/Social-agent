@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { LoopTrack } from "@repo/ui/components/social/loop-track";
+import { LoopTrack, LoopTrackNote } from "@repo/ui/components/social/loop-track";
 import { LOOP_STEPS } from "@/lib/content/loop";
 import type { LoopStage } from "@/lib/types";
 
@@ -33,6 +33,7 @@ export function LoopFollower() {
     // Pinned from md only: on a phone the header plus a second bar would cover too much.
     <div className="material z-30 mt-10 rounded-xl px-5 py-4 md:sticky md:top-[5.25rem] md:mt-14">
       <LoopTrack stage={stage} />
+      <LoopTrackNote />
     </div>
   );
 }

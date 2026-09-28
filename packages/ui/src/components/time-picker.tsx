@@ -73,7 +73,11 @@ export function TimePicker({ value, onChange, suggestions, suggestionsLabel = "S
         Width: the library lays its header out for about 328px. On screens too short for
         header-above-dial it goes side by side (see .tp-host in globals.css), which needs more.
       */}
-      <PopoverContent className="w-[22rem] max-w-[calc(100vw-1.5rem)] short:max-h-[calc(100dvh-1.5rem)] short:w-[31rem]" align="end">
+      {/*
+        Never a scrolling clock: no height cap, so when there is no room below the popover
+        flips above the field instead of shrinking into a scroll box.
+      */}
+      <PopoverContent className="max-h-none w-[22rem] max-w-[calc(100vw-1.5rem)] overflow-visible short:max-h-[calc(100dvh-1.5rem)] short:w-[31rem]" align="end">
         {/* Mounted only while open: the library instance is created on open and destroyed on close. */}
         <ClockPanel value={value} onChange={onChange} suggestions={suggestions} suggestionsLabel={suggestionsLabel} />
       </PopoverContent>

@@ -27,6 +27,8 @@ The frontend twin of [`TASKS.md`](./TASKS.md). Update it in the same change as a
   - [4.8 Your brands and account](#48-brands-and-account)
   - [4.9 System states](#49-system-states)
   - [4.10 Missing flows](#410-missing-flows)
+  - [4.11 Emails](#411-emails)
+  - [4.12 Dark mode check](#412-dark-mode-check)
 - [5. Rules to carry into code](#5-rules-to-carry-into-code)
 - [6. Backend follow-ups](#6-backend-follow-ups)
 - [7. Stitch to-do](#7-stitch-to-do)
@@ -44,14 +46,16 @@ The frontend twin of [`TASKS.md`](./TASKS.md). Update it in the same change as a
 | [Brand workspace](#43-brand-workspace)             |           13 |              13 |                0 |              0 |
 | [Header](#44-header)                               |            1 |               1 |                0 |              0 |
 | [Auth](#45-auth)                                   |            7 |               7 |                0 |              0 |
-| [Admin](#46-admin)                                 |            6 |               6 |                0 |              0 |
+| [Admin](#46-admin) | 7 | 6 | 1 | 0 |
 | [Observability](#47-observability)                 |            6 |               6 |                0 |              0 |
 | [Your brands and account](#48-brands-and-account)  |            2 | 2 | 0 |              0 |
 | [System states](#49-system-states)                 |            5 | 5 | 0 |              0 |
 | [Missing flows](#410-missing-flows)                |            5 | 5 | 0 |              0 |
-| **Total**                                   | **64** |    **64** | **0** |    **0** |
+| [Emails](#411-emails) | 8 | 8 | 0 | 0 |
+| [Dark mode check](#412-dark-mode-check) | 1 | 1 | 0 | 0 |
+| **Total** | **74** | **73** | **1** | **0** |
 
-OBS-1 and OBS-4 moved to v3; v2 stays only as history. S05 is retired and not counted.
+OBS-1 and OBS-4 moved to v3; v2 stays only as history. S05 is retired and not counted. ADM-7 Admin settings v1 built 2026-09-28, awaiting owner review (one-look sheet ready).
 
 <a id="2-waiting-for-the-owner"></a>
 
@@ -63,29 +67,55 @@ Updated with every agent start, finish and owner decision.
 
 | What              | Items                                                            | Where to look                     |
 | ----------------- | ---------------------------------------------------------------- | --------------------------------- |
-| Emails | 8 emails: invite, sign-in code, password reset, password changed, approvals waiting, new posts ready, post failed, connection expired | `design/emails/out/` |
-| Dark mode report | 5 problems, fixes proposed in `design/dark-check/dark-overrides.css`; 3 questions at the end | `design/dark-check/REPORT.md` |
-; mainly the support email               | [Open questions](#open-questions)  |
 | Stitch uploads    | Approved screens not yet uploaded; waits for your go             | [section 7](#7-stitch-to-do)       |
 | Built pages       | None yet; each page lands here as "build in review"              | [section 4](#4-screens)            |
+| Wave 1 close-out  | Wave 1 is done; 4 small items left open from the round 3 compare, and the wave 2 go | [section 2, below](#2-waiting-for-the-owner) |
+| ADM-7 design v1   | Admin settings (Team + Notifications) built and self-checked; needs your approve/reject | [section 4.6](#46-admin), [one-look review](http://127.0.0.1:5500/design/web-v2/review-admin-settings.html) |
+
+**Open items from the round 3 design compare (2026-09-28), left for you rather than guessed**
+
+| Screen | Item | Recommendation |
+|---|---|---|
+| admin-client-detail | `packages/ui`'s `loop-track.tsx` shows a 3×2 grid of the 6 labelled segments at 768/390; the design wants one compact row | Needs a `packages/ui` owner in a later wave; out of any single group's scope this round |
+| admin-client-detail | Shows the client's full name ("Priya Raman"); design shows first name only ("Priya") | Confirm this is deliberate copy, not placeholder text, before adding first-name-extraction logic |
+| S09 (approvals, 390) | The fixed bottom tab bar appears to overlap the action row in the screenshot | Likely a screenshot-stitching artifact from capturing fixed-position chrome, not a real bug; check by eye once |
+| S18 (non-language question types) | No screenshot pair exists for the "Tap one to start..." helper line on other chip question types | Can't verify without a captured pair; flagged, not guessed |
+
+**Open questions from the auth build**
+
+| From | Question | Recommendation |
+|---|---|---|
+| AUTH-4 | The approved design resets the password with a link; Clerk sends a 6-digit code. The code flow uses the same screens with "code" in place of "link" | Keep the code on Clerk; the link design comes back with Better Auth |
+| AUTH-5 | The invite page should name the inviter and the brand ("Priya Shah invited you to Cadence for Tartine Bakery") with an invite card; the invite carries only the email today | Add the inviter and brand to the invite's metadata (backend follow-up) |
+| AUTH-3 | "2 tries left" after a wrong code: Clerk does not report the tries left | Leave it out on Clerk |
+| AUTH-7 | "You have 3 backup codes left": Clerk does not report the count | Leave it out on Clerk |
+
 
 **Waves (temporary: erased when every wave is done)**
 
-Five waves in all. Each wave starts only on the owner's go.
+Five waves in all. Each wave starts only on the owner's go. Wave 1b is running (started after the refill) (every built page must match its approved design exactly), then wave 2 on the owner's go.
 
 | Wave | Task | Screens | Model | Status |
 |---|---|---|---|---|
 | 0 | Coding round 1: header, navigation, shared post pieces, mock data layer | Foundation | Opus | done |
-| 0 | Auth on Clerk behind `lib/auth` (Better Auth can replace it without touching components) | AUTH-1 to AUTH-7 | Opus | done |
-| 0 | Designs: OBS-2 and OBS-3 responsive, emails, dark mode report | OBS-2, OBS-3, emails, dark check | Opus, then Sonnet | done, emails and report in review |
-| 1 | Code onboarding | S01, S02, S17, S18, S19 | Sonnet | running |
-| 1 | Code review post, approvals, viewer | S08, S09, S10 | Sonnet | running |
-| 1 | Code overview, agent chat, content | S03, S04, S06, S07 | Sonnet | running |
-| 1 | Code strategy and research | S20, S21 | Sonnet | running |
-| 1 | Code admin and observability | ADM-1 to ADM-6, OBS-1 to OBS-6 | Sonnet | running |
+| 0 | Auth on Clerk behind `lib/auth` (Better Auth can replace it without touching components) | AUTH-1 to AUTH-7 | Opus | done; owner's changes fixed on all auth screens (Google button, title, post art, footer, copy); sign-in checked in the browser at 1440 and 390 |
+| 0 | Designs: OBS-2 and OBS-3 responsive, emails, dark mode report | OBS-2, OBS-3, emails, dark check | Opus, then Sonnet | done, all approved |
+| 1 | Code onboarding | S01, S02, S17, S18, S19 | Sonnet | coded; two gaps from the design, fixed in wave 1b |
+| 1 | Code review post, approvals, viewer | S08, S09, S10 | Sonnet | coded; type check and lint clean; waits for the wave 3 browser check |
+| 1 | Code overview, agent chat, content | S03, S04, S06, S07 | Sonnet | coded; type check and lint clean; wave 3: a post opened from the chat on calendar, analytics, approvals or settings needs the same `?post=` panel |
+| 1 | Code strategy and research | S20, S21 | Sonnet | coded; type check and lint clean; waits for the wave 3 browser check |
+| 1 | Code admin and observability | ADM-1 to ADM-6, OBS-1 to OBS-6 | Sonnet | coded; parts left out, built in wave 1b |
+| 1b | Onboarding: S17a brand kit as separate cards, one card edited at a time (Edit, Cancel, Done); S18 short answer labels ("You sell", "Posts should") | S17a, S18 | Sonnet | done: cards, source captions, contact values, platform handles, short labels, \"Change something\"; opening hours edits are not saved yet (they are stored per day); browser check after the dev server restart |
+| 1b | Admin and observability: build what was left out, on mock data (server logs, SigNoz links, run again, date range and filter, the ADM-4 "brand kit ready to check" card, "Add a brand" beside the client's name) | ADM-4, OBS-2 to OBS-5 | Sonnet | done: logs, SigNoz links, run again, date range and filter on every tab, the \"brand kit ready to check\" card, \"Add a brand\" beside the name; browser check after the dev server restart |
+| 1b | Design match check: every wave 1 page against its approved design at 1440, 768 and 390; any gap goes back to be fixed | All wave 1 pages | Sonnet (screenshots), Sonnet (compare) | done: round 1 ~150 gaps, round 2 ~80 gaps, round 3 (fresh recapture after all routes landed) found 17 more and fixed them; 4 left open for the owner (see below); type check, lint and build all clean; full route check 38/38 OK |
+| 1b | Admin adds a brand through the full client onboarding flow (owner, 2026-09-28) | ADM-5, S01 to S19 | Sonnet | done: \"Add a brand\" opens onboarding for that client with the admin header; skip or send a connect link; answers marked \"Answered by the agency\" |
+| 1b | Admin routes (owner, 2026-09-28): one word only, `c`, for every admin brand route — `/admin/c/:clientId/brand/new` for onboarding, `/admin/c/:brandId/...` for an admin viewing a brand (same pages as `/c/...`, admin-only); `/c/:brandId` redirects admins there | ADM-4, ADM-5, ADM-6 | Sonnet | done: `basePath` threaded through ~20 files; the workspace layout and pages moved one level deeper into a `(workspace)` route group so `brand/new` (no brand yet) sits outside its chrome — fixes a double-header bug caught by the owner moving the folder by hand; verified single header, build clean |
+| 2 | Design admin settings (ADM-7): what it holds, then the one-look review | ADM-7 | Sonnet | waits for the owner's go |
 | 2 | Code calendar and analytics | S11, S12 | Sonnet | waits for the owner's go |
 | 2 | Code settings | S13, S14, S15, S16 | Sonnet | waits for the owner's go |
 | 2 | Code your brands and account, system states, missing flows | BA-1, BA-2, ST-1 to ST-5, FL-1 to FL-5 | Sonnet | waits for the owner's go |
+| 2 | Dark mode fixes into the real CSS (`packages/ui` tokens, brand tints) | DK-1 | Sonnet | waits for the owner's go |
+| 2 | Move the forms that skip react-hook-form onto it with zod (sign-in, sign-up, verify email, forgot and reset password, invite, two-factor codes, the ask-for-changes dialogs) | AUTH-1 to AUTH-7, S08, S20b | Sonnet | waits for the owner's go |
 | 3 | One clean-up pass over all new code | All coded pages | Sonnet | waits for the owner's go |
 | 3 | Type check, lint, build, browser check at 1440 and 390, light and dark; pages go to the owner as "build in review" | All coded pages | Opus (checks), Haiku (screenshots) | waits for the owner's go |
 | 4 | Changes the owner asks for in the build review, until each page is "build approved" | Per page | Sonnet | after the owner's review |
@@ -221,8 +251,9 @@ The agency owner's area. Approved 2026-09-26. Builder: `design/web-v2/admin_scre
 | ADM-2 | Clients, empty and error | [empty](http://127.0.0.1:5500/design/web-v2/screens-admin/adm-v1-clients-empty.html), [error](http://127.0.0.1:5500/design/web-v2/screens-admin/adm-v1-clients-error.html)                                                                                                  | `/admin/clients`     | ![approved][approved] v1 | ![coding][coding] |                                                                 |
 | ADM-3 | Invite a client          | [dialog](http://127.0.0.1:5500/design/web-v2/screens-admin/adm-v1-invite.html), [email in use](http://127.0.0.1:5500/design/web-v2/screens-admin/adm-v1-invite-email-in-use.html), [sent](http://127.0.0.1:5500/design/web-v2/screens-admin/adm-v1-invite-sent.html)         | `/admin/clients`     | ![approved][approved] v1 | ![coding][coding] |                                                                 |
 | ADM-4 | Client detail            | [active](http://127.0.0.1:5500/design/web-v2/screens-admin/adm-v1-client-detail.html), [invited](http://127.0.0.1:5500/design/web-v2/screens-admin/adm-v1-client-invited.html), [cancel invite](http://127.0.0.1:5500/design/web-v2/screens-admin/adm-v1-cancel-invite.html) | `/admin/clients/:id` | ![approved][approved] v1 | ![coding][coding] | Brand cards with loop stage                                     |
-| ADM-5 | Add a brand for a client | [dialog](http://127.0.0.1:5500/design/web-v2/screens-admin/adm-v1-add-brand.html), [scan running](http://127.0.0.1:5500/design/web-v2/screens-admin/adm-v1-add-brand-reading.html)                                                                                          | `/admin/clients/:id` | ![approved][approved] v1 | ![coding][coding] | Then S17a in admin context                                      |
+| ADM-5 | Add a brand for a client | [dialog](http://127.0.0.1:5500/design/web-v2/screens-admin/adm-v1-add-brand.html), [scan running](http://127.0.0.1:5500/design/web-v2/screens-admin/adm-v1-add-brand-reading.html)                                                                                          | `/admin/clients/:id` | ![approved][approved] v1 | ![coding][coding] | Changed 2026-09-28 (owner): the admin adds a brand through the same onboarding flow as a client (S01 to S19 under the admin header, `/onboarding?for=<client>`); the admin can skip connecting or send the client a link, and questionnaire answers are marked "Answered by the agency" |
 | ADM-6 | Viewing a brand as admin | [open](http://127.0.0.1:5500/design/web-v2/screens-admin/adm-v1-viewing-as-admin.html)                                                                                                                                                                                     | `/c/:brandId`        | ![approved][approved] v1 | ![coding][coding] | Code with the header breadcrumb, not the dark strip (section 5) |
+| ADM-7 | Admin settings | v1: [team](http://127.0.0.1:5500/design/web-v2/screens-admin-settings/adm7-v1-team.html), [invite a teammate](http://127.0.0.1:5500/design/web-v2/screens-admin-settings/adm7-v1-team-invite.html), [notifications](http://127.0.0.1:5500/design/web-v2/screens-admin-settings/adm7-v1-notifications.html); [one-look review](http://127.0.0.1:5500/design/web-v2/review-admin-settings.html) | `/admin/settings` | ![in review][review] v1 | ![not coded][notcoded] | Built 2026-09-28. Scope: **Team** (other admins, invite/remove) and **Notifications** (agency-wide email alerts) only. Personal profile, password and two-factor stay in "Your account" (account menu) — not repeated here. Third rail item "Settings" added beside Clients/Observability. Checked responsive at 1440/768/390, no sideways scroll. Awaiting owner review |
 
 <a id="47-observability"></a>
 
@@ -277,6 +308,33 @@ Builder: `design/web-v2/flows_extra.py`.
 | FL-3 | Published post                 | [panel](http://127.0.0.1:5500/design/web-v2/screens-flows/fl-v1-post-published.html)                                                                                                                                                                                                                           | `/content`                  | ![approved][approved] v1 | ![not coded][notcoded] | Link to the live post; results after a day; not editable                       |
 | FL-4 | Agent drafting posts           | [drafting](http://127.0.0.1:5500/design/web-v2/screens-flows/fl-v1-post-drafting.html), [drafts arrived](http://127.0.0.1:5500/design/web-v2/screens-flows/fl-v1-post-drafts-arrived.html)                                                                                                                      | `/content`                  | ![approved][approved] v1 | ![not coded][notcoded] | "2 of 6 ready"; placeholders show platform, format and time                    |
 | FL-5 | Strategy version 2             | [page](http://127.0.0.1:5500/design/web-v2/screens-flows/fl-v1-strategy-v2.html)                                                                                                                                                                                                                               | `/c/:brandId/strategy`      | ![approved][approved] v1 | ![not coded][notcoded] | What changed and why; before and after; learnings that caused it               |
+
+<a id="411-emails"></a>
+
+### 4.11 Emails
+
+Builder: `design/emails/build.py`. Email-safe HTML: tables, inline styles, 600px wide, works at 390.
+
+| ID | Email | Design | Route | Status | Code | Notes |
+|---|---|---|---|---|---|---|
+| EM-1 | Invite a client | [email](http://127.0.0.1:5500/design/emails/out/em-v1-invite.html) | Email | ![approved][approved] v1 | ![not coded][notcoded] | Sent by the admin; invite lasts 7 days |
+| EM-2 | Sign-in code | [email](http://127.0.0.1:5500/design/emails/out/em-v1-sign-in-code.html) | Email | ![approved][approved] v1 | ![not coded][notcoded] | 6 digits, 10 minutes |
+| EM-3 | Password reset | [email](http://127.0.0.1:5500/design/emails/out/em-v1-password-reset.html) | Email | ![approved][approved] v1 | ![not coded][notcoded] | Link lasts 30 minutes; never says whether the account exists |
+| EM-4 | Password changed | [email](http://127.0.0.1:5500/design/emails/out/em-v1-password-changed.html) | Email | ![approved][approved] v1 | ![not coded][notcoded] | Security notice with a way to get help |
+| EM-5 | Posts waiting for approval | [email](http://127.0.0.1:5500/design/emails/out/em-v1-approvals-waiting.html) | Email | ![approved][approved] v1 | ![not coded][notcoded] | Count, first post's platform, format and time, one button |
+| EM-6 | New posts ready to review | [email](http://127.0.0.1:5500/design/emails/out/em-v1-posts-ready.html) | Email | ![approved][approved] v1 | ![not coded][notcoded] | Sent when a new batch is drafted: count, date range, one button |
+| EM-7 | Post didn't go out | [email](http://127.0.0.1:5500/design/emails/out/em-v1-post-failed.html) | Email | ![approved][approved] v1 | ![not coded][notcoded] | Network, reason, fix button |
+| EM-8 | Connection expired | [email](http://127.0.0.1:5500/design/emails/out/em-v1-connection-expired.html) | Email | ![approved][approved] v1 | ![not coded][notcoded] | Approved posts wait until reconnected |
+
+<a id="412-dark-mode-check"></a>
+
+### 4.12 Dark mode check
+
+Builder: `design/dark-check/build.py`. A report, not new screens: approved screens rendered dark, with proposed fixes in `design/dark-check/dark-overrides.css`. Report: `design/dark-check/REPORT.md` (5 problems, 3 questions for the owner).
+
+| ID | Screen | Design | Route | Status | Code | Notes |
+|---|---|---|---|---|---|---|
+| DK-1 | Dark mode on approved screens | S03 [before](http://127.0.0.1:5500/design/dark-check/screens/s03-overview-dark.html) and [fixed](http://127.0.0.1:5500/design/dark-check/screens/s03-overview-dark-fixed.html), S06 [before](http://127.0.0.1:5500/design/dark-check/screens/s06-content-dark.html) and [fixed](http://127.0.0.1:5500/design/dark-check/screens/s06-content-dark-fixed.html), S08 [before](http://127.0.0.1:5500/design/dark-check/screens/s08-review-post-dark.html) and [fixed](http://127.0.0.1:5500/design/dark-check/screens/s08-review-post-dark-fixed.html), S09 [before](http://127.0.0.1:5500/design/dark-check/screens/s09-approvals-dark.html) and [fixed](http://127.0.0.1:5500/design/dark-check/screens/s09-approvals-dark-fixed.html), S11 [before](http://127.0.0.1:5500/design/dark-check/screens/s11-calendar-month-dark.html) and [fixed](http://127.0.0.1:5500/design/dark-check/screens/s11-calendar-month-dark-fixed.html), S12 [before](http://127.0.0.1:5500/design/dark-check/screens/s12-analytics-month-dark.html) and [fixed](http://127.0.0.1:5500/design/dark-check/screens/s12-analytics-month-dark-fixed.html), S13 [before](http://127.0.0.1:5500/design/dark-check/screens/s13-brand-kit-dark.html) and [fixed](http://127.0.0.1:5500/design/dark-check/screens/s13-brand-kit-dark-fixed.html), AUTH [before](http://127.0.0.1:5500/design/dark-check/screens/auth-sign-in-dark.html) and [fixed](http://127.0.0.1:5500/design/dark-check/screens/auth-sign-in-dark-fixed.html), ADM-1 [before](http://127.0.0.1:5500/design/dark-check/screens/adm-clients-dark.html) and [fixed](http://127.0.0.1:5500/design/dark-check/screens/adm-clients-dark-fixed.html) | All | ![approved][approved] v1 | ![not coded][notcoded] | Fixes become real CSS in `packages/ui` once approved |
 
 <a id="5-rules-to-carry-into-code"></a>
 
@@ -358,6 +416,7 @@ Behaviour the owner decided in review, which a static design cannot show.
 | ADM-4     | Resend and cancel an invite                                                                                            | Admin endpoints                                    |
 | AUTH-5    | "Ask for a new invite" notifies the admin                                                                              | Auth, admin                                        |
 | OBS-5     | Frontend error collection (Sentry recommended) and a tag on every release                                              | Web app, deploy                                    |
+| EM-1 to EM-8 | Send the eight emails from the approved templates (invite, codes, reset, approvals waiting, new posts ready, post failed, connection expired) | API, email provider |
 
 <a id="7-stitch-to-do"></a>
 
@@ -367,7 +426,7 @@ Project `330652592731776730`. Nothing is uploaded without the owner's approval.
 
 **Upload, once the owner says so**
 
-- Approved but not uploaded: S06 to S16, HDR, AUTH-1 to AUTH-7, ADM-1 to ADM-6, OBS-1 v3, OBS-2 and OBS-3 v3, OBS-4 v3, OBS-5, OBS-6, BA-1, BA-2, ST-1 to ST-5, FL-1 to FL-5.
+- Approved but not uploaded: S06 to S16, HDR, AUTH-1 to AUTH-7, ADM-1 to ADM-6, OBS-1 v3, OBS-2 and OBS-3 v3, OBS-4 v3, OBS-5, OBS-6, BA-1, BA-2, ST-1 to ST-5, FL-1 to FL-5, EM-1 to EM-8.
 - Missing from the canvas, upload again: S20a, S20b, S20c, S21a, S21b, and S03 v3 desktop and tablet.
 
 **Delete by hand (the Stitch API cannot delete a screen)**
@@ -382,7 +441,7 @@ Project `330652592731776730`. Nothing is uploaded without the owner's approval.
 Questions on approved designs. The recommendation applies unless the owner says otherwise.
 
 <details>
-<summary>Show the 61 decisions</summary>
+<summary>Show the 65 decisions</summary>
 
 | From     | Question                                                                                                      | Decision                                                                                 |
 | -------- | ------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
@@ -447,6 +506,10 @@ Questions on approved designs. The recommendation applies unless the owner says 
 | FL-5       | Version 2 uses learnings written for Meow Meow Tweet                                | Fine for a mock                                                            |
 | FL-4       | "We'll email you when the posts are ready"                                          | Yes; add it to the emails                                                  |
 | BA-2       | Monospace on backup codes breaks the no-monospace rule                              | No change; AUTH-7 allows monospace only for the setup key and backup codes |
+| DK-1 | Dark tints for every brand: a hand-written block per brand, or computed from the brand colour | Computed from the brand colour in `brand-theme.tsx`, like the accent (no `color-mix()`) |
+| DK-1 | Check the proposed dark hex values before they become real CSS | Checked in the wave 3 browser check, light and dark |
+| DK-1 | Warning notes: a dark-specific tint, or warning text on the existing dim tint | Warning text on the dim tint; add a tint only if contrast fails 4.5:1 |
+| EM | Emails are sent by the API | Sending is a backend follow-up (section 6); the HTML is the approved template |
 
 </details>
 
@@ -459,11 +522,19 @@ Questions on approved designs. The recommendation applies unless the owner says 
 
 | Date       | Change                                                                                                                                                                                                                                                     |
 | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-09-28 | Owner: admin brand pages move under the admin area (`/admin/c/:brandId/...`), admin onboarding at `/admin/clients/:clientId/brands/new` |
+| 2026-09-28 | Owner: admin onboarding of a client's brand uses the same full flow as the client (replaces the short ADM-5 dialog); skip or send a connect link; answers marked "Answered by the agency" |
+| 2026-09-28 | ADM-7 Admin settings added as a design task (owner: design later); the sidebar link that led to a 404 was removed |
+| 2026-09-28 | Owner: admin route rename to one word, `c` (`/admin/c/:clientId/brand/new`); fixed a double-header bug from nesting the create page under the workspace layout by moving the workspace routes into their own `(workspace)` route group |
+| 2026-09-28 | Wave 1 declared done: 3 rounds of design-match fixes, admin routing landed, 38/38 routes verified, build/types/lint clean; 4 small items left open for the owner |
+| 2026-09-28 | ADM-7 Admin settings v1 designed: two tabs, Team (other admins, invite/remove) and Notifications (agency-wide email alerts); personal profile/password/two-factor stay in "Your account", not repeated. Built and self-checked at 1440/768/390, awaiting owner review |
 | 2026-09-27 | Round 1 landed (foundation UI, data layer on mock); round 2 started with 7 agents (onboarding, strategy and research, overview and content, review and approvals, calendar and analytics, settings, admin and observability). All approved rows now coding |
 | 2026-09-27 | Missing flows FL-1 to FL-5 designed (8 screens); in review                                                                                                                                                                                                 |
 | 2026-09-27 | System states ST-1 to ST-5 designed (13 screens); in review                                                                                                                                                                                                |
 | 2026-09-27 | BA-1 Your brands and BA-2 Your account designed; in review                                                                                                                                                                                                 |
 | 2026-09-27 | Owner added a build review: every coded page is reviewed in the running app; changes asked, then build approved                                                                                                                                            |
+| 2026-09-27 | Owner approved EM-1 to EM-8 and DK-1; all 73 designs approved; dark fixes added to wave 2 |
+| 2026-09-27 | Added sections 4.11 Emails (EM-1 to EM-8) and 4.12 Dark mode check (DK-1); both in review |
 | 2026-09-27 | Owner approved BA-1, BA-2, ST-1 to ST-5 and FL-1 to FL-5; all 64 screens approved; their open questions moved to decided; their coding added to wave 2 |
 | 2026-09-27 | Section 2 now lists what is running and what needs the owner's approval; plan A wave 1 started on Sonnet (onboarding, review and approvals, overview and content, strategy, emails and dark check)                                                         |
 | 2026-09-27 | Coding started: round 1 (foundation UI, data layer on mock, auth on Clerk behind our own interface)                                                                                                                                                        |

@@ -1,61 +1,55 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { Check, ChevronsUpDown, Plus, Users } from "lucide-react";
-import type { Client } from "@/lib/types";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@repo/ui/components/dropdown-menu";
-import { ClientAvatar } from "@repo/ui/components/social/client-avatar";
+import { ChevronsUpDown, Plus, Users } from "lucide-react";
+import type { WorkspaceBasePath } from "@/lib/workspace-path";
+import type { SwitcherBrand } from "./switcher-brand";
+import { BrandMark } from "./brand-mark";
+import { BrandMenuRow } from "./brand-menu-row";
+import { HeaderMenu, HeaderMenuItem, HeaderMenuItemText, HeaderMenuLabel, HeaderMenuSeparator } from "./header-menu";
+import { ADMIN_CLIENTS_PATH } from "./admin-nav-items";
 
-/** All the switcher shows of a client: its avatar, its name and where it links. */
-export type SwitchableClient = Pick<Client, "id" | "name" | "accent">;
-
+/** The admin's switcher inside a brand: every client's brand, with whose it is. */
 export function ClientSwitcher({
   current,
-  clients,
-  isAdmin,
+  brands,
+  basePath = "/c",
 }: {
-  current: SwitchableClient;
-  clients: SwitchableClient[];
-  isAdmin: boolean;
+  current: SwitcherBrand;
+  brands: SwitcherBrand[];
+  basePath?: WorkspaceBasePath;
 }) {
-  const router = useRouter();
-  // An agency has clients. Someone running their own account has brands.
-  const noun = isAdmin ? "client" : "brand";
+  const owner = current.ownerName ? `${current.ownerName}’s brand` : null;
+  const brandName = owner ? `${current.name}, ${owner}` : current.name;
+  const trigger = (
+    <button
+      type="button"
+      aria-label={`${brandName}. Switch client`}
+      className="pressable flex h-10.5 min-w-0 items-center gap-2.5 rounded-full pr-2.5 pl-1.25 text-left hover:bg-accent aria-expanded:bg-accent max-[560px]:h-10 max-[560px]:gap-2 max-[560px]:pr-2"
+    >
+      <BrandMark name={current.name} color={current.accent} />
+      <span className="grid min-w-0 leading-tight">
+        <span className="truncate text-sm font-semibold">{current.name}</span>
+        {owner && <span className="truncate text-[0.72rem] text-muted-foreground max-[560px]:hidden">{owner}</span>}
+      </span>
+      <ChevronsUpDown aria-hidden className="size-3.5 shrink-0 text-muted-foreground" />
+    </button>
+  );
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger className="pressable flex min-w-0 items-center gap-2 rounded-full py-1 pr-2 pl-1 text-sm font-medium hover:bg-accent data-[state=open]:bg-accent">
-        <ClientAvatar client={current} className="size-7 text-xs" />
-        <span className="truncate">{current.name}</span>
-        <ChevronsUpDown className="size-3.5 shrink-0 text-muted-foreground" />
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="start">
-        <DropdownMenuLabel>Switch {noun}</DropdownMenuLabel>
-        {clients.map((c) => (
-          <DropdownMenuItem key={c.id} onSelect={() => router.push(`/c/${c.id}`)}>
-            <ClientAvatar client={c} className="size-6 text-[0.6875rem]" />
-            <span className="flex-1 truncate">{c.name}</span>
-            {c.id === current.id && <Check className="text-foreground!" />}
-          </DropdownMenuItem>
-        ))}
-        <DropdownMenuSeparator />
-        {/* With a single brand the list page just sends you back here, so it isn't offered. */}
-        {(isAdmin || clients.length > 1) && (
-          <DropdownMenuItem onSelect={() => router.push("/")}>
-            <Users /> All {noun}s
-          </DropdownMenuItem>
-        )}
-        <DropdownMenuItem onSelect={() => router.push("/onboarding")}>
-          <Plus /> {isAdmin ? "Add a client" : "Add another brand"}
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <HeaderMenu title="Switch client" trigger={trigger}>
+      <HeaderMenuLabel>Switch client</HeaderMenuLabel>
+      {brands.map((brand) => (
+        <BrandMenuRow key={brand.id} brand={brand} detail={brand.ownerName ?? brand.site} current={brand.id === current.id} basePath={basePath} />
+      ))}
+      <HeaderMenuSeparator />
+      <HeaderMenuItem href={ADMIN_CLIENTS_PATH}>
+        <Users aria-hidden />
+        <HeaderMenuItemText title="All clients" />
+      </HeaderMenuItem>
+      <HeaderMenuItem href={`${ADMIN_CLIENTS_PATH}?invite=1`}>
+        <Plus aria-hidden />
+        <HeaderMenuItemText title="Add a client" />
+      </HeaderMenuItem>
+    </HeaderMenu>
   );
 }

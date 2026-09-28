@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { LoopTrack } from "@repo/ui/components/social/loop-track";
+import { LoopTrack, LoopTrackNote } from "@repo/ui/components/social/loop-track";
 import type { LoopStage } from "@/lib/types";
 import { Panel } from "@repo/ui/components/states";
 import { cn } from "@repo/ui/lib/utils";
@@ -16,6 +16,7 @@ export function LoopSection() {
     <div>
       <Panel aria-label="Where the agent is in its loop">
         <LoopTrack stage={stage} />
+        <LoopTrackNote />
       </Panel>
       <RevealGroup as="ol" className="mt-8 grid gap-x-10 gap-y-2 md:grid-cols-2">
         {LOOP_STEPS.map((step, i) => {

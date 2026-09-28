@@ -16,6 +16,8 @@ interface SheetProps {
   children: React.ReactNode;
   footer?: React.ReactNode;
   className?: string;
+  /** Extra controls in the header row, between the title and Close (e.g. prev/next). */
+  headerActions?: React.ReactNode;
 }
 
 /**
@@ -24,7 +26,7 @@ interface SheetProps {
  * dragged, and decides whether to dismiss from where the flick is heading,
  * not from where it was released.
  */
-export function Sheet({ open, onOpenChange, title, description, children, footer, className }: SheetProps) {
+export function Sheet({ open, onOpenChange, title, description, children, footer, className, headerActions }: SheetProps) {
   const isDesktop = useIsDesktop();
   const reduceMotion = useReducedMotion();
   const panelRef = React.useRef<HTMLDivElement>(null);
@@ -93,6 +95,7 @@ export function Sheet({ open, onOpenChange, title, description, children, footer
                       <Dialog.Description className="type-label mt-1">{description}</Dialog.Description>
                     )}
                   </div>
+                  {headerActions && <div className="flex shrink-0 items-center gap-1.5">{headerActions}</div>}
                   <Dialog.Close
                     className="pressable -mr-1.5 grid size-8.5 shrink-0 place-items-center rounded-full bg-secondary text-muted-foreground hover:text-foreground"
                     aria-label="Close"

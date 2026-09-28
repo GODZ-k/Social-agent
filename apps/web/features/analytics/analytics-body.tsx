@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ChartNoAxesCombined } from "lucide-react";
 import { getAnalytics } from "@/lib/api/server";
 import type { BrandKit } from "@social-agent/shared";
+import { workspaceHref, type WorkspaceBasePath } from "@/lib/workspace-path";
 import { EmptyState, SkeletonRows } from "@repo/ui/components/states";
 import { PanelBoundary } from "@repo/ui/components/error-boundary";
 import { Button } from "@repo/ui/components/button";
@@ -17,7 +18,15 @@ import { LearnedSection } from "./learned-section";
  * The two panels below the charts read their own data and stream in behind
  * their own boundaries, so a slow or failed one never holds the charts back.
  */
-export async function AnalyticsBody({ clientId, brand }: { clientId: string; brand: BrandKit }) {
+export async function AnalyticsBody({
+  clientId,
+  brand,
+  basePath = "/c",
+}: {
+  clientId: string;
+  brand: BrandKit;
+  basePath?: WorkspaceBasePath;
+}) {
   const analytics = await getAnalytics(clientId);
   if (!analytics || analytics.series.length === 0) {
     return (
@@ -25,7 +34,7 @@ export async function AnalyticsBody({ clientId, brand }: { clientId: string; bra
         icon={<ChartNoAxesCombined />}
         title="No results yet"
         description="Numbers show up here about a day after the first post is published."
-        action={<Button asChild><Link href={`/c/${clientId}/approvals`}>Review waiting posts</Link></Button>}
+        action={<Button asChild><Link href={workspaceHref(basePath, clientId, "/approvals")}>Review waiting posts</Link></Button>}
       />
     );
   }

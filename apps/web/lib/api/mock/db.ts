@@ -1,5 +1,8 @@
 import "server-only";
-import { buildSeed, type SeedData } from "./seed";
+import { buildSeed, newBrandExtras, type SeedData } from "./seed";
+import { notStarted } from "./questionnaire";
+import { newResearch } from "./research";
+import type { Client } from "@/lib/types";
 
 /**
  * The server-side stand-in for the real API's database.
@@ -12,6 +15,8 @@ import { buildSeed, type SeedData } from "./seed";
 declare global {
   var __cadenceMockDb: SeedData | undefined;
 }
+
+export type { SeedData };
 
 export function getDb(): SeedData {
   if (!globalThis.__cadenceMockDb) {
@@ -26,9 +31,20 @@ export function recounted(db: SeedData): SeedData {
   for (const client of db.clients) {
     const own = db.posts.filter((p) => p.clientId === client.id);
     client.stats.pendingApprovals = own.filter((p) => p.status === "in_review").length;
-    client.stats.scheduled = own.filter((p) => p.status === "scheduled").length;
+    client.stats.scheduled = own.filter((p) => p.status === "scheduled" || p.status === "approved").length;
   }
   return db;
+}
+
+/** Gives a brand made after the seed its questionnaire, research and onboarding records. */
+export function addBrand(client: Client) {
+  const db = getDb();
+  db.clients.unshift(client);
+  db.extras[client.id] = newBrandExtras();
+  db.questionnaires[client.id] = notStarted();
+  db.research[client.id] = newResearch(client);
+  db.strategyHistory[client.id] = [];
+  db.analytics.push({ clientId: client.id, series: [], byFormat: [], byPillar: [] });
 }
 
 export function removeClient(id: string) {
@@ -37,4 +53,8 @@ export function removeClient(id: string) {
   db.strategies = db.strategies.filter((s) => s.clientId !== id);
   db.posts = db.posts.filter((p) => p.clientId !== id);
   db.analytics = db.analytics.filter((a) => a.clientId !== id);
+  delete db.strategyHistory[id];
+  delete db.extras[id];
+  delete db.questionnaires[id];
+  delete db.research[id];
 }

@@ -1,0 +1,78 @@
+# Handoff
+
+*How a new machine or a new Claude session picks up the frontend redesign where it stopped. Written 2026-09-27. Read this after `docs/MEMORY.md`, then open `docs/DESIGN_TRACKER.md` section 2 for the live state.*
+
+## 1. Where the work stands
+
+- **Designs:** all 73 are approved: 64 screens, 8 emails and the dark mode check. The source of truth is `design/**`; the status of every screen is in `docs/DESIGN_TRACKER.md` section 4.
+- **Code:** `apps/web` is being rebuilt page by page against those designs, on the mock data layer (`apps/web/lib/api/mock`), with auth on Clerk behind `lib/auth`.
+- **Waves:** the work runs in waves. The temporary "Waves" table in `docs/DESIGN_TRACKER.md` section 2 lists every task, its model and its status. Erase that table when every wave is done.
+  - Wave 0 (foundation, auth, last designs): done.
+  - Wave 1 (onboarding, review and approvals, overview and content, strategy, admin and observability): coded.
+  - Wave 1b (make every wave 1 page match its design exactly): was running when this was written. Check the tracker for what finished.
+  - Wave 2 (calendar and analytics, settings, brands and account, system states, missing flows, dark mode fixes, forms moved to react-hook-form): waits for the owner's go.
+  - Wave 3 (one code-simplifier pass, type check, lint, build, browser check at 1440 and 390 in light and dark, then pages go to the owner as "build in review"): after wave 2.
+  - Wave 4 (the owner's build review changes; Stitch uploads when the owner says so).
+- **Waiting on the owner:** the go for each wave, the four auth questions in tracker section 2, and the Stitch uploads.
+
+## 2. Owner rules (these were in the local agent memory; they apply to every session)
+
+- **Reply style:** load the `caveman` skill first and reply in it on the terminal. Code, comments, docs and commits stay normal prose.
+- **Never commit, stage or push.** The owner does all git.
+- **Design before code:** every frontend change starts as an approved design (AGENTS.md, "Design before frontend code"). Built pages must match the approved design exactly: copy, structure, states, and the layout at 1440, 768 and 390.
+- **No shortcuts accepted:** if an agent reports it built something differently from the design ("kept the existing form", "simpler"), send it back at once to match. "No data yet" is not a reason to leave a part out; add mock data instead.
+- **Build review:** a page is done only when the owner approves the running page. The tracker Code field reads: not coded, coding, build in review, changes asked, build approved.
+- **Waves need the owner's go.** When a wave finishes, report it and ask before starting the next one. Never fill a freed slot with next-wave work.
+- **Keep the tracker live:** update `docs/DESIGN_TRACKER.md` section 2 on every agent start, finish and owner decision.
+- **Model per task (cost rule):** the goal is the best output at the lowest cost.
+  - Opus: planning, hard bugs, cross-cutting work, reviewing agent output, the coordinating session.
+  - Sonnet: executing a clear brief (coding approved designs, design builders, doc updates, the simplifier pass).
+  - Haiku: mechanical jobs (searches, screenshots, uploads).
+  - Set `model` on every agent. Keep briefs lean: only the skills needed, graft or partial reads instead of whole files, no screenshots in coding agents, one code-simplifier pass at the end, and about four agents at a time.
+- **Near 90% of the plan limit:** when the owner says so, stop starting agents, stop the running ones, and write each one's state (task, brief, files done, what is left) to tracker section 2. Resume after the refill.
+- **Forms:** react-hook-form + zod for every form with fields (`apps/web/AGENTS.md`).
+- **Data:** server components read from `lib/api/server.ts`; client components write through Server Actions with `useServerAction`. No React Query.
+- **Stitch:** upload only approved screens, only when the owner says so, to project `330652592731776730`.
+- **Name a value before you pass it** (root `AGENTS.md`).
+- **Clean code** means plain small named functions at one level of abstraction; no class restructuring.
+- **Agents are reusable assets:** `packages/agents` never imports app code, because the agents are reused in other client work.
+- **Eraser diagrams stay current:** every flow change also updates the diagrams in the single Eraser file "Brand Scan Flow".
+- **Testing files** live only in `apps/api/testing` (temp files in `testing/temp`); deleting that folder must not break the app.
+
+## 2a. What git does not carry
+
+- `.superpowers/` (plan ledgers, about 2.4 MB) is excluded in `.git/info/exclude`. Copy the folder by hand, or it is lost.
+- `graft/` is git-ignored. Rebuild it with `graft build`.
+- The env files (section 4), the local Claude memory and the claude-mem database (`~/.claude-mem`) stay on the old machine. Everything needed from the memory is in this file.
+- Uncommitted work: the redesign is not committed yet. Commit everything, or it does not move.
+
+## 3. How agents are run
+
+- **Briefs:** reusable agent briefs are in `docs/handoff/briefs/`. `round2-common.md` holds the shared rules for every page agent; each `code-*.md` is one area. Replace `<repo>` and `<scratchpad>` with real paths when you use them.
+- **File ownership:** each agent owns a fixed set of files. Coding agents only run `pnpm --filter web exec tsc --noEmit` and eslint on their paths, never `next dev` or `next build`, because agents share `.next` and the port. The coordinating session runs the build and the browser checks.
+- **Review and check scripts:** in `docs/handoff/scripts/`. They need Playwright: run `npm install` in a scratch folder with that `package.json`, then fix the absolute paths at the top of each script.
+  - `look.mjs`: the one-look review sheet (each design at 1440, 768 and 390, opened in a visible browser).
+  - `screen.mjs`, `url-shot.mjs`, `el.mjs`, `hover.mjs`: single screenshots.
+  - `session.mjs`: signs a throwaway admin into the running app (Clerk test email with code 424242, TOTP two-factor) and saves the browser state.
+  - `google-signed-in.mjs`: repro for the Google sign-in fix.
+  - `stitch_sync.py`: the Stitch upload (needs `STITCH_API_KEY`).
+- **Throwaway Clerk users:** scripts that create users through the Clerk Backend API must delete them afterwards and never print emails or keys.
+
+## 4. Setting up a new machine
+
+1. Pull the repo, then run `pnpm install` from the root.
+2. Copy the env files by hand (they are secret, never committed). Variable names:
+   - `apps/web/.env.local`: `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY`, `NEXT_PUBLIC_CLERK_SIGN_IN_URL`, `NEXT_PUBLIC_CLERK_SIGN_UP_URL`, `NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL`, `NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL`, `NEXT_PUBLIC_AUTH_GOOGLE=on`. Optional: `NEXT_PUBLIC_ADMIN_EMAILS`, `NEXT_PUBLIC_SIGNOZ_URL`.
+   - `apps/api/.env`: `PORT`, `NODE_ENV`, `FRONTEND_URL`, `DATABASE_URL`, `REDIS_URL`, `CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY`, `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `CORS_ORIGINS`, `FIRECRAWL_API_KEY`.
+   - Stitch uploads: `STITCH_API_KEY`.
+3. Install the Claude Code plugins: `superpowers`, `code-simplifier` and `claude-code-setup` (claude-plugins-official), and `claude-mem` (marketplace `thedotmack/claude-mem`).
+4. Install the user-level skills: the caveman pack (`caveman`, `cavecrew`, `caveman-review`, `caveman-stats`, `safe-refactor`, `surgical-patch`, `verify-and-stop`, `investigate-first`, `lean-build`, `migration` and the rest) and `graft`. The repo skills in `.agents/skills` come with the repo; link them into `.claude/skills` as the root `AGENTS.md` describes.
+5. Build the code graph: `graft build`. The `graft/` folder is git-ignored. `graft build --deep` adds summaries but needs `GRAFT_API_KEY`.
+6. Start a session and say: "Read docs/HANDOFF.md and docs/DESIGN_TRACKER.md section 2, then continue."
+
+## 5. Known issues to carry
+
+- **Google sign-in:** the Clerk future API ignores `signIn.sso()` while an unfinished sign-in is pending, so the sign-in and sign-up hooks reset any unfinished attempt when the page mounts (`lib/auth/clerk/flows.ts`). The pages Google returns to are public in `proxy.ts`.
+- **Lint:** one warning in `useInvite` (`react-hooks/set-state-in-effect`), left for the wave 3 clean-up.
+- **Types:** stale `.next/types` errors about the old catch-all sign-in and sign-up routes clear on the next build.
+- **Chat posts:** a post opened from the agent chat on calendar, analytics, approvals or settings needs the same `?post=` review panel wiring (wave 3).

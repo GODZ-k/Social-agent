@@ -56,5 +56,22 @@ function draftBrandKit(url: string): NonNullable<Scan["result"]> {
     ],
     fonts: { heading: "Poppins", body: "Inter" },
   };
-  return { name, industry: "Local business", brand };
+  return {
+    name,
+    industry: "Local business",
+    brand,
+    // Phone and opening hours are never on a site like this one, so the review still shows "Not on your site" for them.
+    business: { email: `hello@${host}`, location: { city: "Portland", region: "OR", country: "US" } },
+    sources: {
+      summary: "Found on your About page",
+      audience: "Found on your product pages",
+      colors: "Found on your homepage",
+      email: "Found on your Contact page",
+      address: "Found on your Contact page",
+    },
+    platformSignals: {
+      instagram: { handle: `@${stem}`, source: "linked on your site" },
+      facebook: { handle: name, source: "linked on your site" },
+    },
+  };
 }

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { BrandKit, Platform } from "@social-agent/shared";
+import type { BrandKit, BusinessInfo, Platform } from "@social-agent/shared";
 import type { ClientPatch, NewClientInput, ScanResult } from "@/lib/types";
 import { isValidHex } from "@/lib/utils";
 
@@ -24,12 +24,23 @@ export const brandKitSchema = z.object({
   headingFont: z.string().trim().min(1, "Name the heading typeface."),
   bodyFont: z.string().trim().min(1, "Name the body typeface."),
   platforms: z.array(z.enum(PLATFORMS)).min(1, "Choose at least one place to publish."),
+  contactEmail: z.string().trim().refine((v) => v === "" || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v), "Use a valid email address."),
+  contactPhone: z.string().trim(),
+  contactAddress: z.string().trim(),
+  contactHours: z.string().trim(),
 });
 
 export type Values = z.infer<typeof brandKitSchema>;
 
+/** "123 Main St, Portland, OR, US" from whichever parts the scan found. */
+function formatAddress(location: BusinessInfo["location"]): string {
+  if (!location) return "";
+  return [location.address, location.city, location.region, location.country].filter(Boolean).join(", ");
+}
+
 /** The form's starting values from what the scan found, or from a saved client. */
 export function toValues(scan: ScanResult, platforms: Platform[]): Values {
+  const business = scan.business;
   return {
     name: scan.name,
     industry: scan.industry,
@@ -41,6 +52,10 @@ export function toValues(scan: ScanResult, platforms: Platform[]): Values {
     headingFont: scan.brand.fonts.heading,
     bodyFont: scan.brand.fonts.body,
     platforms: platforms.filter((p): p is (typeof PLATFORMS)[number] => (PLATFORMS as readonly string[]).includes(p)),
+    contactEmail: business?.email ?? "",
+    contactPhone: business?.phone ?? "",
+    contactAddress: formatAddress(business?.location),
+    contactHours: business?.hours?.length ? business.hours.map((h) => `${h.day} ${h.open}-${h.close}`).join(", ") : "",
   };
 }
 
@@ -55,9 +70,25 @@ function toBrandKit(values: Values): BrandKit {
   };
 }
 
+/** The contact facts posts quote exactly; empty fields mean the site never said. */
+function toBusinessInfo(values: Values): BusinessInfo {
+  return {
+    email: values.contactEmail || undefined,
+    phone: values.contactPhone || undefined,
+    location: values.contactAddress ? { address: values.contactAddress } : undefined,
+    // Hours edit as one free-text line here; BusinessInfo.hours is per-day, so it isn't saved back yet.
+  };
+}
+
 /** What Settings sends when the kit changes. */
-export function toPatch(values: Values): Required<Pick<ClientPatch, "name" | "industry" | "brand" | "platforms">> {
-  return { name: values.name, industry: values.industry, platforms: values.platforms, brand: toBrandKit(values) };
+export function toPatch(values: Values): Required<Pick<ClientPatch, "name" | "industry" | "brand" | "platforms" | "business">> {
+  return {
+    name: values.name,
+    industry: values.industry,
+    platforms: values.platforms,
+    brand: toBrandKit(values),
+    business: toBusinessInfo(values),
+  };
 }
 
 /** What onboarding sends to create the client. */

@@ -14,8 +14,9 @@ import { format } from "date-fns";
 import { Check, X } from "lucide-react";
 import type { BrandKit, Post } from "./types";
 import { project, spring } from "../../lib/motion";
-import { FORMAT_LABEL, PLATFORM_LABEL, PlatformIcon } from "./platform";
+import { describePostKind } from "./post-kind";
 import { PostArt } from "./post-art";
+import { PostFacts } from "./post-facts";
 
 export type Decision = "approved" | "rejected";
 export interface SwipeCardHandle {
@@ -112,8 +113,8 @@ export const SwipeCard = forwardRef<SwipeCardHandle, Props>(function SwipeCard(
   return (
     <motion.article
       aria-hidden={!isTop}
-      aria-label={isTop ? `${post.hook}. ${PLATFORM_LABEL[post.platform]} ${FORMAT_LABEL[post.format]}` : undefined}
-      className="absolute inset-0 flex touch-pan-y flex-col overflow-hidden rounded-2xl bg-card shadow-floating select-none"
+      aria-label={isTop ? `${post.hook}. ${describePostKind(post)}` : undefined}
+      className="absolute inset-0 flex touch-pan-y flex-col gap-3 overflow-hidden rounded-[1.75rem] bg-card p-3.5 shadow-floating select-none"
       style={{
         x,
         rotate,
@@ -131,22 +132,27 @@ export const SwipeCard = forwardRef<SwipeCardHandle, Props>(function SwipeCard(
       onDragEnd={handleDragEnd}
       onTap={() => isTop && !dragged.current && !leaving.current && onOpen?.()}
     >
-      <div className="relative min-h-0 flex-1 bg-secondary">
+      {/* Just enough to identify the post before opening it. Hidden on the cards underneath,
+          so the stack shows clean edges rather than slivers of chips and text. */}
+      <PostFacts
+        platform={post.platform}
+        format={post.format}
+        slides={post.slides}
+        durationSec={post.durationSec}
+        date={post.scheduledFor ? format(new Date(post.scheduledFor), "EEE d MMM, h:mm a") : undefined}
+        size="sm"
+        className={`shrink-0 transition-opacity duration-200 ${isTop ? "" : "opacity-0"}`}
+      />
+
+      <div className="relative min-h-0 flex-1 overflow-hidden rounded-xl bg-secondary">
         <PostArt post={post} brand={brand} fixedAspect="h-full" className="rounded-none" />
         <Stamp opacity={approve} side="left" tone="approve"><Check strokeWidth={3} /> Approve</Stamp>
         <Stamp opacity={reject} side="right" tone="reject"><X strokeWidth={3} /> Reject</Stamp>
       </div>
 
-      {/* Just enough to identify the post. The full caption, hashtags and reasoning are one tap away. */}
-      {/* Hidden on the cards underneath, so the stack shows clean edges rather than slivers of text. */}
-      <div className={`grid shrink-0 gap-1.5 px-5 py-4 transition-opacity duration-200 ${isTop ? "" : "opacity-0"}`}>
-        <p className="type-label flex flex-wrap items-center gap-x-2 gap-y-1">
-          <PlatformIcon platform={post.platform} className="size-3.5" />
-          <span>{PLATFORM_LABEL[post.platform]} {FORMAT_LABEL[post.format].toLowerCase()}</span>
-          {post.scheduledFor && <span className="ml-auto tabular-nums">{format(new Date(post.scheduledFor), "EEE d MMM, h:mm a")}</span>}
-        </p>
-        <p className="line-clamp-2 text-[0.9375rem] leading-snug">{post.caption}</p>
-      </div>
+      <p className={`line-clamp-2 shrink-0 px-1 text-[0.9375rem] leading-snug transition-opacity duration-200 ${isTop ? "" : "opacity-0"}`}>
+        {post.caption}
+      </p>
     </motion.article>
   );
 });
