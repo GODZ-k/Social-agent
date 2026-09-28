@@ -1,14 +1,21 @@
 "use client";
 
 import { useState } from "react";
+import { useForm, useWatch } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { Button } from "@repo/ui/components/button";
 
 const REASONS = ["Off brand", "Wrong picture", "Wrong time"];
 
+const formSchema = z.object({ other: z.string().trim().min(1) });
+type Values = z.infer<typeof formSchema>;
+
 /** The toast after a reject: optional reasons that feed the agent's learnings. */
 export function RejectToast({ onUndo, onReason }: { onUndo: () => void; onReason: (reason: string) => void }) {
   const [otherOpen, setOtherOpen] = useState(false);
-  const [other, setOther] = useState("");
+  const form = useForm<Values>({ resolver: zodResolver(formSchema), defaultValues: { other: "" } });
+  const other = useWatch({ control: form.control, name: "other" });
 
   return (
     <div className="w-[min(24rem,calc(100vw-1.5rem))] rounded-2xl border bg-card p-3.5 shadow-floating">
@@ -21,17 +28,10 @@ export function RejectToast({ onUndo, onReason }: { onUndo: () => void; onReason
         </Button>
       </div>
       {otherOpen ? (
-        <form
-          className="mt-2.5 flex gap-2"
-          onSubmit={(e) => {
-            e.preventDefault();
-            if (other.trim()) onReason(other.trim());
-          }}
-        >
+        <form className="mt-2.5 flex gap-2" onSubmit={form.handleSubmit((values) => onReason(values.other))} noValidate>
           <input
             autoFocus
-            value={other}
-            onChange={(e) => setOther(e.target.value)}
+            {...form.register("other")}
             placeholder="What was wrong?"
             className="h-8.5 flex-1 rounded-full border px-3.5 text-[0.8125rem] outline-none focus-visible:border-primary"
           />
