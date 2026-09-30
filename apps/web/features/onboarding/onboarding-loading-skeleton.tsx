@@ -31,8 +31,7 @@ export function OnboardingLoadingSkeleton() {
             <div
               key={i}
               className={cn(
-                "grid grid-cols-[2.5rem_1fr] items-start gap-x-3 rounded-[1.375rem] p-5 min-[901px]:block min-[901px]:p-5.5",
-                i === 0 ? "bg-tint" : "bg-card shadow-raised",
+                "grid grid-cols-[2.5rem_1fr] items-start gap-x-3 rounded-[1.375rem] p-5 min-[901px]:block min-[901px]:p-5.5 bg-card shadow-raised",
               )}
             >
               <div className="skeleton row-span-3 size-7 rounded-full min-[901px]:row-span-1 min-[901px]:mb-4" />

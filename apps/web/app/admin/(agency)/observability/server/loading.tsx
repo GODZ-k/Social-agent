@@ -1,5 +1,5 @@
 import { ObsLoading } from "@/features/observability/obs-loading";
 
-export default function ObservabilityLoading() {
+export default function ObservabilityServerLoading() {
   return <ObsLoading />;
 }

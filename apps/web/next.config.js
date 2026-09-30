@@ -2,6 +2,7 @@
 const nextConfig = {
   transpilePackages: ["@repo/ui"],
   cacheComponents: true,
+  partialPrefetching: true,
   reactCompiler: true,
 };
 
