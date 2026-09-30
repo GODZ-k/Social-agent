@@ -11,7 +11,7 @@ export function AdminHeader({ viewer }: { viewer: Viewer }) {
         <Badge variant="outline" className="border-input text-foreground">
           Admin
         </Badge>
-        <AccountMenu name={viewer.name} email={viewer.email} />
+        <AccountMenu viewer={viewer} />
       </div>
     </TopBarFrame>
   );

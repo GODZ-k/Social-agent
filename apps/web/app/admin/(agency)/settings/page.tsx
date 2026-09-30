@@ -11,10 +11,6 @@ import { TeamPanel } from "@/features/admin-settings/team-panel";
 import { ChannelsPanel } from "@/features/admin-settings/channels-panel";
 import { AlertsPanel } from "@/features/admin-settings/alerts-panel";
 
-// TODO: Cache Components adoption. Refactor this route so this opt-out can be removed.
-// See: https://nextjs.org/docs/app/guides/migrating-to-cache-components
-export const instant = false;
-
 export default async function AdminSettingsPage({ searchParams }: { searchParams: Promise<{ tab?: string }> }) {
   const [settings, viewer, { tab: tabParam }] = await Promise.all([getAgencySettings(), getViewer(), searchParams]);
   if (!settings) notFound();

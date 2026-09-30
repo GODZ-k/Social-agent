@@ -14,10 +14,6 @@ import { SlowRequestsPanel } from "@/features/observability/slow-requests-panel"
 import { LogsPanel } from "@/features/observability/logs-panel";
 import { formatMs } from "@/features/observability/format";
 
-// TODO: Cache Components adoption. Refactor this route so this opt-out can be removed.
-// See: https://nextjs.org/docs/app/guides/migrating-to-cache-components
-export const instant = false;
-
 export default async function ObservabilityServerPage({ searchParams }: { searchParams: Promise<{ range?: string; brand?: string }> }) {
   const { range, brandId } = parseObsSearchParams(await searchParams);
   const [server, overview] = await Promise.all([getObsServer(range, { brandId }), getObsOverview(range, { brandId })]);

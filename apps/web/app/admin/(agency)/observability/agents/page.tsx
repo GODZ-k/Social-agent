@@ -12,10 +12,6 @@ import { UsageOverTimePanel } from "@/features/observability/usage-over-time-pan
 import { CostByClientPanel } from "@/features/observability/cost-by-client-panel";
 import { RecentRunsPanel } from "@/features/observability/recent-runs-panel";
 
-// TODO: Cache Components adoption. Refactor this route so this opt-out can be removed.
-// See: https://nextjs.org/docs/app/guides/migrating-to-cache-components
-export const instant = false;
-
 export default async function ObservabilityAgentsPage({ searchParams }: { searchParams: Promise<{ range?: string; brand?: string }> }) {
   const { range, brandId } = parseObsSearchParams(await searchParams);
   const [agents, overview] = await Promise.all([getObsAgents(range, { brandId }), getObsOverview(range, { brandId })]);

@@ -11,10 +11,6 @@ import { SocialAccounts } from "@/features/settings/social-accounts";
 import { PreferencesForm } from "@/features/settings/preferences-form";
 import { DangerZone } from "@/features/settings/danger-zone";
 
-// TODO: Cache Components adoption. Refactor this route so this opt-out can be removed.
-// See: https://nextjs.org/docs/app/guides/migrating-to-cache-components
-export const instant = false;
-
 export default async function SettingsPage({
   params,
   searchParams,

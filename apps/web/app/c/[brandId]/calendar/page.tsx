@@ -3,10 +3,6 @@ import { getClient, getStrategy, listPosts } from "@/lib/api/server";
 import type { WorkspaceBasePath } from "@/lib/workspace-path";
 import { CalendarView } from "@/features/calendar/calendar-view";
 
-// TODO: Cache Components adoption. Refactor this route so this opt-out can be removed.
-// See: https://nextjs.org/docs/app/guides/migrating-to-cache-components
-export const instant = false;
-
 export default async function CalendarPage({
   params,
   basePath = "/c",

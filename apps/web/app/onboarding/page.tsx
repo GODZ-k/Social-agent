@@ -8,10 +8,6 @@ import { OnboardingEntry } from "@/features/onboarding/onboarding-entry";
 import { OnboardingLoadingSkeleton } from "@/features/onboarding/onboarding-loading-skeleton";
 import { OnboardingResumingSkeleton } from "@/features/onboarding/onboarding-resuming-skeleton";
 
-// TODO: Cache Components adoption. Refactor this route so this opt-out can be removed.
-// See: https://nextjs.org/docs/app/guides/migrating-to-cache-components
-export const instant = false;
-
 /** `for` names a client an admin is building a brand for; ignored unless the viewer is an admin and that client exists. */
 async function resolveAdminContext(personId: string | undefined): Promise<{ personId: string; personName: string } | null> {
   if (!personId) return null;

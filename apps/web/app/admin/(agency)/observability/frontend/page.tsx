@@ -11,10 +11,6 @@ import { FrontendErrorsPanel } from "@/features/observability/frontend-errors-pa
 import { FailedActionsPanel } from "@/features/observability/failed-actions-panel";
 import { FailedApiCallsPanel } from "@/features/observability/failed-api-calls-panel";
 
-// TODO: Cache Components adoption. Refactor this route so this opt-out can be removed.
-// See: https://nextjs.org/docs/app/guides/migrating-to-cache-components
-export const instant = false;
-
 export default async function ObservabilityFrontendPage({ searchParams }: { searchParams: Promise<{ range?: string; brand?: string; release?: string }> }) {
   const params = await searchParams;
   const { range, brandId } = parseObsSearchParams(params);

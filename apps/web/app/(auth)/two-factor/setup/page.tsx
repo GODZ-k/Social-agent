@@ -9,10 +9,6 @@ import { SignOutButton } from "@/components/auth/sign-out-button";
 import { TwoFactorPanel } from "@/components/auth/two-factor-panel";
 import { TwoFactorSetup } from "@/features/auth/two-factor-setup";
 
-// TODO: Cache Components adoption. Refactor this route so this opt-out can be removed.
-// See: https://nextjs.org/docs/app/guides/migrating-to-cache-components
-export const instant = false;
-
 export const metadata: Metadata = { title: "Turn on two-factor" };
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;

@@ -1,3 +1,4 @@
+export * from "./schema/account.schema.js";
 export * from "./schema/admin.schema.js";
 export * from "./schema/brand.schema.js";
 export * from "./schema/brand-context.schema.js";
@@ -9,6 +10,7 @@ export * from "./schema/scan.schema.js";
 export * from "./schema/site-facts.schema.js";
 export * from "./schema/social.schema.js";
 export * from "./schema/strategy.schema.js";
+export * from "./types/account.types.js";
 export * from "./types/admin.types.js";
 export * from "./types/brand.types.js";
 export * from "./types/brand-context.types.js";

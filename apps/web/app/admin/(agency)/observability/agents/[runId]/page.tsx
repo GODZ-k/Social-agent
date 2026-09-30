@@ -7,10 +7,6 @@ import { StepsWaterfall } from "@/features/observability/steps-waterfall";
 import { StepDetailPanel } from "@/features/observability/step-detail-panel";
 import { AboutRunPanel } from "@/features/observability/about-run-panel";
 
-// TODO: Cache Components adoption. Refactor this route so this opt-out can be removed.
-// See: https://nextjs.org/docs/app/guides/migrating-to-cache-components
-export const instant = false;
-
 export default async function AgentRunPage({ params }: { params: Promise<{ runId: string }> }) {
   const { runId } = await params;
   const run = await getAgentRun(runId);

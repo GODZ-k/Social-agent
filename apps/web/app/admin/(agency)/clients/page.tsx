@@ -5,10 +5,6 @@ import { AttentionTiles } from "@/features/admin/attention-tiles";
 import { ClientsView } from "@/features/admin/clients-view";
 import { NoClientsEmpty } from "@/features/admin/no-clients-empty";
 
-// TODO: Cache Components adoption. Refactor this route so this opt-out can be removed.
-// See: https://nextjs.org/docs/app/guides/migrating-to-cache-components
-export const instant = false;
-
 export default async function AdminClientsPage({ searchParams }: { searchParams: Promise<{ invite?: string; filter?: string }> }) {
   const [clients, { invite, filter }] = await Promise.all([listAdminClients(), searchParams]);
 

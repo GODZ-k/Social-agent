@@ -22,6 +22,8 @@ import type {
   StrategyStatus,
 } from "@social-agent/shared";
 
+export type { AccountDetails, AccountView, DeviceSession } from "@social-agent/shared";
+
 // Types the API shares live in @social-agent/shared. This file holds only what the web adds on top.
 
 /** A brand workspace as the mock serves it: the API's Brand without the fields the UI reads through other calls. */
@@ -401,29 +403,6 @@ export interface Preferences {
   postLanguage: Language;
   chatLanguage: Language;
   approvalEmails: boolean;
-}
-
-/** One place the person is signed in, for the account page's "Where you're signed in". */
-export interface DeviceSession {
-  id: string;
-  device: string;
-  browser: string;
-  location: string;
-  lastActiveAt: string;
-  current: boolean;
-}
-
-/** The name and email shown and edited on the account page. */
-export interface AccountDetails {
-  name: string;
-  email: string;
-}
-
-/** The account page's read: details, when the password last changed, and open sessions. */
-export interface AccountView {
-  details: AccountDetails;
-  passwordChangedAt: string;
-  sessions: DeviceSession[];
 }
 
 /** A brand in the "Your brands" list and the brand switcher. */

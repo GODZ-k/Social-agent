@@ -13,7 +13,15 @@ import { WorkspaceNav } from "./workspace-nav";
  * page decides on notFound(). `basePath` tells every link inside whether it is
  * building the client's own tree or the admin's mirror of it.
  */
-export async function WorkspaceChrome({ brandId, basePath = "/c" }: { brandId: string; basePath?: WorkspaceBasePath }) {
+export async function WorkspaceChrome({
+  params,
+  basePath = "/c",
+}: {
+  /** The promise, not the value: awaiting it in the layout would block the whole subtree from prerendering. */
+  params: Promise<{ brandId: string }>;
+  basePath?: WorkspaceBasePath;
+}) {
+  const { brandId } = await params;
   const [viewer, client, clients] = await Promise.all([getViewer(), getClient(brandId), listClients()]);
   const actingForClient = client !== null && viewer.role === "admin";
   return (

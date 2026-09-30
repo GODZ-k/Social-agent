@@ -6,10 +6,6 @@ import { AuthFrame } from "@/components/auth/auth-frame";
 import { SwitchLink } from "@/components/auth/switch-link";
 import { InviteAccept } from "@/features/auth/invite-accept";
 
-// TODO: Cache Components adoption. Refactor this route so this opt-out can be removed.
-// See: https://nextjs.org/docs/app/guides/migrating-to-cache-components
-export const instant = false;
-
 export const metadata: Metadata = { title: "Accept your invite" };
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;

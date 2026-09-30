@@ -10,10 +10,6 @@ import { ResearchRunningBanner } from "@/features/strategy/research-running-bann
 import { ResearchFailedBanner } from "@/features/strategy/research-failed-banner";
 import { ResearchFindings } from "@/features/research/research-findings";
 
-// TODO: Cache Components adoption. Refactor this route so this opt-out can be removed.
-// See: https://nextjs.org/docs/app/guides/migrating-to-cache-components
-export const instant = false;
-
 const DESCRIPTION = "What the agent learned about your market before planning. Your strategy is built on it.";
 
 export default async function StrategyResearchPage({

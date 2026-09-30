@@ -8,10 +8,6 @@ import { StackTracePanel } from "@/features/observability/stack-trace-panel";
 import { ErrorDetailsPanel } from "@/features/observability/error-details-panel";
 import { WhoHitItPanel } from "@/features/observability/who-hit-it-panel";
 
-// TODO: Cache Components adoption. Refactor this route so this opt-out can be removed.
-// See: https://nextjs.org/docs/app/guides/migrating-to-cache-components
-export const instant = false;
-
 export default async function FrontendErrorPage({ params }: { params: Promise<{ errorId: string }> }) {
   const { errorId } = await params;
   const error = await getFrontendError(errorId);

@@ -16,7 +16,7 @@ export function WorkspaceHeader({ viewer, brand, brands }: { viewer: Viewer; bra
       <BrandSwitcher current={current} brands={switchable} />
       <div className="ml-auto flex shrink-0 items-center gap-2">
         <AgentChatButton client={brand} />
-        <AccountMenu name={viewer.name} email={viewer.email} backToId={brand.id} />
+        <AccountMenu viewer={viewer} />
       </div>
     </TopBarFrame>
   );

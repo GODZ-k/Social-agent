@@ -22,7 +22,7 @@ export function AdminOnboardingHeader({ viewer, personName }: { viewer: Viewer; 
         <Badge variant="outline" className="border-input text-foreground max-md:hidden">
           Admin
         </Badge>
-        <AccountMenu name={viewer.name} email={viewer.email} />
+        <AccountMenu viewer={viewer} />
       </div>
     </TopBarFrame>
   );

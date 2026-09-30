@@ -40,22 +40,30 @@ export function HeaderMenu({
   title,
   trigger,
   align = "start",
+  onOpen,
   children,
 }: {
   /** The menu's accessible name, and the sheet's heading on phones. */
   title: string;
   trigger: React.ReactElement;
   align?: "start" | "end";
+  /** Runs when the menu opens, for fetching whatever a row is about to need. */
+  onOpen?: () => void;
   children: React.ReactNode;
 }) {
   const [open, setOpen] = useState(false);
   const isDesktop = useIsDesktop();
   const close = () => setOpen(false);
 
+  function change(next: boolean) {
+    if (next) onOpen?.();
+    setOpen(next);
+  }
+
   if (isDesktop) {
     return (
       <HeaderMenuContext value={{ surface: "menu", close }}>
-        <DropdownMenu open={open} onOpenChange={setOpen}>
+        <DropdownMenu open={open} onOpenChange={change}>
           <DropdownMenuTrigger asChild>{trigger}</DropdownMenuTrigger>
           <DropdownMenuContent
             align={align}
@@ -71,10 +79,10 @@ export function HeaderMenu({
 
   return (
     <HeaderMenuContext value={{ surface: "sheet", close }}>
-      <Slot.Root aria-haspopup="dialog" aria-expanded={open} onClick={() => setOpen(true)}>
+      <Slot.Root aria-haspopup="dialog" aria-expanded={open} onClick={() => change(true)}>
         {trigger}
       </Slot.Root>
-      <Sheet open={open} onOpenChange={setOpen} title={title}>
+      <Sheet open={open} onOpenChange={change} title={title}>
         <div className="grid gap-0.5 pb-[env(safe-area-inset-bottom)]">{children}</div>
       </Sheet>
     </HeaderMenuContext>

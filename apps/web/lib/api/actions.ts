@@ -19,6 +19,7 @@ import * as strategies from "./mock/strategy";
 import { fail, ok, type ActionResult } from "./result";
 import type {
   AccountDetails,
+  AccountView,
   AdminClientRow,
   AlertChannelKind,
   AlertKind,
@@ -111,13 +112,23 @@ async function attempt<T>(body: () => Promise<T>): Promise<ActionResult<T>> {
 
 /* Account (BA-2) */
 
+/**
+ * The account opens as a dialog from the header, on no route of its own, so its
+ * read is an action rather than a page's server fetch: nothing loads until
+ * someone actually opens it, on whichever page they were already on.
+ */
+export async function loadAccount(): Promise<ActionResult<AccountView>> {
+  return attempt(async () => {
+    const viewer = await getViewer();
+    return account.accountOf(viewer);
+  });
+}
+
 export async function updateAccountDetails(input: AccountDetails): Promise<ActionResult<AccountDetails>> {
   return attempt(async () => {
     await getViewer();
     await wait(500);
-    const saved = account.saveDetails(input);
-    revalidatePath("/account");
-    return saved;
+    return account.saveDetails(input);
   });
 }
 
@@ -126,7 +137,6 @@ export async function signOutOtherDevices(): Promise<ActionResult<null>> {
     await getViewer();
     await wait(500);
     account.signOutOthers();
-    revalidatePath("/account");
     return null;
   });
 }

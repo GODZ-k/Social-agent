@@ -11,10 +11,6 @@ import { AiCostPanel } from "@/features/observability/ai-cost-panel";
 import { CostByClientPanel } from "@/features/observability/cost-by-client-panel";
 import { AttentionPanel } from "@/features/observability/attention-panel";
 
-// TODO: Cache Components adoption. Refactor this route so this opt-out can be removed.
-// See: https://nextjs.org/docs/app/guides/migrating-to-cache-components
-export const instant = false;
-
 export default async function ObservabilityOverviewPage({ searchParams }: { searchParams: Promise<{ range?: string; brand?: string }> }) {
   const { range, brandId } = parseObsSearchParams(await searchParams);
   const overview = await getObsOverview(range, { brandId });

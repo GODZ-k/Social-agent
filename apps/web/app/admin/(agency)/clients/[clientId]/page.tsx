@@ -5,10 +5,6 @@ import { ClientBrandsWorkspace } from "@/features/admin/client-brands-workspace"
 import { AboutClientPanel } from "@/features/admin/about-client-panel";
 import { AdminBrandCard } from "@/features/admin/admin-brand-card";
 
-// TODO: Cache Components adoption. Refactor this route so this opt-out can be removed.
-// See: https://nextjs.org/docs/app/guides/migrating-to-cache-components
-export const instant = false;
-
 export default async function AdminClientPage({ params }: { params: Promise<{ clientId: string }> }) {
   const { clientId } = await params;
   const view = await getAdminClient(clientId);

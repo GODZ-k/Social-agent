@@ -15,7 +15,7 @@ export function OnboardingHeader({ viewer, backTo }: { viewer: Viewer; backTo?: 
         </>
       )}
       <div className="ml-auto flex shrink-0 items-center gap-2">
-        <AccountMenu name={viewer.name} email={viewer.email} />
+        <AccountMenu viewer={viewer} />
       </div>
     </TopBarFrame>
   );
