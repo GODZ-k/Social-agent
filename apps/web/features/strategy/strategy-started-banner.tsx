@@ -39,7 +39,7 @@ export function StrategyStartedBanner({
           Ask for changes
         </Button>
         <Button asChild className="flex-1 lg:flex-none">
-          <Link href={workspaceHref(basePath, strategy.clientId, "/content")}>
+          <Link href={workspaceHref(basePath, strategy.brandId, "/content")}>
             See the drafts
             <ArrowRight />
           </Link>

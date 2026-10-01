@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { ApprovalStack } from "@/features/approvals/approval-stack";
 import { ReviewPostSheet } from "@/features/post/review-post-sheet";
-import { getClient, getStrategy, listReviewQueue, listSocialAccounts } from "@/lib/api/server";
+import { getBrand, getStrategy, listReviewQueue, listSocialAccounts } from "@/lib/api/server";
 import type { WorkspaceBasePath } from "@/lib/workspace-path";
 
 export default async function ApprovalsPage({
@@ -15,13 +15,13 @@ export default async function ApprovalsPage({
 }) {
   const { brandId } = await params;
   const { post: postId } = await searchParams;
-  const [client, queue, strategy, accounts] = await Promise.all([
-    getClient(brandId),
+  const [brand, queue, strategy, accounts] = await Promise.all([
+    getBrand(brandId),
     listReviewQueue(brandId),
     getStrategy(brandId),
     listSocialAccounts(brandId),
   ]);
-  if (!client) notFound();
+  if (!brand) notFound();
 
   return (
     <>
@@ -34,7 +34,7 @@ export default async function ApprovalsPage({
           </p>
         </div>
       </header>
-      <ApprovalStack brandId={brandId} queue={queue} brand={client.brand} strategy={strategy} accounts={accounts} basePath={basePath} />
+      <ApprovalStack brandId={brandId} queue={queue} brand={brand.brand} strategy={strategy} accounts={accounts} basePath={basePath} />
       {postId && <ReviewPostSheet postId={postId} />}
     </>
   );

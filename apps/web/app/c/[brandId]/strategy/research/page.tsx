@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { getClient, getResearch } from "@/lib/api/server";
+import { getBrand, getResearch } from "@/lib/api/server";
 import { PageHeader, EmptyState } from "@repo/ui/components/states";
 import { cn } from "@/lib/utils";
 import type { WorkspaceBasePath } from "@/lib/workspace-path";
@@ -20,8 +20,8 @@ export default async function StrategyResearchPage({
   basePath?: WorkspaceBasePath;
 }) {
   const { brandId } = await params;
-  const [client, research] = await Promise.all([getClient(brandId), getResearch(brandId)]);
-  if (!client) notFound();
+  const [brand, research] = await Promise.all([getBrand(brandId), getResearch(brandId)]);
+  if (!brand) notFound();
 
   const isRunning = research?.status === "queued" || research?.status === "running";
 

@@ -1,4 +1,5 @@
-import { PageHeader, SkeletonRows } from "@repo/ui/components/states";
+import { SkeletonRows } from "@repo/ui/components/states";
+import { ObsPageHeader } from "./obs-page-header";
 
 /**
  * The shell the four observability tabs share. Their heading is identical, so it paints
@@ -7,7 +8,7 @@ import { PageHeader, SkeletonRows } from "@repo/ui/components/states";
 export function ObsLoading() {
   return (
     <>
-      <PageHeader title="Observability" description="How the app, the server and the AI agents are doing, across every client." />
+      <ObsPageHeader />
       <SkeletonRows rows={4} className="[&>*]:h-24" />
     </>
   );

@@ -8,7 +8,7 @@ import { OnboardingEntry } from "@/features/onboarding/onboarding-entry";
 import { OnboardingLoadingSkeleton } from "@/features/onboarding/onboarding-loading-skeleton";
 import { OnboardingResumingSkeleton } from "@/features/onboarding/onboarding-resuming-skeleton";
 
-/** `for` names a client an admin is building a brand for; ignored unless the viewer is an admin and that client exists. */
+/** `for` names a brand an admin is building a brand for; ignored unless the viewer is an admin and that brand exists. */
 async function resolveAdminContext(personId: string | undefined): Promise<{ personId: string; personName: string } | null> {
   if (!personId) return null;
   const row = await getAdminClient(personId);
@@ -18,9 +18,9 @@ async function resolveAdminContext(personId: string | undefined): Promise<{ pers
 export default async function OnboardingPage({
   searchParams,
 }: {
-  searchParams: Promise<{ url?: string; clientId?: string; for?: string }>;
+  searchParams: Promise<{ url?: string; brandId?: string; for?: string }>;
 }) {
-  const [viewer, { url, clientId, for: personId }] = await Promise.all([getViewer(), searchParams]);
+  const [viewer, { url, brandId, for: personId }] = await Promise.all([getViewer(), searchParams]);
   const adminContext = await resolveAdminContext(personId);
 
   return (
@@ -29,10 +29,10 @@ export default async function OnboardingPage({
       {adminContext && <AdminActingNote />}
       <main className="mx-auto max-w-5xl px-4 pt-8 pb-24 md:px-6 md:pt-12">
         {/* The header above resolves fast (one lookup, or none); only this fetch is slow, so it gets
-            its own boundary — and its fallback can be chosen by whether `clientId` is present (a
+            its own boundary — and its fallback can be chosen by whether `brandId` is present (a
             fresh visit vs one resuming), which `loading.tsx` itself never gets to see. */}
-        <Suspense fallback={clientId ? <OnboardingResumingSkeleton /> : <OnboardingLoadingSkeleton />}>
-          <OnboardingEntry initialUrl={url ?? ""} clientId={clientId} personId={adminContext?.personId} personName={adminContext?.personName ?? null} />
+        <Suspense fallback={brandId ? <OnboardingResumingSkeleton /> : <OnboardingLoadingSkeleton />}>
+          <OnboardingEntry initialUrl={url ?? ""} brandId={brandId} personId={adminContext?.personId} personName={adminContext?.personName ?? null} />
         </Suspense>
       </main>
     </div>

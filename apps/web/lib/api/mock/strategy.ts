@@ -24,12 +24,12 @@ const versionRow = (strategy: Strategy): StrategyVersion => ({
 });
 
 export function versions(db: SeedData, strategy: Strategy): StrategyVersion[] {
-  return [versionRow(strategy), ...structuredClone(db.strategyHistory[strategy.clientId] ?? [])];
+  return [versionRow(strategy), ...structuredClone(db.strategyHistory[strategy.brandId] ?? [])];
 }
 
 /** Writes the next version as a draft with a fresh 30 minutes; the current one moves to history. */
 export function draftNext(db: SeedData, strategy: Strategy, changeNote: string | null): Strategy {
-  const history = (db.strategyHistory[strategy.clientId] ??= []);
+  const history = (db.strategyHistory[strategy.brandId] ??= []);
   history.unshift({ ...versionRow(strategy), status: "superseded" });
   const generatedAt = new Date();
   Object.assign(strategy, {

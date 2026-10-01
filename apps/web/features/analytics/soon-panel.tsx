@@ -1,4 +1,5 @@
 import { Panel } from "@repo/ui/components/states";
+import { IconCircle } from "@repo/ui/components/icon-circle";
 
 /** A panel that isn't ready to show numbers yet, and says plainly when it will be. */
 export function SoonPanel({
@@ -19,7 +20,7 @@ export function SoonPanel({
       <h2 className="type-heading">{title}</h2>
       <p className="type-label mt-0.5">{description}</p>
       <div className="mt-4 flex items-start gap-4 rounded-xl bg-secondary/60 p-4">
-        <span className="grid size-10 shrink-0 place-items-center rounded-full bg-tint text-tint-foreground [&_svg]:size-4">{icon}</span>
+        <IconCircle className="size-10 bg-tint text-tint-foreground [&_svg]:size-4">{icon}</IconCircle>
         <div>
           <p className="font-medium">{heading}</p>
           <p className="type-label mt-1">{body}</p>

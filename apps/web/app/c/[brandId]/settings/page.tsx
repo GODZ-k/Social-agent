@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { getClient, getPreferences, listSocialAccounts } from "@/lib/api/server";
+import { getBrand, getPreferences, listSocialAccounts } from "@/lib/api/server";
 import { getViewer } from "@/lib/auth/viewer";
 import { PageHeader } from "@repo/ui/components/states";
 import { resolveTab } from "@/features/settings/tabs";
@@ -19,8 +19,8 @@ export default async function SettingsPage({
   searchParams: Promise<{ tab?: string }>;
 }) {
   const [{ brandId }, { tab: tabParam }] = await Promise.all([params, searchParams]);
-  const [client, viewer] = await Promise.all([getClient(brandId), getViewer()]);
-  if (!client) notFound();
+  const [brand, viewer] = await Promise.all([getBrand(brandId), getViewer()]);
+  if (!brand) notFound();
 
   const [preferences, accounts] = await Promise.all([getPreferences(brandId), listSocialAccounts(brandId)]);
   const tab = resolveTab(tabParam);
@@ -29,19 +29,19 @@ export default async function SettingsPage({
 
   return (
     <>
-      <PageHeader title="Settings" description={`The brand kit, social accounts and preferences for ${client.name}.`} />
+      <PageHeader title="Settings" description={`The brand kit, social accounts and preferences for ${brand.name}.`} />
 
-      {client.status === "archived" && <ArchivedBanner client={client} className="mb-6" />}
+      {brand.status === "archived" && <ArchivedBanner brand={brand} className="mb-6" />}
 
       <SettingsTabs tab={tab} needsConnection={needsConnection} />
 
       <TabTransition tab={tab}>
-        {tab === "brand" && <SettingsBrandKitForm client={client} accounts={accounts} />}
-        {tab === "accounts" && <SocialAccounts brandId={client.id} accounts={accounts} />}
+        {tab === "brand" && <SettingsBrandKitForm brand={brand} accounts={accounts} />}
+        {tab === "accounts" && <SocialAccounts brandId={brand.id} accounts={accounts} />}
         {tab === "preferences" && (
           <div className="grid gap-5">
-            {preferences && <PreferencesForm brandId={client.id} preferences={preferences} />}
-            <DangerZone client={client} isAdmin={isAdmin} />
+            {preferences && <PreferencesForm brandId={brand.id} preferences={preferences} />}
+            <DangerZone brand={brand} isAdmin={isAdmin} />
           </div>
         )}
       </TabTransition>

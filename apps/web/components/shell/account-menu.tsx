@@ -7,7 +7,7 @@ import { signOut } from "@/lib/auth/actions";
 import type { Viewer } from "@/lib/types";
 import { HeaderMenu, HeaderMenuItem, HeaderMenuItemText, HeaderMenuSeparator } from "./header-menu";
 import { ThemeChoice } from "./theme-choice";
-import { AccountAvatar } from "./account-avatar";
+import { AccountAvatar } from "@repo/ui/components/account-avatar";
 
 /**
  * The account dialog is in every header but wanted on almost no page load, and it

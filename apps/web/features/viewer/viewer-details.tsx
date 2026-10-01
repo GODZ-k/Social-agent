@@ -65,7 +65,6 @@ export function ViewerDetails({ post, strategy, connected, onApprove, onReject, 
 
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-[1fr_1.3fr_1fr] lg:grid-cols-2">
           <Button
-            size="lg"
             variant="outline"
             className="col-start-1 row-start-1 text-destructive sm:col-start-1 sm:row-start-1 sm:px-3 lg:col-start-2 lg:row-start-2 lg:px-6"
             onClick={onReject}
@@ -73,7 +72,6 @@ export function ViewerDetails({ post, strategy, connected, onApprove, onReject, 
             <X /> Reject
           </Button>
           <Button
-            size="lg"
             variant="outline"
             className="col-span-2 row-start-2 sm:col-span-1 sm:col-start-2 sm:row-start-1 sm:px-3 lg:col-span-1 lg:col-start-1 lg:row-start-2 lg:px-6"
             onClick={onAsk}
@@ -81,7 +79,6 @@ export function ViewerDetails({ post, strategy, connected, onApprove, onReject, 
             <Pencil /> Ask for changes
           </Button>
           <Button
-            size="lg"
             className="col-start-2 row-start-1 bg-success text-white hover:brightness-105 sm:col-start-3 sm:row-start-1 sm:px-3 lg:col-span-2 lg:col-start-1 lg:row-start-1 lg:px-6"
             onClick={onApprove}
           >

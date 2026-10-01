@@ -1,32 +1,32 @@
 import "server-only";
 import { platformSchema } from "@social-agent/shared";
 import type { Platform } from "@social-agent/shared";
-import type { Client, ConnectionState, OnboardingState, Preferences, SocialAccountRow } from "@/lib/types";
+import type { Brand, ConnectionState, OnboardingState, Preferences, SocialAccountRow } from "@/lib/types";
 import { stateOf } from "./posts";
 import type { SeedData } from "./seed";
 
 /** Settings and onboarding views of one brand: accounts, preferences and where onboarding stands. */
 
-export function connectionOf(db: SeedData, client: Client, platform: Platform): ConnectionState {
-  const account = client.accounts.find((a) => a.platform === platform);
+export function connectionOf(db: SeedData, brand: Brand, platform: Platform): ConnectionState {
+  const account = brand.accounts.find((a) => a.platform === platform);
   if (account) return account.status;
-  return db.extras[client.id]?.connectErrors[platform] ? "connect_failed" : "not_connected";
+  return db.extras[brand.id]?.connectErrors[platform] ? "connect_failed" : "not_connected";
 }
 
 /** Every platform: the planned ones first, then the rest so they can be added. */
-export function socialAccounts(db: SeedData, client: Client): SocialAccountRow[] {
-  const extras = db.extras[client.id];
+export function socialAccounts(db: SeedData, brand: Brand): SocialAccountRow[] {
+  const extras = db.extras[brand.id];
   const platforms = platformSchema.options.slice().sort(
-    (a, b) => Number(client.platforms.includes(b)) - Number(client.platforms.includes(a)),
+    (a, b) => Number(brand.platforms.includes(b)) - Number(brand.platforms.includes(a)),
   );
-  const own = db.posts.filter((p) => p.clientId === client.id);
+  const own = db.posts.filter((p) => p.brandId === brand.id);
   return platforms.map((platform) => {
-    const account = client.accounts.find((a) => a.platform === platform);
-    const postsWaiting = own.filter((p) => p.platform === platform && stateOf(p, client) === "waiting_for_connection").length;
+    const account = brand.accounts.find((a) => a.platform === platform);
+    const postsWaiting = own.filter((p) => p.platform === platform && stateOf(p, brand) === "waiting_for_connection").length;
     return {
       platform,
-      inPlan: client.platforms.includes(platform),
-      state: connectionOf(db, client, platform),
+      inPlan: brand.platforms.includes(platform),
+      state: connectionOf(db, brand, platform),
       handle: account?.handle ?? null,
       connectedAt: account?.connectedAt ?? null,
       expiresAt: extras?.accessExpiresAt[platform] ?? null,
@@ -36,12 +36,12 @@ export function socialAccounts(db: SeedData, client: Client): SocialAccountRow[]
   });
 }
 
-export function preferencesOf(db: SeedData, client: Client): Preferences {
+export function preferencesOf(db: SeedData, brand: Brand): Preferences {
   return {
-    timezone: client.preferences.timezone,
-    postLanguage: db.extras[client.id]?.postLanguage ?? "en",
-    chatLanguage: client.preferences.chatLanguage ?? "en",
-    approvalEmails: client.preferences.approvalEmails,
+    timezone: brand.preferences.timezone,
+    postLanguage: db.extras[brand.id]?.postLanguage ?? "en",
+    chatLanguage: brand.preferences.chatLanguage ?? "en",
+    approvalEmails: brand.preferences.approvalEmails,
   };
 }
 
@@ -62,10 +62,10 @@ function offsetMinutes(timeZone: string, at: Date) {
 }
 
 /** A timezone change keeps each upcoming post at the same clock time (owner decision, S15). */
-export function keepClockTimes(db: SeedData, client: Client, from: string, to: string) {
+export function keepClockTimes(db: SeedData, brand: Brand, from: string, to: string) {
   const now = Date.now();
   for (const post of db.posts) {
-    if (post.clientId !== client.id || !post.scheduledFor || post.status === "published") continue;
+    if (post.brandId !== brand.id || !post.scheduledFor || post.status === "published") continue;
     const at = new Date(post.scheduledFor);
     if (at.getTime() < now) continue;
     const shift = offsetMinutes(from, at) - offsetMinutes(to, at);
@@ -73,15 +73,15 @@ export function keepClockTimes(db: SeedData, client: Client, from: string, to: s
   }
 }
 
-export function onboardingOf(db: SeedData, client: Client): OnboardingState {
-  const connections = client.platforms.map((platform) => ({ platform, state: connectionOf(db, client, platform) }));
-  const connectSkipped = db.extras[client.id]?.connectSkipped ?? false;
-  const questionnaire = db.questionnaires[client.id]?.state.status ?? "not_started";
-  const research = db.research[client.id]?.view.status ?? null;
+export function onboardingOf(db: SeedData, brand: Brand): OnboardingState {
+  const connections = brand.platforms.map((platform) => ({ platform, state: connectionOf(db, brand, platform) }));
+  const connectSkipped = db.extras[brand.id]?.connectSkipped ?? false;
+  const questionnaire = db.questionnaires[brand.id]?.state.status ?? "not_started";
+  const research = db.research[brand.id]?.view.status ?? null;
   const connected = connections.some((c) => c.state === "connected");
   let step: OnboardingState["step"] = "done";
   if (!connected && !connectSkipped) step = "connect";
   else if (questionnaire !== "approved") step = "questionnaire";
   else if (research !== "done") step = "research";
-  return { clientId: client.id, step, platforms: client.platforms, connections, connectSkipped, questionnaire, research };
+  return { brandId: brand.id, step, platforms: brand.platforms, connections, connectSkipped, questionnaire, research };
 }

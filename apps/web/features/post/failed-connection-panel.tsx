@@ -61,7 +61,7 @@ export function FailedConnectionPanel({ post, brand }: { post: PostView; brand: 
           <Button type="button" variant="outline" className="mr-auto" disabled={pending} onClick={() => retry.run(post.id, when)}>
             <Pencil /> Change and try again
           </Button>
-          <Button type="button" disabled={pending} onClick={() => reconnect.run(post.clientId, post.platform)}>
+          <Button type="button" disabled={pending} onClick={() => reconnect.run(post.brandId, post.platform)}>
             <PlatformIcon platform={post.platform} /> Reconnect {platformLabel} and try again
           </Button>
         </>

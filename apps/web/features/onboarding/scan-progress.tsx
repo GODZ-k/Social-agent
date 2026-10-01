@@ -30,7 +30,6 @@ export function ScanProgress({
 }: {
   url: string;
   activeIndex: number;
-  /** The draft kit found so far; each row below reveals its own field once it's ready. */
   preview: ScanResult | null;
   onChangeAddress: () => void;
 }) {
@@ -90,7 +89,7 @@ export function ScanProgress({
         <Panel className="max-[560px]:order-first">
           <h2 className="type-heading">Your brand kit so far</h2>
           <p className="type-label mt-1">Your colours, fonts and how you sound. It fills in as the agent reads, and you can change all of it next.</p>
-          <ul className="mt-4 grid gap-3">
+          <ul className="mt-4 grid grid-cols-[minmax(0,1fr)] gap-3">
             {KIT_ROWS.map((row) => (
               <li key={row.label} className="flex items-center justify-between gap-3 border-t pt-3 first:border-t-0 first:pt-0">
                 <span className="type-label shrink-0">{row.label}</span>
@@ -130,7 +129,7 @@ function kitRowStatus(row: KitRow, activeIndex: number, preview: ScanResult | nu
   const ready = activeIndex > row.readyFrom;
   if (!ready || !preview) return <span className="skeleton h-4 w-24 rounded-full" />;
   return (
-    <span className="flex min-w-0 items-center gap-2">
+    <span className="flex min-w-0 flex-1 items-center justify-end gap-2">
       {kitValue(row.label, preview)}
       <span className="flex shrink-0 items-center gap-1.5 text-[0.8125rem] font-medium text-success">
         <Check className="size-3.5" strokeWidth={3} />
@@ -143,10 +142,10 @@ function kitRowStatus(row: KitRow, activeIndex: number, preview: ScanResult | nu
 function kitValue(label: FoundLabel, preview: ScanResult) {
   switch (label) {
     case "Name":
-      return <span className="truncate font-medium">{preview.name}</span>;
+      return <span className="min-w-0 truncate font-medium">{preview.name}</span>;
     case "Colours":
       return (
-        <span className="flex shrink-0 gap-1.5">
+        <span className="flex min-w-0 flex-wrap justify-end gap-1.5">
           {preview.brand.colors.map((color) => (
             <span key={color.hex} title={color.hex} className="size-4.5 rounded-md ring-1 ring-border" style={{ background: color.hex }} />
           ))}
@@ -154,15 +153,15 @@ function kitValue(label: FoundLabel, preview: ScanResult) {
       );
     case "Typefaces":
       return (
-        <span className="truncate">
+        <span className="min-w-0 truncate">
           <span className="font-medium">{preview.brand.fonts.heading}</span> for headings, <span className="font-medium">{preview.brand.fonts.body}</span>{" "}
           for text
         </span>
       );
     case "What you sell":
-      return <span className="truncate">{preview.brand.summary}</span>;
+      return <span className="min-w-0 truncate">{preview.brand.summary}</span>;
     case "Who it's for":
-      return <span className="truncate">{preview.brand.audience}</span>;
+      return <span className="min-w-0 truncate">{preview.brand.audience}</span>;
   }
 }
 

@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { getClient, getStrategy, listContent } from "@/lib/api/server";
+import { getBrand, getStrategy, listContent } from "@/lib/api/server";
 import type { WorkspaceBasePath } from "@/lib/workspace-path";
 import { ContentWorkspace } from "@/features/content/content-workspace";
 import { ReviewPostSheet } from "@/features/post/review-post-sheet";
@@ -14,17 +14,17 @@ export default async function ContentPage({
   basePath?: WorkspaceBasePath;
 }) {
   const [{ brandId }, { post: postId }] = await Promise.all([params, searchParams]);
-  const [client, posts, strategy] = await Promise.all([getClient(brandId), listContent(brandId), getStrategy(brandId)]);
-  if (!client) notFound();
+  const [brand, posts, strategy] = await Promise.all([getBrand(brandId), listContent(brandId), getStrategy(brandId)]);
+  if (!brand) notFound();
 
   return (
     <>
       <ContentWorkspace
         posts={posts}
-        brand={client.brand}
+        brand={brand.brand}
         brandId={brandId}
         strategy={strategy}
-        platforms={client.platforms}
+        platforms={brand.platforms}
         basePath={basePath}
       />
       {postId && <ReviewPostSheet postId={postId} />}

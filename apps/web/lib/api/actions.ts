@@ -5,10 +5,11 @@ import { addDays, addHours, startOfDay } from "date-fns";
 import { inviteClientSchema } from "@social-agent/shared";
 import type { InviteClientInput, Language, Platform, QuestionnaireSubmitResponse } from "@social-agent/shared";
 import { getViewer } from "@/lib/auth/viewer";
-import { addBrand, getDb, recounted, removeClient } from "./mock/db";
+import { clone } from "./clone";
+import { addBrand, getDb, recounted, removeBrand } from "./mock/db";
 import * as account from "./mock/account";
 import * as admin from "./mock/admin";
-import { newClient, settleResearch } from "./mock/brand-flow";
+import { newBrand, settleResearch } from "./mock/brand-flow";
 import * as posts from "./mock/posts";
 import * as questionnaire from "./mock/questionnaire";
 import * as research from "./mock/research";
@@ -25,10 +26,10 @@ import type {
   AlertKind,
   AlertRow,
   BrandCard,
-  Client,
-  ClientPatch,
+  Brand,
+  BrandEdit,
   ConnectableChannelKind,
-  NewClientInput,
+  NewBrandDraft,
   NotificationChannel,
   OnboardingState,
   Post,
@@ -45,7 +46,7 @@ import type {
 } from "@/lib/types";
 
 /**
- * Writes, called from client components as Server Actions.
+ * Writes, called from brand components as Server Actions.
  *
  * Every action authenticates first, changes the mock, revalidates the routes
  * that show the changed data, and returns an ActionResult. Against the real
@@ -53,24 +54,23 @@ import type {
  */
 
 const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
-const clone = <T,>(v: T): T => structuredClone(v);
 
 const NOT_FOUND = "This client doesn't exist, or you don't have access to it.";
 const NO_POST = "This post no longer exists.";
 
 /** Same answer for "missing" and "not yours", so ids can't be probed. */
-async function requireClient(id: string): Promise<Client> {
+async function requireBrand(id: string): Promise<Brand> {
   const viewer = await getViewer();
-  const client = getDb().clients.find((c) => c.id === id);
-  if (!client || (viewer.role !== "admin" && client.ownerId !== viewer.id)) throw new Error(NOT_FOUND);
-  return client;
+  const brand = getDb().brands.find((c) => c.id === id);
+  if (!brand || (viewer.role !== "admin" && brand.ownerId !== viewer.id)) throw new Error(NOT_FOUND);
+  return brand;
 }
 
-async function requirePost(postId: string): Promise<{ post: Post; client: Client }> {
+async function requirePost(postId: string): Promise<{ post: Post; brand: Brand }> {
   const post = getDb().posts.find((p) => p.id === postId);
   if (!post) throw new Error(NO_POST);
-  const client = await requireClient(post.clientId);
-  return { post, client };
+  const brand = await requireBrand(post.brandId);
+  return { post, brand };
 }
 
 async function requireAdmin() {
@@ -85,10 +85,10 @@ function requirePerson(clientId: string) {
   return person;
 }
 
-function revalidateClient(clientId: string) {
+function revalidateBrand(brandId: string) {
   revalidatePath("/");
-  revalidatePath(`/c/${clientId}`, "layout");
-  revalidatePath(`/admin/c/${clientId}`, "layout");
+  revalidatePath(`/c/${brandId}`, "layout");
+  revalidatePath(`/admin/c/${brandId}`, "layout");
   revalidatePath("/onboarding", "layout");
 }
 
@@ -160,32 +160,32 @@ export async function readScan(scanId: string): Promise<ActionResult<Scan>> {
 }
 
 /** Saves the checked brand kit and chosen platforms as a new brand (S17a). */
-export async function createClient(input: NewClientInput): Promise<ActionResult<Client>> {
+export async function createBrand(input: NewBrandDraft): Promise<ActionResult<Brand>> {
   return attempt(async () => {
     await wait(700);
     const viewer = await getViewer();
     const db = getDb();
-    const client = newClient(db, input, viewer.id);
-    addBrand(client);
+    const brand = newBrand(db, input, viewer.id);
+    addBrand(brand);
     revalidatePath("/");
-    return clone(client);
+    return clone(brand);
   });
 }
 
 /** Settings: brand kit (per card), business details, planned platforms and preferences. */
-export async function updateClient(id: string, patch: ClientPatch): Promise<ActionResult<Client>> {
+export async function updateBrand(id: string, patch: BrandEdit): Promise<ActionResult<Brand>> {
   return attempt(async () => {
     await wait(600);
-    const client = await requireClient(id);
-    Object.assign(client, patch);
+    const brand = await requireBrand(id);
+    Object.assign(brand, patch);
     // The workspace accent always follows the first brand colour.
-    if (patch.brand) client.accent = patch.brand.colors[0]?.hex ?? client.accent;
+    if (patch.brand) brand.accent = patch.brand.colors[0]?.hex ?? brand.accent;
     // The kit's "last edited" date only moves when a kit field (not preferences) changed.
     if (patch.name || patch.industry || patch.brand || patch.business || patch.platforms) {
-      client.kitEditedAt = new Date().toISOString();
+      brand.kitEditedAt = new Date().toISOString();
     }
-    revalidateClient(id);
-    return clone(client);
+    revalidateBrand(id);
+    return clone(brand);
   });
 }
 
@@ -196,33 +196,33 @@ export async function updateClient(id: string, patch: ClientPatch): Promise<Acti
  * `onboardingOf` (lib/api/mock/settings.ts) lands back on "connect" and every step runs again in
  * order — nothing is skipped by a leftover "already connected" or "already skipped" flag.
  */
-export async function rescanBrandKit(id: string, patch: ClientPatch): Promise<ActionResult<Client>> {
+export async function rescanBrandKit(id: string, patch: BrandEdit): Promise<ActionResult<Brand>> {
   return attempt(async () => {
     await wait(600);
-    const client = await requireClient(id);
-    Object.assign(client, patch);
-    if (patch.brand) client.accent = patch.brand.colors[0]?.hex ?? client.accent;
-    client.kitEditedAt = new Date().toISOString();
-    client.accounts = [];
+    const brand = await requireBrand(id);
+    Object.assign(brand, patch);
+    if (patch.brand) brand.accent = patch.brand.colors[0]?.hex ?? brand.accent;
+    brand.kitEditedAt = new Date().toISOString();
+    brand.accounts = [];
     const db = getDb();
     db.questionnaires[id] = questionnaire.notStarted();
-    // Not `delete`: `submitQuestionnaire` reads `db.research[clientId]!` once the (re-taken)
+    // Not `delete`: `submitQuestionnaire` reads `db.research[brandId]!` once the (re-taken)
     // questionnaire is approved again, so a record has to exist, freshly reset like a first scan's.
-    db.research[id] = research.newResearch(client);
+    db.research[id] = research.newResearch(brand);
     const extras = db.extras[id];
     if (extras) extras.connectSkipped = false;
-    revalidateClient(id);
-    return clone(client);
+    revalidateBrand(id);
+    return clone(brand);
   });
 }
 
-async function setBrandStatus(id: string, status: Client["status"]): Promise<BrandCard> {
-  const client = await requireClient(id);
-  client.status = status;
-  revalidateClient(id);
+async function setBrandStatus(id: string, status: Brand["status"]): Promise<BrandCard> {
+  const brand = await requireBrand(id);
+  brand.status = status;
+  revalidateBrand(id);
   revalidateAdmin();
   const db = getDb();
-  return admin.brandCardOf(db, client);
+  return admin.brandCardOf(db, brand);
 }
 
 /** Archive instead of delete (S16). The brand leaves every list; its data stays. */
@@ -240,12 +240,12 @@ export async function restoreBrand(id: string): Promise<ActionResult<BrandCard>>
   });
 }
 
-export async function deleteClient(id: string): Promise<ActionResult<null>> {
+export async function deleteBrand(id: string): Promise<ActionResult<null>> {
   return attempt(async () => {
     await wait(700);
-    await requireClient(id);
-    removeClient(id);
-    revalidateClient(id);
+    await requireBrand(id);
+    removeBrand(id);
+    revalidateBrand(id);
     return null;
   });
 }
@@ -258,99 +258,99 @@ export async function deleteClient(id: string): Promise<ActionResult<null>> {
  * Against the real API this is a redirect, not a request: the API returns the
  * network's OAuth consent URL, the browser goes there, and the network sends the
  * person back to Settings with the account connected. The mock skips the trip
- * and connects a handle derived from the client's name.
+ * and connects a handle derived from the brand's name.
  */
-export async function connectAccount(clientId: string, platform: Platform): Promise<ActionResult<Client>> {
+export async function connectAccount(brandId: string, platform: Platform): Promise<ActionResult<Brand>> {
   return attempt(async () => {
     await wait(1400);
-    const client = await requireClient(clientId);
-    const extras = getDb().extras[clientId];
+    const brand = await requireBrand(brandId);
+    const extras = getDb().extras[brandId];
     const connectedAt = new Date();
-    client.accounts = [
-      ...client.accounts.filter((a) => a.platform !== platform),
-      { platform, handle: handleFor(client.name), status: "connected", connectedAt: connectedAt.toISOString() },
+    brand.accounts = [
+      ...brand.accounts.filter((a) => a.platform !== platform),
+      { platform, handle: handleFor(brand.name), status: "connected", connectedAt: connectedAt.toISOString() },
     ];
     if (extras) {
       delete extras.connectErrors[platform];
       extras.accessExpiresAt[platform] = addDays(connectedAt, 60).toISOString();
     }
-    revalidateClient(clientId);
-    return clone(client);
+    revalidateBrand(brandId);
+    return clone(brand);
   });
 }
 
-export async function disconnectAccount(clientId: string, platform: Platform): Promise<ActionResult<Client>> {
+export async function disconnectAccount(brandId: string, platform: Platform): Promise<ActionResult<Brand>> {
   return attempt(async () => {
     await wait(500);
-    const client = await requireClient(clientId);
-    client.accounts = client.accounts.filter((a) => a.platform !== platform);
-    delete getDb().extras[clientId]?.accessExpiresAt[platform];
-    revalidateClient(clientId);
-    return clone(client);
+    const brand = await requireBrand(brandId);
+    brand.accounts = brand.accounts.filter((a) => a.platform !== platform);
+    delete getDb().extras[brandId]?.accessExpiresAt[platform];
+    revalidateBrand(brandId);
+    return clone(brand);
   });
 }
 
 /** "Skip, connect later" in onboarding (S17b). Approved posts wait for the connection. */
-export async function skipConnecting(clientId: string): Promise<ActionResult<OnboardingState>> {
+export async function skipConnecting(brandId: string): Promise<ActionResult<OnboardingState>> {
   return attempt(async () => {
-    const client = await requireClient(clientId);
+    const brand = await requireBrand(brandId);
     const db = getDb();
-    db.extras[clientId]!.connectSkipped = true;
-    revalidateClient(clientId);
-    const state = settings.onboardingOf(db, client);
+    db.extras[brandId]!.connectSkipped = true;
+    revalidateBrand(brandId);
+    const state = settings.onboardingOf(db, brand);
     return state;
   });
 }
 
 /** An admin's alternative to connecting now: the client gets a link and connects themselves (S17b in admin context). */
-export async function sendConnectLink(clientId: string): Promise<ActionResult<{ email: string }>> {
+export async function sendConnectLink(brandId: string): Promise<ActionResult<{ email: string }>> {
   return attempt(async () => {
     await requireAdmin();
-    const client = await requireClient(clientId);
-    const person = requirePerson(client.ownerId);
-    const extras = getDb().extras[clientId];
+    const brand = await requireBrand(brandId);
+    const person = requirePerson(brand.ownerId);
+    const extras = getDb().extras[brandId];
     if (extras) extras.connectLinkSentAt = new Date().toISOString();
     return { email: person.email };
   });
 }
 
-export async function updatePreferences(clientId: string, preferences: Preferences): Promise<ActionResult<Preferences>> {
+export async function updatePreferences(brandId: string, preferences: Preferences): Promise<ActionResult<Preferences>> {
   return attempt(async () => {
     await wait(500);
-    const client = await requireClient(clientId);
+    const brand = await requireBrand(brandId);
     const db = getDb();
-    if (preferences.timezone !== client.preferences.timezone) {
-      settings.keepClockTimes(db, client, client.preferences.timezone, preferences.timezone);
+    if (preferences.timezone !== brand.preferences.timezone) {
+      settings.keepClockTimes(db, brand, brand.preferences.timezone, preferences.timezone);
     }
-    client.preferences = {
+    brand.preferences = {
       timezone: preferences.timezone,
       approvalEmails: preferences.approvalEmails,
       chatLanguage: preferences.chatLanguage,
     };
-    db.extras[clientId]!.postLanguage = preferences.postLanguage;
-    revalidateClient(clientId);
-    const saved = settings.preferencesOf(db, client);
+    db.extras[brandId]!.postLanguage = preferences.postLanguage;
+    revalidateBrand(brandId);
+    const saved = settings.preferencesOf(db, brand);
     return saved;
   });
 }
 
 /* Questionnaire and research */
 
-async function requireQuestionnaire(clientId: string) {
-  const client = await requireClient(clientId);
-  const record = getDb().questionnaires[clientId];
+async function requireQuestionnaire(brandId: string) {
+  const brand = await requireBrand(brandId);
+  const record = getDb().questionnaires[brandId];
   if (!record) throw new Error(NOT_FOUND);
-  return { client, record };
+  return { brand, record };
 }
 
 /** Writes the questions in the chosen chat language (S18a). */
-export async function startQuestionnaire(clientId: string, chatLanguage: Language): Promise<ActionResult<QuestionnaireView>> {
+export async function startQuestionnaire(brandId: string, chatLanguage: Language): Promise<ActionResult<QuestionnaireView>> {
   return attempt(async () => {
     await wait(1800);
-    const { client, record } = await requireQuestionnaire(clientId);
-    questionnaire.start(record, client, chatLanguage);
-    client.preferences.chatLanguage = chatLanguage;
-    revalidateClient(clientId);
+    const { brand, record } = await requireQuestionnaire(brandId);
+    questionnaire.start(record, brand, chatLanguage);
+    brand.preferences.chatLanguage = chatLanguage;
+    revalidateBrand(brandId);
     const view = questionnaire.viewOf(record);
     return view;
   });
@@ -358,7 +358,7 @@ export async function startQuestionnaire(clientId: string, chatLanguage: Languag
 
 /** Saves one answer, first time or edited later (S18b-d, S18f). Later answers are never reset. */
 export async function answerQuestion(
-  clientId: string,
+  brandId: string,
   sessionId: string,
   questionId: string,
   answer: QuestionAnswer,
@@ -366,26 +366,26 @@ export async function answerQuestion(
   return attempt(async () => {
     await wait(250);
     const viewer = await getViewer();
-    const { record } = await requireQuestionnaire(clientId);
+    const { record } = await requireQuestionnaire(brandId);
     const answeredBy = viewer.role === "admin" ? "agency" : "client";
     questionnaire.answer(record, sessionId, questionId, answer, answeredBy);
-    revalidateClient(clientId);
+    revalidateBrand(brandId);
     const view = questionnaire.viewOf(record);
     return view;
   });
 }
 
 /** The summary's "Looks right" (S18e): follow-ups the first time, then approval starts research. */
-export async function submitQuestionnaire(clientId: string, sessionId?: string): Promise<ActionResult<QuestionnaireSubmitResponse>> {
+export async function submitQuestionnaire(brandId: string, sessionId?: string): Promise<ActionResult<QuestionnaireSubmitResponse>> {
   return attempt(async () => {
     await wait(1500);
-    const { record } = await requireQuestionnaire(clientId);
+    const { record } = await requireQuestionnaire(brandId);
     const db = getDb();
     const review = questionnaire.review(record, sessionId);
-    revalidateClient(clientId);
+    revalidateBrand(brandId);
     if (!review.approved) return { ...review, final: false, reopen: [] };
-    db.extras[clientId]!.postLanguage = record.facts!.postLanguage;
-    const researchRecord = db.research[clientId]!;
+    db.extras[brandId]!.postLanguage = record.facts!.postLanguage;
+    const researchRecord = db.research[brandId]!;
     research.run(researchRecord);
     const view = clone(researchRecord.view);
     return { approved: true, research: view };
@@ -393,24 +393,24 @@ export async function submitQuestionnaire(clientId: string, sessionId?: string):
 }
 
 /** Runs research, first time, after a failure, or again (S19c, S21b). The current version stays readable. */
-export async function runResearch(clientId: string): Promise<ActionResult<ResearchView>> {
+export async function runResearch(brandId: string): Promise<ActionResult<ResearchView>> {
   return attempt(async () => {
-    await requireClient(clientId);
+    await requireBrand(brandId);
     const db = getDb();
-    if (!questionnaire.isApproved(db.questionnaires[clientId])) throw new Error("Finish the questionnaire before research can start.");
-    const record = db.research[clientId]!;
+    if (!questionnaire.isApproved(db.questionnaires[brandId])) throw new Error("Finish the questionnaire before research can start.");
+    const record = db.research[brandId]!;
     research.run(record);
-    revalidateClient(clientId);
+    revalidateBrand(brandId);
     return clone(record.view);
   });
 }
 
 /** Polled by the research screens while a run is going. */
-export async function readResearch(clientId: string): Promise<ActionResult<ResearchView>> {
+export async function readResearch(brandId: string): Promise<ActionResult<ResearchView>> {
   return attempt(async () => {
-    const client = await requireClient(clientId);
+    const brand = await requireBrand(brandId);
     const db = getDb();
-    const view = settleResearch(db, client);
+    const view = settleResearch(db, brand);
     if (!view) throw new Error(NOT_FOUND);
     return clone(view);
   });
@@ -418,48 +418,48 @@ export async function readResearch(clientId: string): Promise<ActionResult<Resea
 
 /* Strategy */
 
-async function requireStrategy(clientId: string) {
-  await requireClient(clientId);
-  const strategy = getDb().strategies.find((s) => s.clientId === clientId);
+async function requireStrategy(brandId: string) {
+  await requireBrand(brandId);
+  const strategy = getDb().strategies.find((s) => s.brandId === brandId);
   if (!strategy) throw new Error("No strategy has been drafted for this brand yet.");
   return strategies.settle(strategy);
 }
 
 /** "Start now" on a draft (S20a). Sets `approvedBy`; starting never publishes. */
-export async function startStrategyNow(clientId: string): Promise<ActionResult<Strategy>> {
+export async function startStrategyNow(brandId: string): Promise<ActionResult<Strategy>> {
   return attempt(async () => {
     await wait(600);
-    const strategy = await requireStrategy(clientId);
+    const strategy = await requireStrategy(brandId);
     const viewer = await getViewer();
     strategies.startNow(strategy, viewer.id);
-    revalidateClient(clientId);
+    revalidateBrand(brandId);
     return clone(strategy);
   });
 }
 
 /** "Ask for changes" (S20b): the next version, as a draft with a fresh 30 minutes. */
-export async function askForStrategyChanges(clientId: string, request: string): Promise<ActionResult<Strategy>> {
+export async function askForStrategyChanges(brandId: string, request: string): Promise<ActionResult<Strategy>> {
   return attempt(async () => {
     const note = request.trim();
     if (!note) throw new Error("Say what you would like changed.");
     await wait(2400);
-    const strategy = await requireStrategy(clientId);
+    const strategy = await requireStrategy(brandId);
     const db = getDb();
     strategies.draftNext(db, strategy, note);
-    revalidateClient(clientId);
+    revalidateBrand(brandId);
     return clone(strategy);
   });
 }
 
 /** The "AI learns, new strategy" step of the loop: a rewrite from learnings, as a new draft. */
-export async function regenerateStrategy(clientId: string): Promise<ActionResult<Strategy>> {
+export async function regenerateStrategy(brandId: string): Promise<ActionResult<Strategy>> {
   return attempt(async () => {
     await wait(2400);
-    const strategy = await requireStrategy(clientId);
+    const strategy = await requireStrategy(brandId);
     const db = getDb();
     strategies.draftNext(db, strategy, null);
     strategies.shiftMixTowardLeader(strategy);
-    revalidateClient(clientId);
+    revalidateBrand(brandId);
     return clone(strategy);
   });
 }
@@ -467,48 +467,48 @@ export async function regenerateStrategy(clientId: string): Promise<ActionResult
 /* Posts */
 
 /** The strategy new posts are drafted from, and how many posts the brand already has. */
-function draftingContext(clientId: string): { strategy: Strategy; existing: number } {
+function draftingContext(brandId: string): { strategy: Strategy; existing: number } {
   const db = getDb();
-  const strategy = db.strategies.find((s) => s.clientId === clientId);
+  const strategy = db.strategies.find((s) => s.brandId === brandId);
   if (!strategy) throw new Error("Generate a strategy before creating content.");
-  const existing = db.posts.filter((p) => p.clientId === clientId).length;
+  const existing = db.posts.filter((p) => p.brandId === brandId).length;
   return { strategy, existing };
 }
 
-export async function generatePosts(clientId: string, count: number): Promise<ActionResult<Post[]>> {
+export async function generatePosts(brandId: string, count: number): Promise<ActionResult<Post[]>> {
   return attempt(async () => {
     await wait(2200);
-    const client = await requireClient(clientId);
+    const brand = await requireBrand(brandId);
     const db = getDb();
-    const { strategy, existing } = draftingContext(clientId);
+    const { strategy, existing } = draftingContext(brandId);
     const created = Array.from({ length: count }, (_, i) => {
       const day = startOfDay(addDays(new Date(), 3 + i * 2));
       const when = addHours(day, 9 + (i % 3) * 4);
-      return draftPost(client, strategy, existing + i, i, client.platforms[i % client.platforms.length]!, when);
+      return draftPost(brand, strategy, existing + i, i, brand.platforms[i % brand.platforms.length]!, when);
     });
     db.posts.push(...created);
     recounted(db);
-    revalidateClient(clientId);
+    revalidateBrand(brandId);
     return clone(created);
   });
 }
 
-function draftPost(client: Client, strategy: Strategy, serial: number, offset: number, platform: Platform, when: Date): Post {
+function draftPost(brand: Brand, strategy: Strategy, serial: number, offset: number, platform: Platform, when: Date): Post {
   const pillar = strategy.pillars[offset % strategy.pillars.length]!;
   const format = (["reel", "carousel", "image"] as const)[offset % 3]!;
   return {
-    id: `${client.id}-g${Date.now().toString(36)}${offset}`,
-    clientId: client.id,
+    id: `${brand.id}-g${Date.now().toString(36)}${offset}`,
+    brandId: brand.id,
     platform,
     format,
     pillarId: pillar.id,
     hook: `${pillar.name}, take ${serial + 1}`,
-    caption: `${pillar.description} Drafted from strategy v${strategy.version}. Edit anything that doesn't sound like ${client.name}.`,
+    caption: `${pillar.description} Drafted from strategy v${strategy.version}. Edit anything that doesn't sound like ${brand.name}.`,
     hashtags: [`#${pillar.id}`, "#smallbusiness"],
     status: "in_review",
     scheduledFor: when.toISOString(),
     publishedAt: null,
-    art: { variant: serial % 4, colorIndex: offset % client.brand.colors.length },
+    art: { variant: serial % 4, colorIndex: offset % brand.brand.colors.length },
     durationSec: format === "reel" ? 10 : undefined,
     slides: format === "carousel" ? 5 : undefined,
     aiNote: `Fits "${pillar.name}" (${pillar.share}% of the mix) and fills an empty slot in the next two weeks.`,
@@ -517,16 +517,16 @@ function draftPost(client: Client, strategy: Strategy, serial: number, offset: n
 }
 
 /** Tapping a free best time in the calendar: the agent drafts a post for it, which still needs approval. */
-export async function draftPostForSlot(clientId: string, platform: Platform, when: string): Promise<ActionResult<PostView>> {
+export async function draftPostForSlot(brandId: string, platform: Platform, when: string): Promise<ActionResult<PostView>> {
   return attempt(async () => {
     await wait(1800);
-    const client = await requireClient(clientId);
+    const brand = await requireBrand(brandId);
     const db = getDb();
-    const { strategy, existing } = draftingContext(clientId);
-    const post = draftPost(client, strategy, existing, existing, platform, new Date(when));
+    const { strategy, existing } = draftingContext(brandId);
+    const post = draftPost(brand, strategy, existing, existing, platform, new Date(when));
     db.posts.push(post);
     recounted(db);
-    revalidateClient(clientId);
+    revalidateBrand(brandId);
     const view = posts.viewOf(db, post);
     return view;
   });
@@ -534,12 +534,12 @@ export async function draftPostForSlot(clientId: string, platform: Platform, whe
 
 /**
  * Posts waiting for approval, soonest first, for the agent chat's inline post chips.
- * A read, but the chat calls it from the client, so it goes through an action like a write does.
+ * A read, but the chat calls it from the brand, so it goes through an action like a write does.
  */
-export async function getReviewQueuePosts(clientId: string): Promise<ActionResult<PostView[]>> {
+export async function getReviewQueuePosts(brandId: string): Promise<ActionResult<PostView[]>> {
   return attempt(async () => {
-    const client = await requireClient(clientId);
-    return posts.content(getDb(), client.id, { state: "needs_approval" });
+    const brand = await requireBrand(brandId);
+    return posts.content(getDb(), brand.id, { state: "needs_approval" });
   });
 }
 
@@ -552,7 +552,7 @@ export async function updatePost(postId: string, patch: PostPatch): Promise<Acti
     // An approved post with a slot goes straight onto the schedule.
     if (patch.status === "approved" && post.scheduledFor) post.status = "scheduled";
     recounted(db);
-    revalidateClient(post.clientId);
+    revalidateBrand(post.brandId);
     return clone(post);
   });
 }
@@ -570,9 +570,9 @@ function remember(post: Post) {
 function reviewed(post: Post): ReviewResult {
   const db = getDb();
   recounted(db);
-  revalidateClient(post.clientId);
+  revalidateBrand(post.brandId);
   const view = posts.viewOf(db, post);
-  const nextPostId = posts.nextWaiting(db, post.clientId, post.id);
+  const nextPostId = posts.nextWaiting(db, post.brandId, post.id);
   return { post: view, nextPostId };
 }
 
@@ -610,7 +610,7 @@ export async function setRejectReason(postId: string, reason: string): Promise<A
     const { post } = await requirePost(postId);
     if (post.status !== "rejected") throw new Error("Only a rejected post has a reason.");
     post.rejectReason = reason.trim() || null;
-    revalidateClient(post.clientId);
+    revalidateBrand(post.brandId);
     const db = getDb();
     const view = posts.viewOf(db, post);
     return view;
@@ -643,7 +643,7 @@ export async function undoPostDecision(postId: string): Promise<ActionResult<Pos
     Object.assign(post, before);
     delete db.decisions[postId];
     recounted(db);
-    revalidateClient(post.clientId);
+    revalidateBrand(post.brandId);
     const view = posts.viewOf(db, post);
     return view;
   });
@@ -659,7 +659,7 @@ export async function reschedulePost(postId: string, when: string): Promise<Acti
     if (Number.isNaN(at.getTime()) || at.getTime() < Date.now()) throw new Error("Pick a time in the future.");
     post.scheduledFor = at.toISOString();
     post.failure = null;
-    revalidateClient(post.clientId);
+    revalidateBrand(post.brandId);
     const db = getDb();
     const view = posts.viewOf(db, post);
     return view;
@@ -722,8 +722,8 @@ export async function cancelInvite(clientId: string): Promise<ActionResult<null>
     const person = requirePerson(clientId);
     if (person.status !== "invited") throw new Error("This client has already signed in.");
     const db = getDb();
-    const owned = db.clients.filter((c) => c.ownerId === clientId);
-    owned.forEach((brand) => removeClient(brand.id));
+    const owned = db.brands.filter((c) => c.ownerId === clientId);
+    owned.forEach((brand) => removeBrand(brand.id));
     db.people = db.people.filter((p) => p.id !== clientId);
     db.failedScans = db.failedScans.filter((s) => s.ownerId !== clientId);
     revalidateAdmin();
@@ -731,7 +731,7 @@ export async function cancelInvite(clientId: string): Promise<ActionResult<null>
   });
 }
 
-/** Starts the scan for a client's new brand (ADM-5). Poll it with `readScan`, then `createBrandForClient`. */
+/** Starts the scan for a brand's new brand (ADM-5). Poll it with `readScan`, then `createBrandForClient`. */
 export async function addBrandForClient(clientId: string, url: string): Promise<ActionResult<{ scanId: string }>> {
   return attempt(async () => {
     const viewer = await requireAdmin();
@@ -742,17 +742,17 @@ export async function addBrandForClient(clientId: string, url: string): Promise<
 }
 
 /** Saves the brand kit the admin checked (S17a in admin context) as the client's brand. */
-export async function createBrandForClient(clientId: string, input: NewClientInput): Promise<ActionResult<Client>> {
+export async function createBrandForClient(clientId: string, input: NewBrandDraft): Promise<ActionResult<Brand>> {
   return attempt(async () => {
     await requireAdmin();
     requirePerson(clientId);
     await wait(700);
     const db = getDb();
-    const client = newClient(db, input, clientId);
-    addBrand(client);
+    const brand = newBrand(db, input, clientId);
+    addBrand(brand);
     admin.clearPendingScan(clientId);
     revalidateAdmin();
-    return clone(client);
+    return clone(brand);
   });
 }
 

@@ -69,7 +69,7 @@ export function PublishedPostPanel({ post, brand, handle, bestRank, avgReach }: 
       footer={
         <>
           <Button asChild variant="outline" className="mr-auto">
-            <Link href={`/c/${post.clientId}/analytics`}>
+            <Link href={`/c/${post.brandId}/analytics`}>
               <BarChart3 /> See it in Analytics
             </Link>
           </Button>

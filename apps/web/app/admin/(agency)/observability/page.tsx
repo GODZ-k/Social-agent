@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { getObsOverview } from "@/lib/api/server";
-import { PageHeader } from "@repo/ui/components/states";
 import { formatNumber } from "@/lib/utils";
+import { ObsPageHeader } from "@/features/observability/obs-page-header";
 import { ObsTabs } from "@/features/observability/obs-tabs";
 import { parseObsSearchParams } from "@/features/observability/search-params";
 import { HeadlineBanner } from "@/features/observability/headline-banner";
@@ -21,7 +21,7 @@ export default async function ObservabilityOverviewPage({ searchParams }: { sear
 
   return (
     <>
-      <PageHeader title="Observability" description="How the app, the server and the AI agents are doing, across every client." />
+      <ObsPageHeader />
       <ObsTabs active="overview" checkedAt={overview.checkedAt} range={range} brandId={brandId} />
       <HeadlineBanner
         title={overview.headline.title}

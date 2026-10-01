@@ -1,7 +1,7 @@
 import "server-only";
 import { subDays, subHours } from "date-fns";
 import type { AudienceProfile, GrowthBrief, ResearchStepId } from "@social-agent/shared";
-import type { Client, ResearchSource, ResearchView } from "@/lib/types";
+import type { Brand, ResearchSource, ResearchView } from "@/lib/types";
 
 /**
  * A mock of business discovery. `POST /brands/:id/research` becomes `run`, and
@@ -28,14 +28,14 @@ export interface ResearchRecord {
 }
 
 /** Similar shops reach about a fifth of their followers per post, and never fewer than 280 people. */
-const benchmarkFor = (client: Client): Benchmark => ({
-  reachPerPost: Math.max(280, Math.round(client.stats.followers * 0.22)),
+const benchmarkFor = (brand: Brand): Benchmark => ({
+  reachPerPost: Math.max(280, Math.round(brand.stats.followers * 0.22)),
   savesPer100: 1.4,
   interactionsPer100: 5,
   followerGrowth: 0.012,
 });
 
-const hostOf = (client: Pick<Client, "url">) => new URL(client.url).hostname.replace(/^www\./, "");
+const hostOf = (brand: Pick<Brand, "url">) => new URL(brand.url).hostname.replace(/^www\./, "");
 
 const OVERRIDES: Record<string, Partial<Pick<GrowthBrief, "growthLever" | "opening" | "bottleneck" | "competitors">>> = {
   "kiln-and-clay": {
@@ -55,16 +55,16 @@ const OVERRIDES: Record<string, Partial<Pick<GrowthBrief, "growthLever" | "openi
   },
 };
 
-export function briefFor(client: Client): GrowthBrief {
-  const override = OVERRIDES[client.id] ?? {};
+export function briefFor(brand: Brand): GrowthBrief {
+  const override = OVERRIDES[brand.id] ?? {};
   return {
     businessModel: {
-      sells: client.brand.summary.split(". ")[0]!,
-      toWhom: client.brand.audience,
+      sells: brand.brand.summary.split(". ")[0]!,
+      toWhom: brand.brand.audience,
       howMoneyIsMade: "Direct sales, online and in person, with most revenue from returning customers.",
     },
     bottleneck: override.bottleneck ?? { kind: "trust", why: "People who try it come back, but few people have heard of it yet." },
-    growthLever: override.growthLever ?? `Show how ${client.name} works up close, so new people trust it enough to try it.`,
+    growthLever: override.growthLever ?? `Show how ${brand.name} works up close, so new people trust it enough to try it.`,
     priorityOffers: [
       { name: "The best seller", why: "Most reorders and the best reviews" },
       { name: "A first-time offer", why: "Lowers the risk of a first order" },
@@ -85,17 +85,17 @@ export function briefFor(client: Client): GrowthBrief {
   };
 }
 
-export function profileFor(client: Client): AudienceProfile {
+export function profileFor(brand: Brand): AudienceProfile {
   return {
     segments: [
       {
         name: "Core buyers",
-        summary: client.brand.audience,
+        summary: brand.brand.audience,
         pains: ["Hard to tell good from mass-made", "No time to research"],
         desires: ["Something made with care", "To feel they chose well"],
         objections: ["Price compared with supermarket options"],
         language: [{ phrase: "Worth every penny, I keep coming back.", source: "Google reviews" }],
-        platforms: client.platforms,
+        platforms: brand.platforms,
         contentThatLands: ["Process close-ups", "Honest before and after", "Faces behind the brand"],
         triggers: ["A limited batch", "A friend's recommendation"],
         basis: "evidence",
@@ -113,27 +113,27 @@ export function profileFor(client: Client): AudienceProfile {
         basis: "hypothesis",
       },
     ],
-    followerGap: client.accounts.length > 0 ? "Followers skew local and older than the buyers the owner wants." : "Unknown until accounts are connected.",
+    followerGap: brand.accounts.length > 0 ? "Followers skew local and older than the buyers the owner wants." : "Unknown until accounts are connected.",
     competitorAudienceNotes: ["Rivals' followers ask about ingredients and process more than price."],
   };
 }
 
-function sourcesFor(client: Client): ResearchSource[] {
-  const host = hostOf(client);
+function sourcesFor(brand: Brand): ResearchSource[] {
+  const host = hostOf(brand);
   return [
     { url: `https://${host}/`, title: `${host} home page`, kind: "website", note: "The offer, prices and tone" },
     { url: `https://${host}/about`, title: "About page", kind: "website", note: "The story and the people behind it" },
-    { url: `https://www.google.com/maps/search/${encodeURIComponent(client.name)}`, title: "Google reviews", kind: "reviews", note: "212 reviews, 4.8 stars" },
+    { url: `https://www.google.com/maps/search/${encodeURIComponent(brand.name)}`, title: "Google reviews", kind: "reviews", note: "212 reviews, 4.8 stars" },
     { url: `https://www.trustpilot.com/review/${host}`, title: "Trustpilot", kind: "reviews", note: "What customers praise and complain about" },
     { url: "questionnaire", title: "Your answers", kind: "answers", note: "8 answers and 1 follow-up" },
-    { url: `https://www.google.com/search?q=${encodeURIComponent(client.industry + " near me")}`, title: `${client.industry} near me`, kind: "search", note: "What people ask before buying" },
+    { url: `https://www.google.com/search?q=${encodeURIComponent(brand.industry + " near me")}`, title: `${brand.industry} near me`, kind: "search", note: "What people ask before buying" },
     { url: "https://www.instagram.com/explore/", title: "Similar brands on Instagram", kind: "similar_brand", note: "Posts, offers and how often they post" },
   ];
 }
 
-function emptyView(client: Client): ResearchView {
+function emptyView(brand: Brand): ResearchView {
   return {
-    brandId: client.id,
+    brandId: brand.id,
     status: null,
     currentStep: null,
     error: null,
@@ -146,13 +146,13 @@ function emptyView(client: Client): ResearchView {
   };
 }
 
-function writeVersion(view: ResearchView, client: Client, at: Date) {
+function writeVersion(view: ResearchView, brand: Brand, at: Date) {
   const version = (view.versions[0]?.version ?? 0) + 1;
-  const sources = sourcesFor(client);
+  const sources = sourcesFor(brand);
   const urls = sources.map((s) => s.url);
   const createdAt = at.toISOString();
-  view.growthBrief = { version, content: briefFor(client), sources: urls, createdAt };
-  view.audienceProfile = { version, content: profileFor(client), sources: urls, createdAt };
+  view.growthBrief = { version, content: briefFor(brand), sources: urls, createdAt };
+  view.audienceProfile = { version, content: profileFor(brand), sources: urls, createdAt };
   view.sources = sources;
   view.versions.unshift({ version, createdAt });
 }
@@ -160,19 +160,19 @@ function writeVersion(view: ResearchView, client: Client, at: Date) {
 const DONE = new Set(["kiln-and-clay", "northbound-coffee", "form-pilates", "harbour-dental", "tartine-bakery"]);
 
 /** Established brands have research (Kiln & Clay has two versions); Don Angie's first run failed at saving. */
-export function buildResearch(clients: Client[]): Record<string, ResearchRecord> {
+export function buildResearch(brands: Brand[]): Record<string, ResearchRecord> {
   const now = new Date();
   return Object.fromEntries(
-    clients.map((client) => {
-      const view = emptyView(client);
-      const created = new Date(client.createdAt);
-      if (client.id === "kiln-and-clay") writeVersion(view, client, subDays(now, 40));
-      if (DONE.has(client.id)) {
-        const finished = client.id === "tartine-bakery" ? subHours(now, 1) : subDays(created, -1);
-        writeVersion(view, client, finished);
+    brands.map((brand) => {
+      const view = emptyView(brand);
+      const created = new Date(brand.createdAt);
+      if (brand.id === "kiln-and-clay") writeVersion(view, brand, subDays(now, 40));
+      if (DONE.has(brand.id)) {
+        const finished = brand.id === "tartine-bakery" ? subHours(now, 1) : subDays(created, -1);
+        writeVersion(view, brand, finished);
         Object.assign(view, { status: "done", startedAt: subHours(finished, 1).toISOString(), finishedAt: finished.toISOString() });
       }
-      if (client.id === "don-angie") {
+      if (brand.id === "don-angie") {
         Object.assign(view, {
           status: "failed",
           currentStep: "save",
@@ -181,13 +181,13 @@ export function buildResearch(clients: Client[]): Record<string, ResearchRecord>
           finishedAt: subHours(now, 3).toISOString(),
         });
       }
-      return [client.id, { view, run: null, benchmark: benchmarkFor(client) }];
+      return [brand.id, { view, run: null, benchmark: benchmarkFor(brand) }];
     }),
   );
 }
 
-export function newResearch(client: Client): ResearchRecord {
-  return { view: emptyView(client), run: null, benchmark: benchmarkFor(client) };
+export function newResearch(brand: Brand): ResearchRecord {
+  return { view: emptyView(brand), run: null, benchmark: benchmarkFor(brand) };
 }
 
 /** Starts a run. The current version stays readable while it runs. */
@@ -205,7 +205,7 @@ export function run(record: ResearchRecord) {
 }
 
 /** Moves a running record forward to where elapsed time says it is. */
-export function settle(record: ResearchRecord, client: Client): ResearchView {
+export function settle(record: ResearchRecord, brand: Brand): ResearchView {
   const job = record.run;
   if (!job) return record.view;
   const step = Math.floor((Date.now() - job.startedAt) / STEP_MS);
@@ -214,7 +214,7 @@ export function settle(record: ResearchRecord, client: Client): ResearchView {
     return record.view;
   }
   const finished = new Date(job.startedAt + STEPS.length * STEP_MS);
-  writeVersion(record.view, client, finished);
+  writeVersion(record.view, brand, finished);
   Object.assign(record.view, { status: "done", currentStep: null, finishedAt: finished.toISOString() });
   record.run = null;
   return record.view;

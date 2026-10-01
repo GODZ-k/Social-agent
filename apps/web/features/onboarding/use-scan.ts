@@ -28,7 +28,7 @@ const EMPTY_JOB = { step: 0, result: null, preview: null, error: null };
  */
 export function useScan(
   url: string | null,
-  /** Set when an admin is scanning for a client's new brand, instead of their own. */
+  /** Set when an admin is scanning for a brand's new brand, instead of their own. */
   personId?: string,
 ): {
   status: ScanStatus;

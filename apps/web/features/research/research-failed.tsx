@@ -9,11 +9,11 @@ import { Button } from "@repo/ui/components/button";
 
 /** Research stopped partway (S19c). Answers and the brand kit are saved, so retrying costs nothing already given. */
 export function ResearchFailed({
-  clientId,
+  brandId,
   onRetried,
   basePath = "/c",
 }: {
-  clientId: string;
+  brandId: string;
   onRetried: (research: ResearchView) => void;
   basePath?: "/c" | "/admin/c";
 }) {
@@ -38,7 +38,7 @@ export function ResearchFailed({
             <p className="font-medium">Try again</p>
             <p className="type-label">Starts where it stopped. About 3 minutes.</p>
           </div>
-          <Button disabled={retry.isPending} onClick={() => retry.run(clientId)}>
+          <Button disabled={retry.isPending} onClick={() => retry.run(brandId)}>
             {retry.isPending && <LoaderCircle className="animate-spin" />}
             Try again
           </Button>
@@ -52,7 +52,7 @@ export function ResearchFailed({
             <p className="type-label">Change anything before it runs again.</p>
           </div>
           <Button variant="outline" asChild>
-            <Link href={`${basePath}/${clientId}/settings`}>Your answers</Link>
+            <Link href={`${basePath}/${brandId}/settings`}>Your answers</Link>
           </Button>
         </div>
       </div>

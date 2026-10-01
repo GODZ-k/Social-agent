@@ -2,6 +2,9 @@ import type { FailedApiCallRow } from "@/lib/types";
 import { Panel } from "@repo/ui/components/states";
 import { Badge } from "@repo/ui/components/badge";
 import { RowList, type RowListColumn } from "./row-list";
+import { PanelHeader } from "@repo/ui/components/panel-header";
+import { PanelStat } from "@repo/ui/components/panel-stat";
+import { MethodBadge } from "./method-badge";
 import { SignozTraceLink } from "./signoz-link";
 
 const COLUMNS: RowListColumn<FailedApiCallRow>[] = [
@@ -11,9 +14,7 @@ const COLUMNS: RowListColumn<FailedApiCallRow>[] = [
     render: (c) => (
       <span className="min-w-0">
         <span className="flex items-center gap-2">
-          <span className={c.method === "POST" ? "rounded-md bg-tint px-1.5 py-0.5 font-mono text-[0.6875rem] font-medium text-tint-foreground uppercase" : "rounded-md bg-secondary px-1.5 py-0.5 font-mono text-[0.6875rem] font-medium uppercase"}>
-            {c.method}
-          </span>
+          <MethodBadge method={c.method} />
           <span className="font-mono text-[0.8125rem]">{c.path}</span>
         </span>
         <span className="type-label block">{c.doing}</span>
@@ -44,16 +45,11 @@ export function FailedApiCallsPanel({ calls }: { calls: FailedApiCallRow[] }) {
 
   return (
     <Panel>
-      <div className="mb-4 flex items-start justify-between gap-3">
-        <div>
-          <h2 className="type-heading">Failed API calls</h2>
-          <p className="type-label mt-1">Calls the app made that came back with an error or no answer.</p>
-        </div>
-        <div className="shrink-0 text-right">
-          <p className="type-number text-xl">{total}</p>
-          <p className="type-label mt-0.5">Failed</p>
-        </div>
-      </div>
+      <PanelHeader
+        title="Failed API calls"
+        description="Calls the app made that came back with an error or no answer."
+        right={<PanelStat value={total} caption="Failed" />}
+      />
       <RowList columns={COLUMNS} rows={calls} rowKey={(c) => c.traceId} />
       {worst && reason && (
         <p className="type-label mt-4">

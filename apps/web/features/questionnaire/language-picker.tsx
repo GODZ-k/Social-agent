@@ -28,11 +28,11 @@ const PLACEHOLDER_ROWS: AnswerRow[] = [
 
 /** The questionnaire's first message (S18a): pick the chat language, then the account manager starts asking. */
 export function LanguagePicker({
-  clientId,
+  brandId,
   onStarted,
   onBack,
 }: {
-  clientId: string;
+  brandId: string;
   onStarted: (view: QuestionnaireView) => void;
   /** Set when reached by stepping back into this step; see `QuestionnaireChat`. */
   onBack?: () => void;
@@ -75,7 +75,7 @@ export function LanguagePicker({
                 Starting the questionnaire
               </span>
             ) : (
-              LANGUAGES.map((lang) => <ChipReply key={lang.value} label={lang.label} onClick={() => start.run(clientId, lang.value)} />)
+              LANGUAGES.map((lang) => <ChipReply key={lang.value} label={lang.label} onClick={() => start.run(brandId, lang.value)} />)
             )}
           </div>
           <p className="type-label mt-2.5">Tap one to start. You pick the language for your posts later.</p>

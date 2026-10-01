@@ -1,5 +1,7 @@
 import { Panel } from "@repo/ui/components/states";
 import { RowList, type RowListColumn } from "./row-list";
+import { PanelHeader } from "@repo/ui/components/panel-header";
+import { PanelStat } from "@repo/ui/components/panel-stat";
 import { formatTokens, formatUsd } from "./format";
 
 interface Model {
@@ -38,16 +40,7 @@ export function ModelsPanel({ models }: { models: Model[] }) {
   const total = models.reduce((sum, m) => sum + m.cost, 0);
   return (
     <Panel>
-      <div className="mb-4 flex items-start justify-between gap-3">
-        <div>
-          <h2 className="type-heading">Model usage and cost</h2>
-          <p className="type-label mt-1">Tokens and cost for each model.</p>
-        </div>
-        <div className="shrink-0 text-right">
-          <p className="type-number text-xl">{formatUsd(total)}</p>
-          <p className="type-label mt-0.5">Total cost</p>
-        </div>
-      </div>
+      <PanelHeader title="Model usage and cost" description="Tokens and cost for each model." right={<PanelStat value={formatUsd(total)} caption="Total cost" />} />
       <RowList columns={buildColumns(models)} rows={models} rowKey={(m) => m.model} />
     </Panel>
   );

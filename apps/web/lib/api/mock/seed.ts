@@ -5,7 +5,7 @@
  */
 import { addDays, addHours, addMinutes, startOfDay, subDays, subMinutes } from "date-fns";
 import type { ConnectError, Language, Platform, PostFormat, PostStatus } from "@social-agent/shared";
-import type { AlertRow, Analytics, Client, Learning, NotificationChannel, Post, Strategy, StrategyVersion, TeamMember } from "@/lib/types";
+import type { AlertRow, Analytics, Brand, Learning, NotificationChannel, Post, Strategy, StrategyVersion, TeamMember } from "@/lib/types";
 import { buildPeople, failedScans, OWNERS, type FailedScan, type MockPerson } from "./seed-people";
 import { buildAlerts, buildChannels, buildTeam } from "./seed-agency-settings";
 import { buildQuestionnaires, type QuestionnaireRecord } from "./questionnaire";
@@ -27,14 +27,14 @@ const today = startOfDay(now);
 
 export const handleFor = (name: string) => "@" + name.toLowerCase().replace(/[^a-z0-9]+/g, "");
 
-type ClientSeed = Omit<Client, "accounts" | "preferences" | "status" | "business" | "kitScannedAt" | "kitEditedAt"> &
-  Partial<Pick<Client, "status" | "business" | "kitScannedAt" | "kitEditedAt">> & {
+type BrandSeed = Omit<Brand, "accounts" | "preferences" | "status" | "business" | "kitScannedAt" | "kitEditedAt"> &
+  Partial<Pick<Brand, "status" | "business" | "kitScannedAt" | "kitEditedAt">> & {
     connected: Platform[];
     expired?: Platform[];
     timezone: string;
   };
 
-const seedClients: ClientSeed[] = [
+const seedBrands: BrandSeed[] = [
   {
     id: "kiln-and-clay",
     ownerId: OWNERS.priya,
@@ -284,20 +284,20 @@ const seedClients: ClientSeed[] = [
   },
 ];
 
-const clients: Client[] = seedClients.map(({ connected, expired = [], timezone, ...client }) => ({
-  ...client,
-  status: client.status ?? "active",
-  business: client.business ?? {},
+const brands: Brand[] = seedBrands.map(({ connected, expired = [], timezone, ...brand }) => ({
+  ...brand,
+  status: brand.status ?? "active",
+  business: brand.business ?? {},
   accounts: [...connected, ...expired].map((platform) => ({
     platform,
-    handle: handleFor(client.name),
+    handle: handleFor(brand.name),
     status: expired.includes(platform) ? ("expired" as const) : ("connected" as const),
-    connectedAt: client.createdAt,
+    connectedAt: brand.createdAt,
   })),
   preferences: { timezone, approvalEmails: true, chatLanguage: "en" },
   // The scan that built the kit, and the owner's last hand-edit; both default to when the brand was created.
-  kitScannedAt: client.kitScannedAt ?? client.createdAt,
-  kitEditedAt: client.kitEditedAt ?? client.createdAt,
+  kitScannedAt: brand.kitScannedAt ?? brand.createdAt,
+  kitEditedAt: brand.kitEditedAt ?? brand.createdAt,
 }));
 
 /** Per-brand onboarding and connection details the Brand record does not carry. */
@@ -311,17 +311,17 @@ export interface BrandExtras {
   connectLinkSentAt?: string;
 }
 
-function extrasFor(client: Client): BrandExtras {
+function extrasFor(brand: Brand): BrandExtras {
   const accessExpiresAt: Partial<Record<Platform, string>> = {};
-  client.accounts.forEach((account, k) => {
+  brand.accounts.forEach((account, k) => {
     const expiry = account.status === "expired" ? subDays(today, 3) : addDays(today, 18 + k * 11);
     accessExpiresAt[account.platform] = expiry.toISOString();
   });
   return {
-    connectSkipped: client.id === "tartine-bakery" || client.id === "meow-meow-tweet",
-    connectErrors: client.id === "form-pilates" ? { facebook: "missing_scopes" } : {},
+    connectSkipped: brand.id === "tartine-bakery" || brand.id === "meow-meow-tweet",
+    connectErrors: brand.id === "form-pilates" ? { facebook: "missing_scopes" } : {},
     accessExpiresAt,
-    postLanguage: client.id === "meow-meow-tweet" ? "hinglish" : "en",
+    postLanguage: brand.id === "meow-meow-tweet" ? "hinglish" : "en",
   };
 }
 
@@ -430,8 +430,8 @@ const strategySeeds: Record<string, StrategySeed> = {
   },
 };
 
-const learningsFor = (clientId: string): Learning[] =>
-  clientId === "harbour-dental" || clientId === "tartine-bakery"
+const learningsFor = (brandId: string): Learning[] =>
+  brandId === "harbour-dental" || brandId === "tartine-bakery"
     ? []
     : [
         { id: "l1", insight: "Reels under 12 seconds hold viewers to the end", evidence: "71% completion vs 38% for longer cuts over the last 30 days", impact: "up", change: "Next month's reels are cut to 8–12 seconds." },
@@ -449,14 +449,14 @@ function activatedAtOf(generatedAt: Date, approvedBy: string | null): Date {
   return addMinutes(generatedAt, minutes);
 }
 
-function buildStrategy(client: Client): Strategy | null {
-  const seed = strategySeeds[client.id];
+function buildStrategy(brand: Brand): Strategy | null {
+  const seed = strategySeeds[brand.id];
   if (!seed) return null;
   const generatedAt = subMinutes(now, seed.draftedMinutesAgo);
   const autoStartsAt = addMinutes(generatedAt, AUTO_START_MINUTES);
   const activatedAt = seed.status === "active" ? activatedAtOf(generatedAt, seed.approvedBy).toISOString() : null;
   return {
-    clientId: client.id,
+    brandId: brand.id,
     version: seed.version,
     status: seed.status,
     generatedAt: generatedAt.toISOString(),
@@ -465,23 +465,23 @@ function buildStrategy(client: Client): Strategy | null {
     approvedBy: seed.approvedBy,
     changeNote: seed.changeNote,
     goal: seed.goal,
-    pillars: pillarSets[client.id]!,
-    cadence: client.platforms.map((platform, j) => ({
+    pillars: pillarSets[brand.id]!,
+    cadence: brand.platforms.map((platform, j) => ({
       platform,
       perWeek: [5, 3, 4, 2][j] ?? 2,
       bestTimes: BEST_TIMES[j] ?? ["Wed 12:00pm"],
     })),
     audience: [
-      { segment: "Core", note: client.brand.audience },
+      { segment: "Core", note: brand.brand.audience },
       { segment: "Growing", note: "Followers of similar local brands who engage with saves more than likes" },
       { segment: "Untapped", note: "People searching the category on TikTok who have never seen the brand" },
     ],
-    learnings: learningsFor(client.id),
+    learnings: learningsFor(brand.id),
   };
 }
 
-function buildHistory(clientId: string): StrategyVersion[] {
-  const seed = strategySeeds[clientId];
+function buildHistory(brandId: string): StrategyVersion[] {
+  const seed = strategySeeds[brandId];
   if (!seed) return [];
   return seed.history.map((h) => {
     const generatedAt = subDays(now, h.draftedDaysAgo);
@@ -539,16 +539,16 @@ function statusFor(offset: number, n: number): PostStatus {
 
 function buildPosts(): Post[] {
   const out: Post[] = [];
-  clients.forEach((client, ci) => {
-    const plan = postPlans[client.id];
+  brands.forEach((brand, ci) => {
+    const plan = postPlans[brand.id];
     if (!plan) return;
     const rand = mulberry32(ci * 97 + 13);
-    const pillars = pillarSets[client.id]!;
-    const clientHooks = hooks[client.id]!;
-    const failed = FAILED_POSTS[client.id];
+    const pillars = pillarSets[brand.id]!;
+    const clientHooks = hooks[brand.id]!;
+    const failed = FAILED_POSTS[brand.id];
 
     plan.offsets.forEach((offset, n) => {
-      const platform = client.platforms[n % client.platforms.length] as Platform;
+      const platform = brand.platforms[n % brand.platforms.length] as Platform;
       const format = formats[n % formats.length] as PostFormat;
       const pillar = pillars[n % pillars.length]!;
       const hook = clientHooks[n % clientHooks.length]!;
@@ -556,21 +556,21 @@ function buildPosts(): Post[] {
       const isFailed = failed?.index === n;
       const status = isFailed ? "scheduled" : statusFor(offset, n);
       const decided = status === "published" || status === "scheduled";
-      const reach = Math.round((client.stats.followers * 0.08 + 800 + rand() * 4000) * (format === "reel" ? 1.8 : 1));
+      const reach = Math.round((brand.stats.followers * 0.08 + 800 + rand() * 4000) * (format === "reel" ? 1.8 : 1));
 
       out.push({
-        id: `${client.id}-p${n + 1}`,
-        clientId: client.id,
+        id: `${brand.id}-p${n + 1}`,
+        brandId: brand.id,
         platform,
         format,
         pillarId: pillar.id,
         hook,
         caption: `${hook}. ${pillar.description} We keep it short because the work speaks for itself. Tell us what you'd like to see next.`,
-        hashtags: [client.industry.split(" ").pop()!.toLowerCase(), pillar.id, "smallbusiness", "behindthescenes"].map((h) => `#${h}`),
+        hashtags: [brand.industry.split(" ").pop()!.toLowerCase(), pillar.id, "smallbusiness", "behindthescenes"].map((h) => `#${h}`),
         status,
         scheduledFor: offset >= 0 || isFailed ? when.toISOString() : null,
         publishedAt: offset < 0 && !isFailed ? when.toISOString() : null,
-        art: { variant: n % 4, colorIndex: n % client.brand.colors.length },
+        art: { variant: n % 4, colorIndex: n % brand.brand.colors.length },
         durationSec: format === "reel" ? 8 + Math.round(rand() * 22) : undefined,
         slides: format === "carousel" ? 3 + (n % 5) : undefined,
         aiNote: aiNoteFor(pillar, format),
@@ -596,9 +596,9 @@ function buildPosts(): Post[] {
       const format = formats[(k + 2) % formats.length] as PostFormat;
       const hook = clientHooks[(k + 5) % clientHooks.length]!;
       out.push({
-        id: `${client.id}-q${k + 1}`,
-        clientId: client.id,
-        platform: client.platforms[k % client.platforms.length] as Platform,
+        id: `${brand.id}-q${k + 1}`,
+        brandId: brand.id,
+        platform: brand.platforms[k % brand.platforms.length] as Platform,
         format,
         pillarId: pillar.id,
         hook,
@@ -607,7 +607,7 @@ function buildPosts(): Post[] {
         status: "in_review",
         scheduledFor: addHours(addDays(today, 5 + k * 2), 9 + k).toISOString(),
         publishedAt: null,
-        art: { variant: (k + 1) % 4, colorIndex: k % client.brand.colors.length },
+        art: { variant: (k + 1) % 4, colorIndex: k % brand.brand.colors.length },
         durationSec: format === "reel" ? 9 + k * 2 : undefined,
         slides: format === "carousel" ? 4 + k : undefined,
         aiNote: `Fits "${pillar.name}". Scheduled for a slot where your audience has been most active over the last 4 weeks.`,
@@ -619,25 +619,25 @@ function buildPosts(): Post[] {
 }
 
 function buildAnalytics(): Analytics[] {
-  return clients.map((client, ci) => {
-    const pillars = pillarSets[client.id];
-    if (!postPlans[client.id] || !pillars) return { clientId: client.id, series: [], byFormat: [], byPillar: [] };
+  return brands.map((brand, ci) => {
+    const pillars = pillarSets[brand.id];
+    if (!postPlans[brand.id] || !pillars) return { brandId: brand.id, series: [], byFormat: [], byPillar: [] };
     const rand = mulberry32(ci * 31 + 7);
-    const growth = 1 + client.stats.followersDelta / 100;
-    const startFollowers = client.stats.followers / growth;
+    const growth = 1 + brand.stats.followersDelta / 100;
+    const startFollowers = brand.stats.followers / growth;
     const series = Array.from({ length: 30 }, (_, d) => {
       const t = d / 29;
       const weekly = 1 + 0.25 * Math.sin((d / 7) * Math.PI * 2);
       return {
         date: subDays(today, 29 - d).toISOString(),
-        reach: Math.round((client.stats.followers * 0.18 + rand() * client.stats.followers * 0.1) * weekly * (0.85 + t * 0.3)),
-        engagement: +(client.stats.engagementRate * (0.8 + t * 0.2) + (rand() - 0.5) * 0.9).toFixed(2),
-        followers: Math.round(startFollowers + (client.stats.followers - startFollowers) * t + (rand() - 0.5) * 30),
+        reach: Math.round((brand.stats.followers * 0.18 + rand() * brand.stats.followers * 0.1) * weekly * (0.85 + t * 0.3)),
+        engagement: +(brand.stats.engagementRate * (0.8 + t * 0.2) + (rand() - 0.5) * 0.9).toFixed(2),
+        followers: Math.round(startFollowers + (brand.stats.followers - startFollowers) * t + (rand() - 0.5) * 30),
       };
     });
-    const base = client.stats.engagementRate;
+    const base = brand.stats.engagementRate;
     return {
-      clientId: client.id,
+      brandId: brand.id,
       series,
       byFormat: [
         { format: "reel", engagementRate: +(base * 1.45).toFixed(1), posts: 9 },
@@ -648,7 +648,7 @@ function buildAnalytics(): Analytics[] {
       byPillar: pillars.map((p, k) => ({
         pillarId: p.id,
         name: p.name,
-        reach: Math.round(client.stats.followers * (1.9 - k * 0.4) * (0.8 + rand() * 0.4)),
+        reach: Math.round(brand.stats.followers * (1.9 - k * 0.4) * (0.8 + rand() * 0.4)),
       })),
     };
   });
@@ -658,7 +658,7 @@ function buildAnalytics(): Analytics[] {
 export type DecisionSnapshot = Pick<Post, "status" | "approval" | "rejectReason" | "changeRequest">;
 
 export interface SeedData {
-  clients: Client[];
+  brands: Brand[];
   strategies: Strategy[];
   /** Older strategy versions per brand, newest first. */
   strategyHistory: Record<string, StrategyVersion[]>;
@@ -682,16 +682,16 @@ export interface SeedData {
 
 /** A fresh, unshared copy every time, so one store never leaks into another. */
 export function buildSeed(): SeedData {
-  const strategies = clients.map(buildStrategy).filter((s): s is Strategy => s !== null);
+  const strategies = brands.map(buildStrategy).filter((s): s is Strategy => s !== null);
   return {
-    clients: structuredClone(clients),
+    brands: structuredClone(brands),
     strategies,
-    strategyHistory: Object.fromEntries(clients.map((c) => [c.id, buildHistory(c.id)])),
+    strategyHistory: Object.fromEntries(brands.map((c) => [c.id, buildHistory(c.id)])),
     posts: buildPosts(),
     analytics: buildAnalytics(),
-    extras: Object.fromEntries(clients.map((c) => [c.id, extrasFor(c)])),
-    questionnaires: buildQuestionnaires(clients),
-    research: buildResearch(clients),
+    extras: Object.fromEntries(brands.map((c) => [c.id, extrasFor(c)])),
+    questionnaires: buildQuestionnaires(brands),
+    research: buildResearch(brands),
     people: buildPeople(),
     failedScans: structuredClone(failedScans),
     decisions: {},

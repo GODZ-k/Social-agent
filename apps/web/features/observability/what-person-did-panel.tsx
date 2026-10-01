@@ -3,6 +3,7 @@ import { AlertCircle, Circle, ExternalLink, MousePointerClick, Navigation } from
 import type { FrontendErrorDetail } from "@/lib/types";
 import { Panel } from "@repo/ui/components/states";
 import { cn } from "@/lib/utils";
+import { PanelHeader } from "@repo/ui/components/panel-header";
 import { SignozTraceLink } from "./signoz-link";
 
 const KIND_ICON = { navigation: Navigation, request: ExternalLink, click: MousePointerClick, error: AlertCircle } as const;
@@ -11,8 +12,7 @@ const KIND_ICON = { navigation: Navigation, request: ExternalLink, click: MouseP
 export function WhatPersonDidPanel({ steps }: { steps: FrontendErrorDetail["steps"] }) {
   return (
     <Panel>
-      <h2 className="type-heading">What the person did</h2>
-      <p className="type-label mt-1 mb-4">The last steps before the error, from the most recent time.</p>
+      <PanelHeader title="What the person did" description="The last steps before the error, from the most recent time." />
       <ol className="grid gap-3">
         {steps.map((step, i) => {
           const Icon = KIND_ICON[step.kind] ?? Circle;

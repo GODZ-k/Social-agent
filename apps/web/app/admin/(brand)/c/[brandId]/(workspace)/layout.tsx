@@ -4,7 +4,7 @@ import { WorkspaceChromeSkeleton } from "@/components/shell/workspace-chrome-ske
 
 /**
  * The admin's mirror of `/c/[brandId]`: same chrome, `basePath="/admin/c"` so every
- * link inside stays under the admin tree. Renders at once, same as the client layout.
+ * link inside stays under the admin tree. Renders at once, same as the brand layout.
  */
 export default async function AdminWorkspaceLayout({
   children,

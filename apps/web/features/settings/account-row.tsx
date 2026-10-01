@@ -34,7 +34,7 @@ function outlineClass(failed: boolean, attention: boolean): string | undefined {
 }
 
 /** Each row owns its own actions, so a pending state never leaks onto another network's button. */
-export function AccountRow({ clientId, account }: { clientId: string; account: SocialAccountRow }) {
+export function AccountRow({ brandId, account }: { brandId: string; account: SocialAccountRow }) {
   const name = PLATFORM_LABEL[account.platform];
   const connect = useServerAction(connectAccount, { success: `${name} connected` });
   const disconnect = useServerAction(disconnectAccount, { success: `${name} disconnected` });
@@ -109,7 +109,7 @@ export function AccountRow({ clientId, account }: { clientId: string; account: S
 
         <div className="flex shrink-0 gap-2">
           {account.state === "connected" ? (
-            <Button variant="ghost" size="sm" disabled={disconnect.isPending} onClick={() => disconnect.run(clientId, account.platform)}>
+            <Button variant="ghost" size="sm" disabled={disconnect.isPending} onClick={() => disconnect.run(brandId, account.platform)}>
               {disconnect.isPending && <LoaderCircle className="animate-spin" />}
               Disconnect
             </Button>
@@ -118,7 +118,7 @@ export function AccountRow({ clientId, account }: { clientId: string; account: S
               variant={attention || failed ? "default" : "outline"}
               size="sm"
               disabled={connect.isPending}
-              onClick={() => connect.run(clientId, account.platform)}
+              onClick={() => connect.run(brandId, account.platform)}
             >
               {connect.isPending && <LoaderCircle className="animate-spin" />}
               {connect.isPending ? `Opening ${name}` : connectLabel(account.state, name)}

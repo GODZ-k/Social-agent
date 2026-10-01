@@ -17,12 +17,12 @@ import { SummaryCard } from "@/features/questionnaire/summary-card";
 
 /** S18a-f: the account manager's guided chat. Approving it (S18e) starts research. */
 export function QuestionnaireChat({
-  clientId,
+  brandId,
   initial,
   onApproved,
   onBack,
 }: {
-  clientId: string;
+  brandId: string;
   initial: QuestionnaireView | null;
   onApproved: (research: ResearchView) => void;
   /** Set when reached by stepping back into this step; shows a back button in the chat header
@@ -57,7 +57,7 @@ export function QuestionnaireChat({
     failure: "Couldn't send your answers.",
   });
 
-  if (!view || !view.session) return <LanguagePicker clientId={clientId} onStarted={setView} onBack={onBack} />;
+  if (!view || !view.session) return <LanguagePicker brandId={brandId} onStarted={setView} onBack={onBack} />;
   const session = view.session;
   const allQuestions = [...session.questions, ...session.followUps];
   const nextQuestion = allQuestions.find((q) => session.answers[q.id] === undefined);
@@ -72,7 +72,7 @@ export function QuestionnaireChat({
   const answeredCount = Object.keys(session.answers).length;
 
   function handleAnswer(questionId: string, value: QuestionAnswer) {
-    answer.run(clientId, session.sessionId, questionId, value);
+    answer.run(brandId, session.sessionId, questionId, value);
   }
 
   const editingQuestion = editingId ? allQuestions.find((q) => q.id === editingId) : undefined;
@@ -151,7 +151,7 @@ export function QuestionnaireChat({
                 <Button variant="outline" onClick={() => setEditingId(allQuestions[0]?.id ?? null)}>
                   Change something
                 </Button>
-                <Button size="lg" disabled={submit.isPending} onClick={() => submit.run(clientId, session.sessionId)}>
+                <Button disabled={submit.isPending} onClick={() => submit.run(brandId, session.sessionId)}>
                   {submit.isPending ? <LoaderCircle className="animate-spin" /> : <Check />}
                   Looks right, start research
                 </Button>

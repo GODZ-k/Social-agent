@@ -11,7 +11,7 @@ import { StatusIcon } from "@/components/auth/status-icon";
 import { SubmitButton } from "@/components/auth/submit-button";
 import { TextField } from "@/components/auth/text-field";
 import { errorCopy } from "./error-copy";
-import { useAuthSubmit } from "./use-auth-submit";
+import { useAuthSubmit, whenLocked } from "./use-auth-submit";
 
 const schema = z.object({ backup: z.string().trim().min(1, "Enter a backup code.") });
 type Values = z.infer<typeof schema>;
@@ -30,13 +30,7 @@ export function BackupCodeForm({
   const form = useForm<Values>({ resolver: zodResolver(schema), defaultValues: { backup: "" } });
 
   function submit(values: Values) {
-    run(
-      () => verify(values.backup),
-      undefined,
-      (failure) => {
-        if (failure.code === "too_many_attempts") onPaused(failure);
-      },
-    );
+    run(() => verify(values.backup), undefined, whenLocked(onPaused));
   }
 
   const wrong = error?.code === "code_wrong";

@@ -3,7 +3,7 @@
 import { ChevronsUpDown, Plus, Users } from "lucide-react";
 import type { WorkspaceBasePath } from "@/lib/workspace-path";
 import type { SwitcherBrand } from "./switcher-brand";
-import { BrandMark } from "./brand-mark";
+import { BrandMark } from "@repo/ui/components/brand-mark";
 import { BrandMenuRow } from "./brand-menu-row";
 import { HeaderMenu, HeaderMenuItem, HeaderMenuItemText, HeaderMenuLabel, HeaderMenuSeparator } from "./header-menu";
 import { ADMIN_CLIENTS_PATH } from "./admin-nav-items";

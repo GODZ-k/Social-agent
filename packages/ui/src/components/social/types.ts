@@ -2,7 +2,7 @@
  * The shapes the social components need, and nothing more.
  *
  * These are deliberately structural minimums, not the app's data model: an app
- * passes its own, richer `Post` or `Client` and TypeScript checks it fits. That
+ * passes its own, richer `Post` or `Brand` and TypeScript checks it fits. That
  * keeps this package free of any one app's API while still catching drift at
  * the call site.
  */
@@ -40,7 +40,7 @@ export interface Post {
   aiNote: string;
 }
 
-export interface Client {
+export interface Brand {
   name: string;
   /** Primary brand colour. */
   accent: string;

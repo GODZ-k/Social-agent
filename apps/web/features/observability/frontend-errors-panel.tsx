@@ -8,6 +8,8 @@ import { Panel } from "@repo/ui/components/states";
 import { Badge } from "@repo/ui/components/badge";
 import { Segmented } from "@repo/ui/components/segmented";
 import { RowList, type RowListColumn } from "./row-list";
+import { PanelHeader } from "@repo/ui/components/panel-header";
+import { PanelStat } from "@repo/ui/components/panel-stat";
 
 type Filter = "unresolved" | "new" | "fixed";
 
@@ -46,16 +48,11 @@ export function FrontendErrorsPanel({ errors, hiddenNoise }: { errors: FrontendE
 
   return (
     <Panel id="errors">
-      <div className="mb-4 flex items-start justify-between gap-3">
-        <div>
-          <h2 className="type-heading">Errors people hit</h2>
-          <p className="type-label mt-1">Grouped by cause, most people first. Open one for where it happens and what the person did.</p>
-        </div>
-        <div className="shrink-0 text-right">
-          <p className="type-number text-xl">{errors.filter((e) => e.status === "unresolved").length}</p>
-          <p className="type-label mt-0.5">Unresolved</p>
-        </div>
-      </div>
+      <PanelHeader
+        title="Errors people hit"
+        description="Grouped by cause, most people first. Open one for where it happens and what the person did."
+        right={<PanelStat value={errors.filter((e) => e.status === "unresolved").length} caption="Unresolved" />}
+      />
       <Segmented
         label="Filter errors"
         value={filter}

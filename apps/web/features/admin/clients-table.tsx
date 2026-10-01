@@ -17,7 +17,7 @@ export function ClientsTable({ clients }: { clients: AdminClientRow[] }) {
       <table className="w-full border-collapse text-sm">
         <thead className="hidden min-[900px]:table-header-group">
           <tr className="border-b">
-            <th scope="col" className="px-5 py-3 text-left font-medium text-muted-foreground">Client</th>
+            <th scope="col" className="px-5 py-3 text-left font-medium text-muted-foreground">Brand</th>
             <th scope="col" className="px-5 py-3 text-left font-medium text-muted-foreground">Status</th>
             <th scope="col" className="px-5 py-3 text-left font-medium text-muted-foreground">Brands</th>
             <th scope="col" className="px-5 py-3 text-left font-medium text-muted-foreground">Needs you</th>

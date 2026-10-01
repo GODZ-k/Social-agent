@@ -1,21 +1,19 @@
 import type { AlertRow } from "@/lib/types";
 import { Panel } from "@repo/ui/components/states";
+import { PanelHeader } from "@repo/ui/components/panel-header";
+import { PanelStat } from "@repo/ui/components/panel-stat";
 import { AlertItem } from "./alert-item";
 
 /** Which connected channels each kind of alert goes to. */
 export function AlertsPanel({ alerts }: { alerts: AlertRow[] }) {
   return (
     <Panel>
-      <div className="mb-2 flex items-start justify-between gap-3">
-        <div>
-          <h2 className="type-heading">Alerts</h2>
-          <p className="type-label mt-1">Pick which connected channels each kind of alert goes to.</p>
-        </div>
-        <div className="shrink-0 text-right">
-          <p className="type-number text-xl">{alerts.length}</p>
-          <p className="type-label mt-0.5">kinds</p>
-        </div>
-      </div>
+      <PanelHeader
+        className="mb-2"
+        title="Alerts"
+        description="Pick which connected channels each kind of alert goes to."
+        right={<PanelStat value={alerts.length} caption="kinds" />}
+      />
       <ul>
         {alerts.map((alert) => (
           <AlertItem key={alert.kind} alert={alert} />

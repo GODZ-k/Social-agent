@@ -10,3 +10,17 @@
  * stylesheet, so the dev server watches the shared components for changes too.
  */
 /* @source "../../../packages/ui/src"; */
+
+/*
+ * Clerk portals its own modal to the body when it wants the person to confirm who
+ * they are again (changing a password, turning two-factor on). Radix sets
+ * `pointer-events: none` on the body for as long as a dialog is open, and
+ * `pointer-events` inherits, so Clerk's modal picked it up: the modal was drawn and
+ * looked normal, but every click went through it into the account dialog behind, and
+ * its Cancel button did nothing. Handing Clerk's own layers their events back is
+ * enough — the property inherits, so the card and its buttons come with it.
+ */
+body > [class*="cl-"],
+[class*="cl-modal"] {
+  pointer-events: auto;
+}

@@ -3,6 +3,7 @@ import type { RunStep } from "@/lib/types";
 import { Panel } from "@repo/ui/components/states";
 import { Badge } from "@repo/ui/components/badge";
 import { cn } from "@/lib/utils";
+import { PanelHeader } from "@repo/ui/components/panel-header";
 import { formatMs, formatUsd } from "./format";
 
 const KIND_ICON = { step: Workflow, agent: Bot, tool: Wrench } as const;
@@ -12,8 +13,7 @@ const KIND_LABEL = { step: "Step", agent: "Agent", tool: "Tool" } as const;
 export function StepsWaterfall({ steps, totalMs }: { steps: RunStep[]; totalMs: number }) {
   return (
     <Panel>
-      <h2 className="type-heading">Steps</h2>
-      <p className="type-label mt-1 mb-4">What the run did, in order. Bars show when each step ran.</p>
+      <PanelHeader title="Steps" description="What the run did, in order. Bars show when each step ran." />
       <div className="grid gap-1">
         {steps.map((step) => {
           const Icon = KIND_ICON[step.type];

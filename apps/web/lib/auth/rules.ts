@@ -1,4 +1,4 @@
-import type { TwoFactorMethod } from "./types";
+import type { AuthError, AuthErrorCode, TwoFactorMethod } from "./types";
 
 // Product rules that hold whatever the provider is (docs/DESIGN_TRACKER.md, sections 5 and 8).
 export const AUTH_POLICY = {
@@ -43,6 +43,13 @@ function ruleState(typed: boolean, passes: boolean): RuleState {
 
 export function passwordAllowed(rules: PasswordRules): boolean {
   return rules.length === "met" && rules.notEmail === "met" && rules.notLeaked !== "fail";
+}
+
+const PASSWORD_ERROR_CODES = new Set<AuthErrorCode>(["password_too_short", "password_leaked"]);
+
+/** Splits a submit error into "about the password" (ticked live against the rules) from everything else (a banner). */
+export function passwordErrorFrom(error: AuthError | null): AuthError | null {
+  return error && PASSWORD_ERROR_CODES.has(error.code) ? error : null;
 }
 
 /**

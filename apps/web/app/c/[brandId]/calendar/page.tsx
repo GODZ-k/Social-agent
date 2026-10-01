@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { getClient, getStrategy, listPosts } from "@/lib/api/server";
+import { getBrand, getStrategy, listPosts } from "@/lib/api/server";
 import type { WorkspaceBasePath } from "@/lib/workspace-path";
 import { CalendarView } from "@/features/calendar/calendar-view";
 
@@ -11,8 +11,8 @@ export default async function CalendarPage({
   basePath?: WorkspaceBasePath;
 }) {
   const { brandId } = await params;
-  const [client, posts, strategy] = await Promise.all([getClient(brandId), listPosts(brandId), getStrategy(brandId)]);
-  if (!client) notFound();
+  const [brand, posts, strategy] = await Promise.all([getBrand(brandId), listPosts(brandId), getStrategy(brandId)]);
+  if (!brand) notFound();
 
-  return <CalendarView posts={posts} brand={client.brand} strategy={strategy} platforms={client.platforms} brandId={brandId} basePath={basePath} />;
+  return <CalendarView posts={posts} brand={brand.brand} strategy={strategy} platforms={brand.platforms} brandId={brandId} basePath={basePath} />;
 }

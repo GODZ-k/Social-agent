@@ -14,3 +14,14 @@ export const postArtSchema = z.object({
   variant: z.number().int(),
   colorIndex: z.number().int(),
 });
+
+/** A post's metrics snapshot. Matches `post_metrics`; the latest capture is what the UI shows. */
+export const postMetricsSchema = z.object({
+  reach: z.number(),
+  likes: z.number(),
+  comments: z.number(),
+  saves: z.number(),
+  shares: z.number(),
+  /** Followers gained from this post, where the network reports it. */
+  follows: z.number().optional(),
+});

@@ -1,4 +1,4 @@
-import type { Client } from "@/lib/types";
+import type { Brand } from "@/lib/types";
 
 /** All a switcher row shows of a brand. Only these fields cross to the browser. */
 export interface SwitcherBrand {
@@ -8,7 +8,7 @@ export interface SwitcherBrand {
   site: string;
   accent: string;
   pendingApprovals: number;
-  /** Admins only: the client who owns the brand, when known. */
+  /** Admins only: the brand who owns the brand, when known. */
   ownerName?: string;
 }
 
@@ -20,13 +20,13 @@ function siteOf(url: string) {
   }
 }
 
-export function toSwitcherBrand(client: Client, ownerName?: string): SwitcherBrand {
+export function toSwitcherBrand(brand: Brand, ownerName?: string): SwitcherBrand {
   return {
-    id: client.id,
-    name: client.name,
-    site: siteOf(client.url),
-    accent: client.accent,
-    pendingApprovals: client.stats.pendingApprovals,
+    id: brand.id,
+    name: brand.name,
+    site: siteOf(brand.url),
+    accent: brand.accent,
+    pendingApprovals: brand.stats.pendingApprovals,
     ownerName,
   };
 }

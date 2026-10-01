@@ -2,6 +2,8 @@ import { Mail } from "lucide-react";
 import type { ConnectableChannelKind, NotificationChannel } from "@/lib/types";
 import { APP_NAME } from "@/lib/utils";
 import { Panel } from "@repo/ui/components/states";
+import { PanelHeader } from "@repo/ui/components/panel-header";
+import { PanelStat } from "@repo/ui/components/panel-stat";
 import { ChannelRow } from "./channel-row";
 
 /** Email is always on; Discord, Slack and WhatsApp connect or disconnect below it. */
@@ -11,16 +13,12 @@ export function ChannelsPanel({ channels }: { channels: NotificationChannel[] })
 
   return (
     <Panel>
-      <div className="mb-4 flex items-start justify-between gap-3">
-        <div>
-          <h2 className="type-heading">Channels</h2>
-          <p className="type-label mt-1">Add somewhere besides email for {APP_NAME} to send alerts.</p>
-        </div>
-        <div className="shrink-0 text-right">
-          <p className="type-number text-xl">{connectedCount}</p>
-          <p className="type-label mt-0.5">connected</p>
-        </div>
-      </div>
+      <PanelHeader
+        className="mb-4"
+        title="Channels"
+        description={`Add somewhere besides email for ${APP_NAME} to send alerts.`}
+        right={<PanelStat value={connectedCount} caption="connected" />}
+      />
       <p className="mb-4 flex items-center gap-2.5 text-sm text-muted-foreground">
         <span className="grid size-8 shrink-0 place-items-center rounded-full bg-secondary">
           <Mail className="size-4" />

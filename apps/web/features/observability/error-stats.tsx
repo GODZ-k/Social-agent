@@ -7,7 +7,7 @@ export function ErrorStats({ error }: { error: FrontendErrorDetail }) {
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
       <StatTile label="People" value={error.people}>
-        Across {error.clients.length} clients
+        Across {error.brands.length} brands
       </StatTile>
       <StatTile label="Times" value={error.times}>
         Since it was first seen

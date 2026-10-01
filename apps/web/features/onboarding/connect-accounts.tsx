@@ -20,13 +20,13 @@ const PROMISES = [
 
 /** Connect where to post (S17b), which updates in place as accounts connect (S17c). Always optional. */
 export function ConnectAccounts({
-  clientId,
+  brandId,
   platforms,
   initialAccounts,
   onContinue,
   onBack,
 }: {
-  clientId: string;
+  brandId: string;
   platforms: Platform[];
   initialAccounts: SocialAccount[];
   onContinue: () => void;
@@ -68,7 +68,7 @@ export function ConnectAccounts({
         {platforms.map((platform) => (
           <ConnectAccountRow
             key={platform}
-            clientId={clientId}
+            brandId={brandId}
             platform={platform}
             account={accounts.find((a) => a.platform === platform) ?? null}
             primary={remaining[0] === platform}
@@ -92,7 +92,7 @@ export function ConnectAccounts({
       <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
         {connectedCount === 0 ? (
           <div className="flex flex-wrap items-center gap-3">
-            <Button variant="outline" className="max-[560px]:w-full" disabled={skip.isPending} onClick={() => skip.run(clientId)}>
+            <Button variant="outline" className="max-[560px]:w-full" disabled={skip.isPending} onClick={() => skip.run(brandId)}>
               {skip.isPending && <LoaderCircle className="animate-spin" />}
               Skip, connect later
             </Button>

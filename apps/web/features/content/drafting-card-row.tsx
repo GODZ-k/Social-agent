@@ -1,9 +1,8 @@
 import { format, parseISO } from "date-fns";
 import { LoaderCircle } from "lucide-react";
 import { Badge } from "@repo/ui/components/badge";
-import { PLATFORM_LABEL, PlatformIcon } from "@repo/ui/components/social/platform";
-import { FORMAT_NAME } from "@repo/ui/components/social/format-badge";
 import { DraftingStep } from "./drafting-step";
+import { PlatformFormatLine } from "./platform-format";
 import type { DraftingSlot } from "./use-generate-posts";
 
 /** FL-4: `DraftingTableRow`'s phone/tablet twin, same columns folded into one card. */
@@ -14,13 +13,7 @@ export function DraftingCardRow({ slot }: { slot: DraftingSlot }) {
       <span className="grid min-w-0 flex-1 gap-1">
         <span className="skeleton block h-3 w-32 rounded-full" />
         <DraftingStep step={slot.step} />
-        <span className="flex items-center gap-1.5 text-sm">
-          <PlatformIcon platform={slot.platform} className="size-3.5 text-muted-foreground" />
-          <b className="font-medium">
-            {PLATFORM_LABEL[slot.platform]} {FORMAT_NAME[slot.format].toLowerCase()}
-          </b>
-          {slot.detail && <span className="text-muted-foreground">, {slot.detail}</span>}
-        </span>
+        <PlatformFormatLine platform={slot.platform} format={slot.format} detail={slot.detail} />
         <Badge variant="tint">
           <LoaderCircle className="animate-spin" /> Drafting
         </Badge>

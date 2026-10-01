@@ -1,12 +1,12 @@
 import Link from "next/link";
 import { ChevronRight, Plus } from "lucide-react";
-import { listClients } from "@/lib/api/server";
+import { listActiveBrands } from "@/lib/api/server";
 import { signOut } from "@/lib/auth/actions";
 import { getViewer } from "@/lib/auth/viewer";
 import { prettyUrl } from "@/lib/utils";
 import { workspaceHref } from "@/lib/workspace-path";
 import { textLinkClass } from "@/components/auth/text-link";
-import { BrandMark } from "@/components/shell/brand-mark";
+import { BrandMark } from "@repo/ui/components/brand-mark";
 import { Logo } from "@/components/shell/logo";
 import { StateMark } from "@repo/ui/components/states";
 
@@ -16,7 +16,7 @@ import { StateMark } from "@repo/ui/components/states";
  * way on is one tap. Async: not-found.tsx can read data like any other server component.
  */
 export default async function WorkspaceNotFound() {
-  const [brands, viewer] = await Promise.all([listClients(), getViewer()]);
+  const [brands, viewer] = await Promise.all([listActiveBrands(), getViewer()]);
 
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-lg flex-col items-center px-4 pt-10 text-center md:pt-16">

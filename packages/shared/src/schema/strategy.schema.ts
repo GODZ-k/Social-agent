@@ -22,3 +22,22 @@ export const audienceSegmentSchema = z.object({
   segment: z.string(),
   note: z.string(),
 });
+
+/** One slice of the content mix: a theme the strategy posts against. Matches `content_pillars`. */
+export const contentPillarSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  description: z.string(),
+  /** Share of the content mix, 0-100. */
+  share: z.number(),
+});
+
+/** The agent's memory of what worked, kept across strategy rewrites. Matches `learnings`. */
+export const learningSchema = z.object({
+  id: z.string(),
+  insight: z.string(),
+  evidence: z.string(),
+  impact: learningImpactSchema,
+  /** What the agent changes in the plan because of it. */
+  change: z.string().optional(),
+});

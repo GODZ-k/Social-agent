@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { getObsFrontend, getObsOverview } from "@/lib/api/server";
-import { PageHeader } from "@repo/ui/components/states";
+import { ObsPageHeader } from "@/features/observability/obs-page-header";
 import { ObsTabs } from "@/features/observability/obs-tabs";
 import { parseObsSearchParams } from "@/features/observability/search-params";
 import { ReleaseCheckPanel } from "@/features/observability/release-check-panel";
@@ -22,7 +22,7 @@ export default async function ObservabilityFrontendPage({ searchParams }: { sear
 
   return (
     <>
-      <PageHeader title="Observability" description="How the app, the server and the AI agents are doing, across every client." />
+      <ObsPageHeader />
       <ObsTabs active="frontend" checkedAt={overview.checkedAt} range={range} brandId={brandId} releases={frontend.releases} activeReleaseId={frontend.release.id} />
       <ReleaseCheckPanel release={frontend.release} releaseCheck={frontend.releaseCheck} newErrorsCount={newErrorsCount} />
       <FrontendStats frontend={frontend} range={range} />

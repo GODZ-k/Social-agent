@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
-import { getClient } from "@/lib/api/server";
+import { getBrand } from "@/lib/api/server";
 import { AnalyticsBody } from "@/features/analytics/analytics-body";
 import type { AnalyticsRange } from "@/lib/types";
 import type { WorkspaceBasePath } from "@/lib/workspace-path";
@@ -16,15 +16,15 @@ export default async function AnalyticsPage({
   basePath?: WorkspaceBasePath;
 }) {
   const [{ brandId }, { range: rangeParam }] = await Promise.all([params, searchParams]);
-  const client = await getClient(brandId);
-  if (!client) notFound();
+  const brand = await getBrand(brandId);
+  if (!brand) notFound();
   const range = rangeOf(rangeParam);
 
   return (
     <>
       <PageHeader title="Analytics" description="How your posts did, in plain numbers, and what the agent changed because of it." />
       <Suspense fallback={<SkeletonRows rows={2} className="[&>*]:h-72" />}>
-        <AnalyticsBody brandId={brandId} client={client} basePath={basePath} range={range} />
+        <AnalyticsBody brandId={brandId} brand={brand} basePath={basePath} range={range} />
       </Suspense>
     </>
   );

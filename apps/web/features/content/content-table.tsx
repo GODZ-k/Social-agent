@@ -1,14 +1,13 @@
 import Link from "next/link";
-import { format, parseISO } from "date-fns";
 import { ChevronRight } from "lucide-react";
 import type { BrandKit } from "@social-agent/shared";
 import type { PostView } from "@/lib/types";
 import { PostArt } from "@repo/ui/components/social/post-art";
-import { PLATFORM_LABEL, PlatformIcon } from "@repo/ui/components/social/platform";
-import { FORMAT_NAME } from "@repo/ui/components/social/format-badge";
 import { Button } from "@repo/ui/components/button";
 import { PostStateBadge } from "./post-state-badge";
-import { formatDetail, relativeDayLabel } from "./format-post";
+import { formatDetail } from "./format-post";
+import { PlatformFormatCell } from "./platform-format";
+import { ScheduleCell } from "./schedule";
 import { DraftingTableRow } from "./drafting-table-row";
 import { FailedTableRow } from "./failed-table-row";
 import { NewBadge } from "./new-badge";
@@ -77,28 +76,13 @@ export function ContentTable({
                   </Link>
                 </td>
                 <td className="px-5 py-3">
-                  <span className="flex items-center gap-2 whitespace-nowrap">
-                    <PlatformIcon platform={post.platform} className="text-muted-foreground" />
-                    <span>
-                      <b className="font-medium">
-                        {PLATFORM_LABEL[post.platform]} {FORMAT_NAME[post.format].toLowerCase()}
-                      </b>
-                      {detail && <span className="text-muted-foreground">, {detail}</span>}
-                    </span>
-                  </span>
+                  <PlatformFormatCell platform={post.platform} format={post.format} detail={detail} />
                 </td>
                 <td className="px-5 py-3">
                   <PostStateBadge post={post} />
                 </td>
                 <td className="px-5 py-3 whitespace-nowrap">
-                  {when ? (
-                    <>
-                      <span className="block tabular-nums">{format(parseISO(when), "EEE d MMM, h:mm a")}</span>
-                      <span className="type-label">{relativeDayLabel(parseISO(when))}</span>
-                    </>
-                  ) : (
-                    <span className="text-muted-foreground">Not set</span>
-                  )}
+                  <ScheduleCell when={when} />
                 </td>
                 <td className="relative px-5 py-3 text-right">
                   {post.state === "needs_approval" ? (

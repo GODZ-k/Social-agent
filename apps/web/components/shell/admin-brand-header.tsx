@@ -1,8 +1,9 @@
-import type { Client, Viewer } from "@/lib/types";
+import type { Brand, Viewer } from "@/lib/types";
 import type { WorkspaceBasePath } from "@/lib/workspace-path";
 import { Badge } from "@repo/ui/components/badge";
 import { TopBarFrame } from "./top-bar-frame";
 import { BarDivider } from "./bar-divider";
+import { CrumbSlash } from "./crumb-slash";
 import { ClientsBackLink } from "./clients-back-link";
 import { ClientSwitcher } from "./client-switcher";
 import { AgentChatButton } from "./agent-chat-button";
@@ -22,8 +23,8 @@ export function AdminBrandHeader({
   basePath = "/c",
 }: {
   viewer: Viewer;
-  brand: Client;
-  brands: Client[];
+  brand: Brand;
+  brands: Brand[];
   ownerNames?: Record<string, string>;
   basePath?: WorkspaceBasePath;
 }) {
@@ -33,12 +34,10 @@ export function AdminBrandHeader({
     <TopBarFrame>
       <BarDivider />
       <ClientsBackLink />
-      <span aria-hidden className="text-lg leading-none text-input max-[560px]:hidden">
-        /
-      </span>
+      <CrumbSlash />
       <ClientSwitcher current={current} brands={switchable} basePath={basePath} />
       <div className="ml-auto flex shrink-0 items-center gap-2">
-        <AgentChatButton client={brand} basePath={basePath} />
+        <AgentChatButton brand={brand} basePath={basePath} />
         <Badge variant="outline" className="border-input text-foreground max-md:hidden">
           Admin
         </Badge>

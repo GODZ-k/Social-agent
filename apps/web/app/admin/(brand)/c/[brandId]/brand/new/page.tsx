@@ -9,13 +9,13 @@ import { OnboardingLoadingSkeleton } from "@/features/onboarding/onboarding-load
 import { OnboardingResumingSkeleton } from "@/features/onboarding/onboarding-resuming-skeleton";
 
 /**
- * An admin building a brand for an existing client, keyed by the client's own id in the route
+ * An admin building a brand for an existing brand, keyed by the brand's own id in the route
  * (replaces `/onboarding?for=:clientId`). Sits beside the `(workspace)` group, not inside it: that
  * group's layout renders the brand-workspace chrome for a brand that exists, which this route,
  * before the brand is created, does not have. Once the brand kit is saved, `?brandId=` carries
  * the new brand's own id and the page switches to `OnboardingJourney`, same as onboarding's `for=` case did.
  * The route segment is named `brandId` to match the sibling `(workspace)` routes, even though here,
- * before a brand exists, it actually holds the client's (person's) id.
+ * before a brand exists, it actually holds the brand's (person's) id.
  */
 export default async function NewBrandPage({
   params,
@@ -38,7 +38,7 @@ export default async function NewBrandPage({
             boundary — and its fallback can be chosen by whether `brandId` is present (a fresh visit
             vs one resuming), which `loading.tsx` itself never gets to see. */}
         <Suspense fallback={brandId ? <OnboardingResumingSkeleton /> : <OnboardingLoadingSkeleton />}>
-          <OnboardingEntry initialUrl="" clientId={brandId} personId={personId} personName={personName} />
+          <OnboardingEntry initialUrl="" brandId={brandId} personId={personId} personName={personName} />
         </Suspense>
       </main>
     </div>

@@ -3,7 +3,7 @@
 import { Check } from "lucide-react";
 import { workspaceHref, type WorkspaceBasePath } from "@/lib/workspace-path";
 import type { SwitcherBrand } from "./switcher-brand";
-import { BrandMark } from "./brand-mark";
+import { BrandMark } from "@repo/ui/components/brand-mark";
 import { HeaderMenuItem, HeaderMenuItemText } from "./header-menu";
 
 /** One brand in a switcher. The current one is ticked; the others show what waits for approval. */

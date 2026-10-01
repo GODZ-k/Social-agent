@@ -32,10 +32,18 @@ export function VerifyEmailForm({ redirectTo }: { redirectTo: string }) {
   const { pending, error, setError, run } = useAuthSubmit();
   const form = useForm<VerifyValues>({ resolver: zodResolver(formSchema), defaultValues: { code: "" } });
   const [sentCount, setSentCount] = useState(0);
+  const [navigatingAway, setNavigatingAway] = useState(false);
   const code = useWatch({ control: form.control, name: "code" });
 
   if (!ready) return <div className="skeleton h-80 w-full" role="status" aria-label="Loading" />;
-  if (!hasPending) return <FlowEnded />;
+  // `finalize` (inside `verify`) activates the session by calling Clerk's own `setActive`,
+  // which pushes `signIn`/`signUp` state off "needs a code" through Clerk's own subscription —
+  // re-rendering this still-mounted form mid-submit, before `verify()` even returns and before
+  // its `router.push` to `redirectTo` finishes navigating away (finalize does not wait for that
+  // navigation, so a slow-to-compile destination widens the gap). `pending` covers that whole
+  // submit; `navigatingAway` covers the moment after it, once `pending` itself has cleared.
+  // Without both, this reads as "this step has ended" on a step that in fact just succeeded.
+  if (!hasPending && !pending && !navigatingAway) return <FlowEnded />;
 
   const expired = error?.code === "code_expired";
   const codeWrong = error?.code === "code_wrong";
@@ -45,6 +53,7 @@ export function VerifyEmailForm({ redirectTo }: { redirectTo: string }) {
       () => verify(values.code),
       (step) => {
         if (step === "two-factor") router.push(withRedirect("/two-factor", redirectTo));
+        else setNavigatingAway(true);
       },
     );
   }

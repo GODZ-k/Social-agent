@@ -1,6 +1,9 @@
 import { cn } from "@/lib/utils";
 
-export function SetupProgress({ step, total = 3 }: { step: number; total?: number }) {
+// Default 2: choose/start the authenticator, then connect it. Backup codes are the
+// (currently unreachable, since this Clerk instance has them switched off) 3rd step;
+// SaveCodesStep passes its own total when it actually renders.
+export function SetupProgress({ step, total = 2 }: { step: number; total?: number }) {
   return (
     <div className="mb-5 flex items-center gap-2.5 text-[0.8125rem] text-muted-foreground">
       <span aria-hidden className="flex gap-1">

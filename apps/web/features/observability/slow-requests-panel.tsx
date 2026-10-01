@@ -2,7 +2,9 @@ import { format, parseISO } from "date-fns";
 import type { SlowRequest } from "@/lib/types";
 import { Panel } from "@repo/ui/components/states";
 import { RowList, type RowListColumn } from "./row-list";
-import { avatarColor, formatMs } from "./format";
+import { PanelHeader } from "@repo/ui/components/panel-header";
+import { BrandBadge } from "./brand-badge";
+import { formatMs } from "./format";
 import { SignozTraceLink } from "./signoz-link";
 
 const COLUMNS: RowListColumn<SlowRequest>[] = [
@@ -20,18 +22,7 @@ const COLUMNS: RowListColumn<SlowRequest>[] = [
     ),
   },
   { header: "Took", align: "right", width: "4.5rem", render: (r) => <span className="font-medium">{formatMs(r.tookMs)}</span> },
-  {
-    header: "Client",
-    width: "9rem",
-    render: (r) => (
-      <span className="flex items-center gap-1.5">
-        <span aria-hidden className="grid size-5 shrink-0 place-items-center rounded-full text-[0.625rem] font-semibold text-white" style={{ background: avatarColor(r.brandName) }}>
-          {r.brandName.charAt(0)}
-        </span>
-        {r.brandName}
-      </span>
-    ),
-  },
+  { header: "Client", width: "9rem", render: (r) => <BrandBadge name={r.brandName} /> },
   { header: "When", align: "right", width: "4.5rem", render: (r) => format(parseISO(r.at), "h:mm a") },
   { header: "", align: "right", width: "5rem", render: (r) => <SignozTraceLink traceId={r.traceId} /> },
 ];
@@ -40,8 +31,7 @@ const COLUMNS: RowListColumn<SlowRequest>[] = [
 export function SlowRequestsPanel({ requests }: { requests: SlowRequest[] }) {
   return (
     <Panel>
-      <h2 className="type-heading">Slowest requests</h2>
-      <p className="type-label mt-1 mb-4">The three longest requests, and what they waited on.</p>
+      <PanelHeader title="Slowest requests" description="The three longest requests, and what they waited on." />
       <RowList columns={COLUMNS} rows={requests} rowKey={(r) => r.traceId} />
     </Panel>
   );

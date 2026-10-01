@@ -7,7 +7,7 @@ import { z } from "zod";
 import { Lock, Mail } from "lucide-react";
 import { useInvite } from "@/lib/auth/client";
 import { withRedirect } from "@/lib/auth/redirect";
-import { AUTH_POLICY, checkPassword, passwordAllowed } from "@/lib/auth/rules";
+import { AUTH_POLICY, checkPassword, passwordAllowed, passwordErrorFrom } from "@/lib/auth/rules";
 import { AuthHeading } from "@/components/auth/auth-heading";
 import { Notice } from "@/components/auth/notice";
 import { PasswordField } from "@/components/auth/password-field";
@@ -40,9 +40,9 @@ export function InviteAccept({ token, redirectTo }: { token: string | null; redi
   if (state.status === "expired" || error?.code === "link_expired") return <InviteExpired />;
 
   const { email } = state;
-  const leaked = error?.code === "password_leaked" ? true : undefined;
+  const passwordError = passwordErrorFrom(error);
+  const leaked = passwordError?.code === "password_leaked" ? true : undefined;
   const rules = checkPassword(password, email, leaked);
-  const passwordError = error?.code === "password_leaked" || error?.code === "password_too_short" ? error : null;
 
   function submit(values: Values) {
     if (!passwordAllowed(rules)) return;

@@ -2,7 +2,7 @@
 
 import { ChevronsUpDown, LayoutGrid, Plus } from "lucide-react";
 import type { SwitcherBrand } from "./switcher-brand";
-import { BrandMark } from "./brand-mark";
+import { BrandMark } from "@repo/ui/components/brand-mark";
 import { BrandMenuRow } from "./brand-menu-row";
 import { HeaderMenu, HeaderMenuItem, HeaderMenuItemText, HeaderMenuLabel, HeaderMenuSeparator } from "./header-menu";
 

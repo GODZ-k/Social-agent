@@ -1,7 +1,7 @@
 import "server-only";
 import { addMinutes } from "date-fns";
 import { DEFAULT_ACCENT } from "@social-agent/shared";
-import type { Client, NewClientInput, Strategy } from "@/lib/types";
+import type { Brand, NewBrandDraft, Strategy } from "@/lib/types";
 import * as research from "./research";
 import type { SeedData } from "./seed";
 import { AUTO_START_MINUTES } from "./strategy";
@@ -10,11 +10,11 @@ import { AUTO_START_MINUTES } from "./strategy";
 
 const slugOf = (name: string) => name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 
-export function newClient(db: SeedData, input: NewClientInput, ownerId: string): Client {
-  const slug = slugOf(input.name) || `brand-${db.clients.length + 1}`;
+export function newBrand(db: SeedData, input: NewBrandDraft, ownerId: string): Brand {
+  const slug = slugOf(input.name) || `brand-${db.brands.length + 1}`;
   const now = new Date().toISOString();
   return {
-    id: db.clients.some((c) => c.id === slug) ? `${slug}-${Date.now().toString(36)}` : slug,
+    id: db.brands.some((c) => c.id === slug) ? `${slug}-${Date.now().toString(36)}` : slug,
     ownerId,
     name: input.name,
     url: input.url,
@@ -43,11 +43,11 @@ const GENERIC_PILLARS: Strategy["pillars"] = [
 ];
 
 /** Research done drafts strategy v1, which starts on its own after the auto-start wait. */
-function firstStrategy(client: Client, db: SeedData): Strategy {
+function firstStrategy(brand: Brand, db: SeedData): Strategy {
   const generatedAt = new Date();
-  const brief = db.research[client.id]?.view.growthBrief?.content;
+  const brief = db.research[brand.id]?.view.growthBrief?.content;
   return {
-    clientId: client.id,
+    brandId: brand.id,
     version: 1,
     status: "draft",
     generatedAt: generatedAt.toISOString(),
@@ -55,28 +55,28 @@ function firstStrategy(client: Client, db: SeedData): Strategy {
     activatedAt: null,
     approvedBy: null,
     changeNote: null,
-    goal: brief?.growthLever ?? `Turn ${client.name}'s website visitors into followers, and followers into customers.`,
+    goal: brief?.growthLever ?? `Turn ${brand.name}'s website visitors into followers, and followers into customers.`,
     pillars: structuredClone(GENERIC_PILLARS),
-    cadence: client.platforms.map((platform, i) => ({
+    cadence: brand.platforms.map((platform, i) => ({
       platform,
       perWeek: [4, 3, 2, 2][i] ?? 2,
       bestTimes: ["Tue 8:00am", "Thu 6:00pm"],
     })),
-    audience: [{ segment: "Core", note: client.brand.audience }],
+    audience: [{ segment: "Core", note: brand.brand.audience }],
     learnings: [],
   };
 }
 
 /** Brings a brand's research up to date and drafts the first strategy when the first run finishes. */
-export function settleResearch(db: SeedData, client: Client) {
-  const record = db.research[client.id];
+export function settleResearch(db: SeedData, brand: Brand) {
+  const record = db.research[brand.id];
   if (!record) return null;
-  const view = research.settle(record, client);
-  const hasStrategy = db.strategies.some((s) => s.clientId === client.id);
+  const view = research.settle(record, brand);
+  const hasStrategy = db.strategies.some((s) => s.brandId === brand.id);
   if (view.status === "done" && !hasStrategy) {
-    const strategy = firstStrategy(client, db);
+    const strategy = firstStrategy(brand, db);
     db.strategies.push(strategy);
-    client.stage = "strategy";
+    brand.stage = "strategy";
   }
   return view;
 }

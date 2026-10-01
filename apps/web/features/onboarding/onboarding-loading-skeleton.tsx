@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
  * S00a: bones of `OnboardingFlow`'s website step (headline, `UrlForm`, `StartJourney`'s 3 cards),
  * shown by `loading.tsx` while `/onboarding` and the admin "add a brand" route fetch their data.
  * `loading.js` gets no props (not even `searchParams`), so it can't tell a first-time visit from
- * one resuming with `?clientId=` — this is the shape for the far more common first-time case; a
+ * one resuming with `?brandId=` — this is the shape for the far more common first-time case; a
  * resuming visit briefly shows this shape too before the real journey swaps in.
  */
 export function OnboardingLoadingSkeleton() {

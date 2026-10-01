@@ -2,6 +2,7 @@ import { ChartNoAxesCombined } from "lucide-react";
 import type { AnalyticsReport } from "@/lib/types";
 import { formatNumber } from "@repo/ui/lib/utils";
 import { Button } from "@repo/ui/components/button";
+import { IconCircle } from "@repo/ui/components/icon-circle";
 import { reachTotal } from "./report-format";
 
 /** The month in one line: the agent's own top finding, in numbers pulled straight from the report. */
@@ -12,9 +13,9 @@ export function SummaryBanner({ report }: { report: AnalyticsReport }) {
 
   return (
     <section className="flex flex-wrap items-center gap-5 rounded-[1.375rem] bg-tint p-5 md:p-6">
-      <span className="grid size-12 shrink-0 place-items-center rounded-full bg-card text-tint-foreground">
+      <IconCircle className="size-12 bg-card text-tint-foreground">
         <ChartNoAxesCombined className="size-5" />
-      </span>
+      </IconCircle>
       <div className="min-w-0 flex-1">
         <h2 className="type-heading max-w-[46ch] text-tint-foreground">{headline}.</h2>
         <p className="mt-1.5 max-w-[70ch] text-tint-foreground/80">

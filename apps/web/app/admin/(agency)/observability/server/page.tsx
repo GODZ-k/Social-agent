@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { getObsOverview, getObsServer } from "@/lib/api/server";
-import { PageHeader } from "@repo/ui/components/states";
 import { formatNumber } from "@/lib/utils";
+import { ObsPageHeader } from "@/features/observability/obs-page-header";
 import { ObsTabs } from "@/features/observability/obs-tabs";
 import { parseObsSearchParams } from "@/features/observability/search-params";
 import { ServerStats } from "@/features/observability/server-stats";
@@ -25,7 +25,7 @@ export default async function ObservabilityServerPage({ searchParams }: { search
 
   return (
     <>
-      <PageHeader title="Observability" description="How the app, the server and the AI agents are doing, across every client." />
+      <ObsPageHeader />
       <ObsTabs active="server" checkedAt={overview.checkedAt} range={range} brandId={brandId} />
       <ServerStats server={server} range={range} />
       <div className="mt-5 grid gap-5 lg:grid-cols-2">

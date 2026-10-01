@@ -25,3 +25,10 @@ export function useAuthSubmit() {
 
   return { pending, error, setError, run };
 }
+
+/** Runs `onPaused` only for a lockout, so a form's `run(..., onError)` doesn't repeat the check. */
+export function whenLocked(onPaused: (error: AuthError) => void) {
+  return (error: AuthError) => {
+    if (error.code === "too_many_attempts") onPaused(error);
+  };
+}

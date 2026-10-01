@@ -13,12 +13,22 @@ import { SetupProgress } from "./setup-progress";
 import { useAuthSubmit } from "./use-auth-submit";
 
 /** Step 2 with a passkey: the browser owns the prompt; we say what is happening and offer a way out. */
-export function CreatePasskeyStep({ create, onCreated, onUseApp }: { create: () => Promise<AuthResult>; onCreated: () => void; onUseApp: () => void }) {
+export function CreatePasskeyStep({
+  create,
+  onCreated,
+  onUseApp,
+  headingLevel,
+}: {
+  create: () => Promise<AuthResult>;
+  onCreated: () => void;
+  onUseApp: () => void;
+  headingLevel?: 1 | 2;
+}) {
   const { pending, error, run } = useAuthSubmit();
   return (
     <>
       <SetupProgress step={2} />
-      <AuthHeading icon={<StatusIcon icon={KeyRound} />} title="Create a passkey">
+      <AuthHeading icon={<StatusIcon icon={KeyRound} />} title="Create a passkey" level={headingLevel}>
         Your browser asks for your fingerprint, face or device PIN. {APP_NAME} never sees them; they stay on your device.
       </AuthHeading>
       {error ? <Notice tone="warning">{errorCopy(error.code)}</Notice> : null}

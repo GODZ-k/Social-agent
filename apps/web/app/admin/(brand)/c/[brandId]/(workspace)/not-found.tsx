@@ -8,7 +8,7 @@ import { Logo } from "@/components/shell/logo";
 /**
  * A brand id under /admin/c that's missing, archived, or unreachable (ST-2 "brand"), told the
  * same way regardless of which so nothing leaks. An admin has no personal "your brands" list —
- * every brand belongs to some client — so the way back is the client roster, not a brand switcher.
+ * every brand belongs to some brand — so the way back is the brand roster, not a brand switcher.
  */
 export default function AdminWorkspaceNotFound() {
   return (
@@ -24,7 +24,7 @@ export default function AdminWorkspaceNotFound() {
           <GoBackButton />
           <Button asChild>
             <Link href={ADMIN_CLIENTS_PATH}>
-              <Users /> Back to all clients
+              <Users /> Back to all brands
             </Link>
           </Button>
         </div>

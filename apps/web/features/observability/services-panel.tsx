@@ -1,6 +1,9 @@
 import type { ServiceRow } from "@/lib/types";
 import { Panel } from "@repo/ui/components/states";
 import { RowList, type RowListColumn } from "./row-list";
+import { PanelHeader } from "@repo/ui/components/panel-header";
+import { PanelStat } from "@repo/ui/components/panel-stat";
+import { FailedCount } from "@repo/ui/components/failed-count";
 import { formatMs } from "./format";
 import { formatNumber } from "@/lib/utils";
 
@@ -26,7 +29,7 @@ const COLUMNS: RowListColumn<ServiceRow>[] = [
     ),
   },
   { header: "Calls", align: "right", render: (s) => formatNumber(s.calls) },
-  { header: "Failed", align: "right", render: (s) => <span className={s.failed > 0 ? "font-medium text-destructive" : ""}>{s.failed}</span> },
+  { header: "Failed", align: "right", render: (s) => <FailedCount count={s.failed} /> },
   { header: "p95", align: "right", render: (s) => formatMs(s.p95Ms) },
 ];
 
@@ -35,16 +38,7 @@ export function ServicesPanel({ services }: { services: ServiceRow[] }) {
   const failed = services.reduce((sum, s) => sum + s.failed, 0);
   return (
     <Panel>
-      <div className="mb-4 flex items-start justify-between gap-3">
-        <div>
-          <h2 className="type-heading">Services the API calls</h2>
-          <p className="type-label mt-1">Outside services, and how they answered.</p>
-        </div>
-        <div className="shrink-0 text-right">
-          <p className="type-number text-xl">{failed}</p>
-          <p className="type-label mt-0.5">Failed calls</p>
-        </div>
-      </div>
+      <PanelHeader title="Services the API calls" description="Outside services, and how they answered." right={<PanelStat value={failed} caption="Failed calls" />} />
       <RowList columns={COLUMNS} rows={services} rowKey={(s) => s.name} />
     </Panel>
   );

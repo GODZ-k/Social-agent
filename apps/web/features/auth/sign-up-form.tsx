@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { authCapabilities, BotCheck, useSignUpFlow } from "@/lib/auth/client";
 import { withRedirect } from "@/lib/auth/redirect";
-import { AUTH_POLICY, checkPassword, passwordAllowed } from "@/lib/auth/rules";
+import { AUTH_POLICY, checkPassword, passwordAllowed, passwordErrorFrom } from "@/lib/auth/rules";
 import { APP_NAME } from "@/lib/utils";
 import { AuthHeading } from "@/components/auth/auth-heading";
 import { GoogleButton } from "@/components/auth/google-button";
@@ -18,8 +18,6 @@ import { TextField } from "@/components/auth/text-field";
 import { TextLink } from "@/components/auth/text-link";
 import { errorCopy } from "./error-copy";
 import { useAuthSubmit } from "./use-auth-submit";
-
-const PASSWORD_ERRORS = new Set(["password_too_short", "password_leaked"]);
 
 const formSchema = z.object({
   name: z.string().trim().min(1, "Enter your name"),
@@ -40,7 +38,7 @@ export function SignUpForm({ redirectTo, site }: { redirectTo: string; site?: Re
   const email = useWatch({ control: form.control, name: "email" });
   const password = useWatch({ control: form.control, name: "password" });
 
-  const passwordError = error && PASSWORD_ERRORS.has(error.code) ? error : null;
+  const passwordError = passwordErrorFrom(error);
   const leaked = passwordError?.code === "password_leaked" ? true : undefined;
   const rules = checkPassword(password, email, leaked);
   const emailTaken = error?.code === "email_in_use";

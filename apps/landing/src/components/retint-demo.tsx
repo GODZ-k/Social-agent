@@ -5,7 +5,7 @@ import { AnimatePresence, motion, useMotionValue, useReducedMotion, useScroll, u
 import { Check } from "lucide-react";
 import { Badge } from "@repo/ui/components/badge";
 import { Button } from "@repo/ui/components/button";
-import { ClientAvatar } from "@repo/ui/components/social/client-avatar";
+import { BrandAvatar } from "@repo/ui/components/social/brand-avatar";
 import { PostArt } from "@repo/ui/components/social/post-art";
 import { spring } from "@repo/ui/lib/motion";
 import { brandStyle, cn } from "@repo/ui/lib/utils";
@@ -92,7 +92,7 @@ export function RetintDemo() {
                 selected ? "bg-tint-strong text-tint-foreground" : "bg-card text-muted-foreground shadow-raised hover:text-foreground",
               )}
             >
-              <ClientAvatar client={b} className="size-6 text-[0.6875rem]" />
+              <BrandAvatar brand={b} className="size-6 text-[0.6875rem]" />
               {b.name}
             </button>
           );

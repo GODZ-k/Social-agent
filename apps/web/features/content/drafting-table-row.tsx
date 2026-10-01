@@ -1,9 +1,8 @@
 import { format, parseISO } from "date-fns";
 import { LoaderCircle } from "lucide-react";
 import { Badge } from "@repo/ui/components/badge";
-import { PLATFORM_LABEL, PlatformIcon } from "@repo/ui/components/social/platform";
-import { FORMAT_NAME } from "@repo/ui/components/social/format-badge";
 import { DraftingStep } from "./drafting-step";
+import { PlatformFormatCell } from "./platform-format";
 import type { DraftingSlot } from "./use-generate-posts";
 
 /** FL-4: one post still drafting, as a real table row — same columns as a finished post,
@@ -22,15 +21,7 @@ export function DraftingTableRow({ slot }: { slot: DraftingSlot }) {
         </span>
       </td>
       <td className="px-5 py-3">
-        <span className="flex items-center gap-2 whitespace-nowrap">
-          <PlatformIcon platform={slot.platform} className="text-muted-foreground" />
-          <span>
-            <b className="font-medium">
-              {PLATFORM_LABEL[slot.platform]} {FORMAT_NAME[slot.format].toLowerCase()}
-            </b>
-            {slot.detail && <span className="text-muted-foreground">, {slot.detail}</span>}
-          </span>
-        </span>
+        <PlatformFormatCell platform={slot.platform} format={slot.format} detail={slot.detail} />
       </td>
       <td className="px-5 py-3">
         <Badge variant="tint">

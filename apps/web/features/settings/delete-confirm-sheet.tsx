@@ -6,16 +6,16 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Archive as ArchiveIcon, Check, LoaderCircle } from "lucide-react";
-import { deleteClient } from "@/lib/api/actions";
+import { deleteBrand } from "@/lib/api/actions";
 import { useServerAction } from "@/lib/api/use-server-action";
-import type { Client } from "@/lib/types";
+import type { Brand } from "@/lib/types";
 import { Button } from "@repo/ui/components/button";
 import { Sheet } from "@repo/ui/components/sheet";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "@repo/ui/components/form";
 import { Input } from "@repo/ui/components/input";
 
 /** What deleting removes, itemised (owner decision, S16): specific enough that no one is surprised. */
-function whatsGone(stats: Client["stats"]): string[] {
+function whatsGone(stats: Brand["stats"]): string[] {
   const items = ["The brand kit and contact details", "The strategy and the research behind it"];
   const posts: string[] = [];
   if (stats.pendingApprovals > 0) posts.push(`${stats.pendingApprovals} approved`);
@@ -26,26 +26,26 @@ function whatsGone(stats: Client["stats"]): string[] {
 }
 
 export function DeleteConfirmSheet({
-  client,
+  brand,
   noun,
   open,
   onOpenChange,
   onArchiveInstead,
 }: {
-  client: Pick<Client, "id" | "name" | "stats">;
+  brand: Pick<Brand, "id" | "name" | "stats">;
   noun: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onArchiveInstead: () => void;
 }) {
   const router = useRouter();
-  const schema = z.object({ confirmName: z.string().refine((v) => v === client.name, "") });
+  const schema = z.object({ confirmName: z.string().refine((v) => v === brand.name, "") });
   const form = useForm<{ confirmName: string }>({
     resolver: zodResolver(schema),
     defaultValues: { confirmName: "" },
     mode: "onChange",
   });
-  const remove = useServerAction(deleteClient, { onSuccess: () => router.replace("/"), success: `${client.name} deleted` });
+  const remove = useServerAction(deleteBrand, { onSuccess: () => router.replace("/"), success: `${brand.name} deleted` });
 
   useEffect(() => {
     if (!open) form.reset({ confirmName: "" });
@@ -55,7 +55,7 @@ export function DeleteConfirmSheet({
     <Sheet
       open={open}
       onOpenChange={onOpenChange}
-      title={`Delete ${client.name}?`}
+      title={`Delete ${brand.name}?`}
       description="This can't be undone. It deletes:"
       footer={
         <>
@@ -66,7 +66,7 @@ export function DeleteConfirmSheet({
             variant="destructive"
             className="flex-1"
             disabled={!form.formState.isValid || remove.isPending}
-            onClick={form.handleSubmit(() => remove.run(client.id))}
+            onClick={form.handleSubmit(() => remove.run(brand.id))}
           >
             {remove.isPending && <LoaderCircle className="animate-spin" />}
             Delete for good
@@ -75,7 +75,7 @@ export function DeleteConfirmSheet({
       }
     >
       <ul className="grid gap-2 text-[0.9375rem]">
-        {whatsGone(client.stats).map((item) => (
+        {whatsGone(brand.stats).map((item) => (
           <li key={item} className="flex items-start gap-2.5">
             <span className="mt-2 size-1 shrink-0 rounded-full bg-destructive" />
             {item}
@@ -100,12 +100,12 @@ export function DeleteConfirmSheet({
           <FormField control={form.control} name="confirmName" render={({ field }) => (
             <FormItem>
               <FormLabel>
-                Type <b className="text-foreground">{client.name}</b> to confirm
+                Type <b className="text-foreground">{brand.name}</b> to confirm
               </FormLabel>
               <FormControl>
                 <Input {...field} autoComplete="off" spellCheck={false} />
               </FormControl>
-              {field.value.length > 0 && field.value === client.name && (
+              {field.value.length > 0 && field.value === brand.name && (
                 <p className="flex items-center gap-1.5 text-[0.8125rem] text-success">
                   <Check className="size-3.5" />Name matches
                 </p>

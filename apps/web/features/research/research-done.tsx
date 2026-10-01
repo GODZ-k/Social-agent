@@ -6,11 +6,11 @@ import { ResearchFindings } from "@/features/research/research-findings";
 
 /** Research is done (S19b): the findings, then on to the first month's strategy. */
 export function ResearchDone({
-  clientId,
+  brandId,
   research,
   basePath = "/c",
 }: {
-  clientId: string;
+  brandId: string;
   research: ResearchView;
   basePath?: "/c" | "/admin/c";
 }) {
@@ -27,8 +27,8 @@ export function ResearchDone({
       </div>
 
       <div className="mt-7 hidden justify-end lg:flex">
-        <Button size="lg" asChild>
-          <Link href={`${basePath}/${clientId}/strategy`}>
+        <Button asChild>
+          <Link href={`${basePath}/${brandId}/strategy`}>
             See your first month
             <ArrowRight />
           </Link>
@@ -37,8 +37,8 @@ export function ResearchDone({
 
       <div className="fixed inset-x-0 bottom-0 z-10 flex items-center justify-between gap-3 border-t bg-card p-4 shadow-floating lg:hidden">
         <p className="type-label">Your first month is ready.</p>
-        <Button size="lg" asChild>
-          <Link href={`${basePath}/${clientId}/strategy`}>
+        <Button asChild>
+          <Link href={`${basePath}/${brandId}/strategy`}>
             See your first month
             <ArrowRight />
           </Link>

@@ -5,9 +5,9 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { LoaderCircle } from "lucide-react";
 import type { Platform } from "@social-agent/shared";
-import { createBrandForClient, createClient } from "@/lib/api/actions";
+import { createBrandForClient, createBrand } from "@/lib/api/actions";
 import { useServerAction } from "@/lib/api/use-server-action";
-import type { NewClientInput, ScanResult } from "@/lib/types";
+import type { NewBrandDraft, ScanResult } from "@/lib/types";
 import { brandStyle } from "@/lib/utils";
 import { brandKitSchema, toInput, toValues, type Values } from "@/features/brand-kit/schema";
 import { useEditableCard } from "@/features/brand-kit/use-editable-card";
@@ -23,7 +23,7 @@ import { Form } from "@repo/ui/components/form";
 
 /**
  * Onboarding's review step (S17a): each card is read-only until Edit is tapped, then Cancel/Done
- * swap it back. `personId` set means an admin is building this brand for that client (2026-09-28):
+ * swap it back. `personId` set means an admin is building this brand for that brand (2026-09-28):
  * the brand is created under them, and the flow continues under `/admin/c/:brandId/brand/new`.
  */
 export function OnboardingBrandKitForm({
@@ -51,12 +51,12 @@ export function OnboardingBrandKitForm({
   });
   const preview = useLiveBrand(form, scan.brand);
   const { cardProps } = useEditableCard(form);
-  const createBrand = personId ? (input: NewClientInput) => createBrandForClient(personId, input) : createClient;
-  const save = useServerAction(createBrand, {
-    success: (client) => `${client.name} added`,
+  const create = personId ? (input: NewBrandDraft) => createBrandForClient(personId, input) : createBrand;
+  const save = useServerAction(create, {
+    success: (brand) => `${brand.name} added`,
     failure: "Couldn't save the brand.",
-    onSuccess: (client) =>
-      router.push(personId ? `/admin/c/${personId}/brand/new?brandId=${client.id}` : `/onboarding?clientId=${client.id}`),
+    onSuccess: (brand) =>
+      router.push(personId ? `/admin/c/${personId}/brand/new?brandId=${brand.id}` : `/onboarding?brandId=${brand.id}`),
   });
 
   return (
@@ -87,7 +87,7 @@ export function OnboardingBrandKitForm({
 
           <BrandPreview brand={preview.brand} hook={preview.hook}>
             <div className="hidden lg:block">
-              <Button type="submit" size="lg" className="mt-6 w-full" disabled={save.isPending}>
+              <Button type="submit" className="mt-6 w-fit" disabled={save.isPending}>
                 {save.isPending && <LoaderCircle className="animate-spin" />}
                 {save.isPending ? "Saving your brand kit" : "Looks right, continue"}
               </Button>
@@ -97,7 +97,7 @@ export function OnboardingBrandKitForm({
 
           <div className="fixed inset-x-0 bottom-0 z-10 flex items-center justify-between gap-3 border-t bg-card p-4 shadow-floating lg:hidden">
             <p className="type-label">You can change all of this later in Settings.</p>
-            <Button type="submit" size="lg" disabled={save.isPending}>
+            <Button type="submit" disabled={save.isPending}>
               {save.isPending && <LoaderCircle className="animate-spin" />}
               {save.isPending ? "Saving" : "Looks right, continue"}
             </Button>

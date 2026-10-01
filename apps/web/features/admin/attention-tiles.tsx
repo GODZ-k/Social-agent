@@ -10,7 +10,7 @@ export function AttentionTiles({ clients }: { clients: AdminClientRow[] }) {
   const posts = withPosts.reduce((sum, c) => sum + c.postsToApprove, 0);
 
   const expired = clients.flatMap((c) => c.expiredConnections);
-  const expiredClients = [...new Set(expired.map((e) => e.brandName))];
+  const expiredBrands = [...new Set(expired.map((e) => e.brandName))];
 
   const failed = clients.flatMap((c) => c.failedRuns.map((r) => ({ ...r, clientId: c.id })));
 
@@ -31,8 +31,8 @@ export function AttentionTiles({ clients }: { clients: AdminClientRow[] }) {
         count={expired.length}
         label={expired.length === 1 ? "connection to fix" : "connections to fix"}
         detail={expired.length > 0 ? `${PLATFORM_LABEL[expired[0]!.platform]} for ${expired[0]!.brandName}, expired.` : "Nothing waiting."}
-        href={expiredClients.length === 1 ? `/admin/clients/${clients.find((c) => c.expiredConnections.length > 0)?.id}` : "/admin/clients?filter=needs-you"}
-        linkLabel={expiredClients.length === 1 ? "Show client" : `Show ${expiredClients.length} clients`}
+        href={expiredBrands.length === 1 ? `/admin/clients/${clients.find((c) => c.expiredConnections.length > 0)?.id}` : "/admin/clients?filter=needs-you"}
+        linkLabel={expiredBrands.length === 1 ? "Show client" : `Show ${expiredBrands.length} clients`}
       />
       <AttentionTile
         icon={AlertCircle}

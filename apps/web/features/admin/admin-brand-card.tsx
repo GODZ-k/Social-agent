@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { format, parseISO } from "date-fns";
 import { ChevronRight, Eye } from "lucide-react";
-import type { AdminClientRow, Client } from "@/lib/types";
+import type { AdminClientRow, Brand } from "@/lib/types";
 import { getStrategy, listContent } from "@/lib/api/server";
 import { prettyUrl } from "@/lib/utils";
 import { workspaceHref } from "@/lib/workspace-path";
@@ -12,7 +12,7 @@ import { LoopTrack, LoopTrackNote } from "@repo/ui/components/social/loop-track"
 import { PLATFORM_LABEL, PlatformIcon } from "@repo/ui/components/social/platform";
 
 /** One brand, in full: where it is in the loop, what needs the admin, and its accounts, strategy and posts. */
-export async function AdminBrandCard({ brand, clientRow }: { brand: Client; clientRow: AdminClientRow }) {
+export async function AdminBrandCard({ brand, clientRow }: { brand: Brand; clientRow: AdminClientRow }) {
   const [strategy, posts] = await Promise.all([getStrategy(brand.id), listContent(brand.id)]);
   const published = posts.filter((p) => p.state === "published").length;
   const expired = clientRow.expiredConnections.filter((e) => e.brandId === brand.id);

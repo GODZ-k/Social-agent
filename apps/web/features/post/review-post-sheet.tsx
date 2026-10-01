@@ -1,5 +1,5 @@
 import dynamic from "next/dynamic";
-import { getAnalyticsReport, getBestTimes, getClient, getPost, listReviewQueue, listSocialAccounts } from "@/lib/api/server";
+import { getAnalyticsReport, getBestTimes, getBrand, getPost, listReviewQueue, listSocialAccounts } from "@/lib/api/server";
 import { reachTotal } from "@/features/analytics/report-format";
 
 // The picker components are heavy (a clock face library, a calendar); nobody
@@ -19,13 +19,13 @@ export async function ReviewPostSheet({ postId }: { postId: string }) {
   if (!post) return null;
 
   const scheduledDate = (post.scheduledFor ?? new Date().toISOString()).slice(0, 10);
-  const [client, queue, accounts, bestTimes] = await Promise.all([
-    getClient(post.clientId),
-    listReviewQueue(post.clientId),
-    listSocialAccounts(post.clientId),
-    getBestTimes(post.clientId, post.platform, scheduledDate),
+  const [brand, queue, accounts, bestTimes] = await Promise.all([
+    getBrand(post.brandId),
+    listReviewQueue(post.brandId),
+    listSocialAccounts(post.brandId),
+    getBestTimes(post.brandId, post.platform, scheduledDate),
   ]);
-  if (!client) return null;
+  if (!brand) return null;
 
   const account = accounts.find((a) => a.platform === post.platform);
   const connected = account?.state === "connected";
@@ -34,15 +34,15 @@ export async function ReviewPostSheet({ postId }: { postId: string }) {
   // reconnecting. Both clear `failure` the same way (reschedulePost), so the account's own
   // connection state is what tells the two apart — no extra field on the post itself.
   if (post.state === "failed") {
-    return connected ? <FailedSizePanel post={post} brand={client.brand} /> : <FailedConnectionPanel post={post} brand={client.brand} />;
+    return connected ? <FailedSizePanel post={post} brand={brand.brand} /> : <FailedConnectionPanel post={post} brand={brand.brand} />;
   }
 
   if (post.state === "published") {
-    const report = await getAnalyticsReport(post.clientId);
+    const report = await getAnalyticsReport(post.brandId);
     const bestRankFound = report?.bestPosts.findIndex((p) => p.id === post.id) ?? -1;
     const bestRank = bestRankFound === -1 ? null : bestRankFound;
     const avgReach = report && report.postCount ? reachTotal(report) / report.postCount : 0;
-    return <PublishedPostPanel post={post} brand={client.brand} handle={account?.handle ?? null} bestRank={bestRank} avgReach={avgReach} />;
+    return <PublishedPostPanel post={post} brand={brand.brand} handle={account?.handle ?? null} bestRank={bestRank} avgReach={avgReach} />;
   }
 
   const index = queue.findIndex((p) => p.id === post.id);
@@ -50,7 +50,7 @@ export async function ReviewPostSheet({ postId }: { postId: string }) {
   return (
     <ReviewPostPanel
       post={post}
-      brand={client.brand}
+      brand={brand.brand}
       bestTimes={bestTimes}
       connected={connected}
       position={index === -1 ? null : index + 1}

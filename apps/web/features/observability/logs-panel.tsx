@@ -7,6 +7,7 @@ import type { LogLevel, LogRow } from "@/lib/types";
 import { Panel } from "@repo/ui/components/states";
 import { Badge } from "@repo/ui/components/badge";
 import { cn } from "@/lib/utils";
+import { PanelHeader } from "@repo/ui/components/panel-header";
 import { SignozTraceLink } from "./signoz-link";
 import { signozLogsUrl } from "./signoz";
 
@@ -32,8 +33,7 @@ export function LogsPanel({ logs }: { logs: LogRow[] }) {
 
   return (
     <Panel>
-      <h2 className="type-heading">Logs</h2>
-      <p className="type-label mt-1 mb-4">What the server wrote down, newest first.</p>
+      <PanelHeader title="Logs" description="What the server wrote down, newest first." />
 
       <div className="mb-3 flex flex-wrap items-center gap-3">
         <div role="radiogroup" aria-label="Log level" className="inline-flex rounded-full bg-secondary p-1">

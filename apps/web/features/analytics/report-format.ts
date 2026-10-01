@@ -1,7 +1,5 @@
 import type { AnalyticsReport } from "@/lib/types";
 
-export const listFormat = new Intl.ListFormat("en", { type: "conjunction" });
-
 /** "1 post", "3 posts". */
 export function postsLabel(count: number): string {
   return `${count} ${count === 1 ? "post" : "posts"}`;

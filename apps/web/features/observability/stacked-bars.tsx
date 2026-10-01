@@ -1,4 +1,4 @@
-import { BarLabel } from "./bar-label";
+import { BarLabel } from "@repo/ui/components/bar-label";
 
 /** One stacked horizontal bar: its segments' totals, the row's label inside the bar (or just past it, in dark text, when the bar is too short to hold it), the grand total at the right. */
 export function StackedBars({

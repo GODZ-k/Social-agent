@@ -7,12 +7,7 @@ import { scaleLinear } from "@tanstack/charts/scales/linear";
 import { scalePoint } from "@tanstack/charts/scales/point";
 import { tooltip } from "@tanstack/charts/tooltip";
 import { Chart } from "@tanstack/react-charts";
-
-// Module scope so server and client format identically.
-const compact = new Intl.NumberFormat("en", { notation: "compact", maximumFractionDigits: 1 });
-
-// A stable default: an inline arrow would rebuild every chart definition on each render.
-const formatCompactValue = (value: number) => compact.format(value);
+import { formatCompact } from "../../lib/utils";
 
 const grid = { stroke: "currentColor", strokeOpacity: 0.1 };
 
@@ -31,7 +26,7 @@ export interface TrendRow {
 export function TrendChart({
   rows,
   metric,
-  formatValue = formatCompactValue,
+  formatValue = formatCompact,
 }: {
   rows: readonly TrendRow[];
   metric: string;
@@ -80,7 +75,7 @@ export interface BarRow {
 export function RankedBars({
   rows,
   metric,
-  formatValue = formatCompactValue,
+  formatValue = formatCompact,
 }: {
   rows: readonly BarRow[];
   metric: string;

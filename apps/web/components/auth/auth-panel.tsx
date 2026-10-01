@@ -7,7 +7,7 @@ export function AuthPanel({ label, heading, body, children }: { label: string; h
     >
       <div className="relative mx-auto w-76 max-w-full">{children}</div>
       <div className="mx-auto max-w-100 text-center">
-        {/* A fixed deep indigo, not the theme's tint-foreground: this panel is the app's own brand voice, not a client's. */}
+        {/* A fixed deep indigo, not the theme's tint-foreground: this panel is the app's own brand voice, not a brand's. */}
         <h2 className="text-balance font-display text-[1.75rem] leading-[1.12] font-semibold tracking-[-0.025em] text-[#231d6e] dark:text-tint-foreground">
           {heading}
         </h2>

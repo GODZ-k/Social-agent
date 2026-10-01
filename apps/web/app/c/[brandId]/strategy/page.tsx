@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getClient, getResearch, getStrategy } from "@/lib/api/server";
+import { getBrand, getResearch, getStrategy } from "@/lib/api/server";
 import { workspaceHref, type WorkspaceBasePath } from "@/lib/workspace-path";
 import { PageHeader, EmptyState } from "@repo/ui/components/states";
 import { Button } from "@repo/ui/components/button";
@@ -22,8 +22,8 @@ export default async function StrategyPage({
   basePath?: WorkspaceBasePath;
 }) {
   const [{ brandId }, { ask }] = await Promise.all([params, searchParams]);
-  const [client, strategy, research] = await Promise.all([getClient(brandId), getStrategy(brandId), getResearch(brandId)]);
-  if (!client) notFound();
+  const [brand, strategy, research] = await Promise.all([getBrand(brandId), getStrategy(brandId), getResearch(brandId)]);
+  if (!brand) notFound();
 
   if (!strategy) {
     return (

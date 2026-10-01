@@ -35,6 +35,21 @@ function useAccount() {
 }
 
 /**
+ * Clerk raises its own modal when it wants the person to confirm who they are again
+ * (changing a password, turning two-factor on). It portals to the body, so Radix counts
+ * it as outside this card and closes it — which took the account dialog down and left
+ * Clerk’s modal stranded on the page with nothing behind it. Every element Clerk renders
+ * carries its `cl-` class prefix, which is the same hook its appearance API is built on.
+ */
+function belongsToClerk(node: EventTarget | null): boolean {
+  return node instanceof Element && node.closest("[class*=cl-]") !== null;
+}
+
+/** True while Clerk has a modal up, so Escape closes that one rather than this card. */
+function clerkModalIsOpen(): boolean {
+  return document.querySelector("[class*=cl-modal]") !== null;
+}
+/**
  * The account, as a card over whatever page you were on. It has no route: the
  * header opens it, Escape and the close button end it, and the page behind never
  * moves. Its own two panes are the layout Clerk's account component uses, drawn
@@ -59,6 +74,12 @@ export function AccountDialog({ open, onOpenChange, isAdmin }: { open: boolean; 
       title="Your account"
       description="Your details and how you sign in."
       className="sm:h-[min(40rem,100%)]"
+      onInteractOutside={(event) => {
+        if (belongsToClerk(event.target) || clerkModalIsOpen()) event.preventDefault();
+      }}
+      onEscapeKeyDown={(event) => {
+        if (clerkModalIsOpen()) event.preventDefault();
+      }}
     >
       <div className="flex min-h-0 flex-1 flex-col sm:flex-row">
         <nav
@@ -86,7 +107,7 @@ export function AccountDialog({ open, onOpenChange, isAdmin }: { open: boolean; 
         </nav>
 
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pt-4 pb-6 sm:px-7">
-          <Pane tab={tab} view={view} isAdmin={isAdmin} onSaved={onSaved} onLeave={() => onOpenChange(false)} />
+          <Pane tab={tab} view={view} isAdmin={isAdmin} onSaved={onSaved} />
         </div>
       </div>
     </Modal>
@@ -99,13 +120,11 @@ function Pane({
   view,
   isAdmin,
   onSaved,
-  onLeave,
 }: {
   tab: TabId;
   view: AccountView | null;
   isAdmin: boolean;
   onSaved: (details: AccountDetails) => void;
-  onLeave: () => void;
 }) {
   if (tab === "profile") {
     if (!view) return <ProfileSkeleton />;
@@ -113,11 +132,6 @@ function Pane({
   }
   if (!view) return <SecuritySkeleton />;
   return (
-    <SecurityTab
-      passwordChangedAt={view.passwordChangedAt}
-      sessions={view.sessions}
-      isAdmin={isAdmin}
-      onLeave={onLeave}
-    />
+    <SecurityTab passwordChangedAt={view.passwordChangedAt} sessions={view.sessions} isAdmin={isAdmin} />
   );
 }

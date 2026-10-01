@@ -5,6 +5,9 @@ import type { RunKind } from "@/lib/types";
 import { Panel } from "@repo/ui/components/states";
 import { Segmented } from "@repo/ui/components/segmented";
 import { StackedBars } from "./stacked-bars";
+import { PanelHeader } from "@repo/ui/components/panel-header";
+import { PanelStat } from "@repo/ui/components/panel-stat";
+import { ChartLegend } from "@repo/ui/components/chart-legend";
 
 const KIND_OPTIONS: { value: RunKind; label: string; singular: string }[] = [
   { value: "agent", label: "Agents", singular: "agent" },
@@ -21,31 +24,17 @@ export function RunsByKindPanel({ rows }: { rows: { name: string; kind: RunKind;
 
   return (
     <Panel>
-      <div className="mb-4 flex items-start justify-between gap-3">
-        <div>
-          <h2 className="type-heading">Runs and errors</h2>
-          <p className="type-label mt-1">How often each {singular} ran, and how often it failed.</p>
-        </div>
-        <div className="shrink-0 text-right">
-          <p className="type-number text-xl">{total}</p>
-          <p className="type-label mt-0.5">Total runs</p>
-        </div>
-      </div>
+      <PanelHeader
+        title="Runs and errors"
+        description={`How often each ${singular} ran, and how often it failed.`}
+        right={<PanelStat value={total} caption="Total runs" />}
+      />
       <Segmented label="Kind" value={kind} onValueChange={setKind} options={KIND_OPTIONS} className="mb-4" />
       {filtered.length === 0 ? (
         <p className="text-muted-foreground">Nothing of this kind ran in the window.</p>
       ) : (
         <>
-          <div className="mb-3 flex flex-wrap gap-4 text-[0.8125rem]">
-            <span className="flex items-center gap-1.5">
-              <i aria-hidden className="inline-block size-2 rounded-full" style={{ background: "var(--brand)" }} />
-              Completed
-            </span>
-            <span className="flex items-center gap-1.5">
-              <i aria-hidden className="inline-block size-2 rounded-full bg-destructive" />
-              Errors
-            </span>
-          </div>
+          <ChartLegend className="mb-3" items={[{ label: "Completed", color: "var(--brand)" }, { label: "Errors", swatchClassName: "bg-destructive" }]} />
           <StackedBars
             rows={filtered.map((r) => ({
               key: r.name,

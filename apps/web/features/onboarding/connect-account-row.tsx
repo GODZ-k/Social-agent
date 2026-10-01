@@ -25,13 +25,13 @@ const BRAND_BG: Partial<Record<Platform, string>> = {
  * their own. `primary` marks the one filled call-to-action; the rest stay outline.
  */
 export function ConnectAccountRow({
-  clientId,
+  brandId,
   platform,
   account,
   primary,
   onConnected,
 }: {
-  clientId: string;
+  brandId: string;
   platform: Platform;
   account: SocialAccount | null;
   primary: boolean;
@@ -40,8 +40,8 @@ export function ConnectAccountRow({
   const name = PLATFORM_LABEL[platform];
   const connect = useServerAction(connectAccount, {
     success: `${name} connected`,
-    onSuccess: (client) => {
-      const connected = client.accounts.find((a) => a.platform === platform);
+    onSuccess: (brand) => {
+      const connected = brand.accounts.find((a) => a.platform === platform);
       if (connected) onConnected(connected);
     },
   });
@@ -65,7 +65,7 @@ export function ConnectAccountRow({
           className="ml-auto max-[560px]:w-full"
           variant={primary ? "default" : "outline"}
           disabled={connect.isPending}
-          onClick={() => connect.run(clientId, platform)}
+          onClick={() => connect.run(brandId, platform)}
         >
           {connect.isPending && <LoaderCircle className="animate-spin" />}
           {connect.isPending ? `Opening ${name}` : `Connect ${name}`}

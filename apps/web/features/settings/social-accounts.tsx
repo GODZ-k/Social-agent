@@ -17,7 +17,7 @@ export function SocialAccounts({ brandId, accounts }: { brandId: string; account
           <p className="mt-1 text-sm font-semibold">In your posting plan</p>
           <ul className="grid gap-3">
             {planned.map((account) => (
-              <AccountRow key={account.platform} clientId={brandId} account={account} />
+              <AccountRow key={account.platform} brandId={brandId} account={account} />
             ))}
           </ul>
         </>
@@ -28,7 +28,7 @@ export function SocialAccounts({ brandId, accounts }: { brandId: string; account
           <p className="mt-1 text-sm font-semibold">Not in your plan</p>
           <ul className="grid gap-3">
             {unplanned.map((account) => (
-              <AccountRow key={account.platform} clientId={brandId} account={account} />
+              <AccountRow key={account.platform} brandId={brandId} account={account} />
             ))}
           </ul>
         </>

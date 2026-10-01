@@ -6,7 +6,7 @@ import type {
   AnalyticsRange,
   AnalyticsReport,
   AnalyticsTotal,
-  Client,
+  Brand,
   PostView,
   Verdict,
 } from "@/lib/types";
@@ -84,10 +84,10 @@ function daysOf(posts: Published[], from: Date, to: Date): AnalyticsReport["days
   return days;
 }
 
-export function report(db: SeedData, client: Client, range: AnalyticsRange, benchmark: Benchmark): AnalyticsReport {
+export function report(db: SeedData, brand: Brand, range: AnalyticsRange, benchmark: Benchmark): AnalyticsReport {
   const to = new Date();
   const from = subDays(to, range);
-  const all = postsOf(db, client.id).filter((p): p is Published => p.state === "published" && !!p.metrics && !!p.publishedAt);
+  const all = postsOf(db, brand.id).filter((p): p is Published => p.state === "published" && !!p.metrics && !!p.publishedAt);
   const inRange = (p: Published, start: Date, end: Date) => {
     const at = parseISO(p.publishedAt);
     return at >= start && at <= end;
@@ -104,7 +104,7 @@ export function report(db: SeedData, client: Client, range: AnalyticsRange, benc
     reach: benchmark.reachPerPost * posts.length,
     saves: (benchmark.savesPer100 * sums.reach) / 100,
     interactions: (benchmark.interactionsPer100 * sums.reach) / 100,
-    followers: benchmark.followerGrowth * client.stats.followers * (range / 30),
+    followers: benchmark.followerGrowth * brand.stats.followers * (range / 30),
   };
   const totals: AnalyticsTotal[] = (["reach", "saves", "interactions", "followers"] as const).map((key) => ({
     key,
@@ -117,10 +117,10 @@ export function report(db: SeedData, client: Client, range: AnalyticsRange, benc
   const byReach = posts.slice().sort((a, b) => b.metrics.reach - a.metrics.reach);
   const best = byReach.slice(0, 3);
   const worst = byReach.slice(3).reverse().slice(0, 3);
-  const learnings = db.strategies.find((s) => s.clientId === client.id)?.learnings ?? [];
+  const learnings = db.strategies.find((s) => s.brandId === brand.id)?.learnings ?? [];
 
   return {
-    clientId: client.id,
+    brandId: brand.id,
     phase,
     range,
     from: from.toISOString(),
@@ -128,7 +128,7 @@ export function report(db: SeedData, client: Client, range: AnalyticsRange, benc
     postCount: posts.length,
     platforms: [...new Set(posts.map((p) => p.platform))] as Platform[],
     totals,
-    followers: { from: client.stats.followers - sums.followers, to: client.stats.followers },
+    followers: { from: brand.stats.followers - sums.followers, to: brand.stats.followers },
     days: phase === "empty" ? [] : daysOf(posts, from, to),
     bestPosts: best,
     worstPosts: worst,

@@ -10,7 +10,7 @@ import type { AccountDetails } from "@/lib/types";
 import { Button } from "@repo/ui/components/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@repo/ui/components/form";
 import { Input } from "@repo/ui/components/input";
-import { AccountAvatar } from "@/components/shell/account-avatar";
+import { AccountAvatar } from "@repo/ui/components/account-avatar";
 import { AccountRow, AccountSection } from "./account-row";
 import { accountDetailsSchema, type AccountDetailsValues } from "./schema";
 

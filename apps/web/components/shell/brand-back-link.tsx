@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 
-/** While adding a brand, the way back to the brand the client came from. Keeps its words on phones. */
+/** While adding a brand, the way back to the brand the brand came from. Keeps its words on phones. */
 export function BrandBackLink({ brand }: { brand: { id: string; name: string } }) {
   return (
     <Link

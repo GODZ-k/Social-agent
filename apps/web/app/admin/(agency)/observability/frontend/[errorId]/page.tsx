@@ -35,7 +35,7 @@ export default async function FrontendErrorPage({ params }: { params: Promise<{ 
         </div>
         <div className="grid gap-5 content-start">
           <ErrorDetailsPanel error={error} />
-          <WhoHitItPanel clients={error.clients} />
+          <WhoHitItPanel brands={error.brands} />
         </div>
       </div>
     </>

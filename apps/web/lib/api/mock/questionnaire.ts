@@ -10,7 +10,7 @@ import type {
   QuestionnaireSession,
   QuestionnaireState,
 } from "@social-agent/shared";
-import type { Client, QuestionAnswer, QuestionnaireView } from "@/lib/types";
+import type { Brand, QuestionAnswer, QuestionnaireView } from "@/lib/types";
 
 /**
  * A mock of the Account Manager's guided questionnaire. Pure functions over one
@@ -24,7 +24,7 @@ export interface QuestionnaireRecord {
   facts: Questionnaire | null;
   /** How many times the answers were reviewed; the first review asks a follow-up. */
   reviews: number;
-  /** Who gave each answer, keyed by question id (2026-09-28: an admin can answer for the client). */
+  /** Who gave each answer, keyed by question id (2026-09-28: an admin can answer for the brand). */
   answeredBy: Record<string, "agency" | "client">;
 }
 
@@ -45,8 +45,8 @@ const option = (value: string, label: Words, lang: Language, min?: number, max?:
   ...(max === undefined ? {} : { max }),
 });
 
-export function questionsFor(client: Pick<Client, "brand" | "name">, lang: Language): QuestionnaireQuestion[] {
-  const offer = client.brand.summary.split(". ")[0]!.replace(/\.$/, "") + ".";
+export function questionsFor(brand: Pick<Brand, "brand" | "name">, lang: Language): QuestionnaireQuestion[] {
+  const offer = brand.brand.summary.split(". ")[0]!.replace(/\.$/, "") + ".";
   return [
     {
       id: "offer",
@@ -104,7 +104,7 @@ export function questionsFor(client: Pick<Client, "brand" | "name">, lang: Langu
       why: "The website describes everyone; the owner knows who buys most.",
       kind: "text",
       text: w("Who is your best customer?", "आपका सबसे अच्छा ग्राहक कौन है?", "Aapka best customer kaun hai?")[lang],
-      example: client.brand.audience,
+      example: brand.brand.audience,
       required: true,
     },
     {
@@ -128,7 +128,7 @@ export function questionsFor(client: Pick<Client, "brand" | "name">, lang: Langu
       why: "The shop lists everything; best sellers deserve more posts.",
       kind: "text",
       text: w("What sells best right now?", "अभी सबसे ज़्यादा क्या बिकता है?", "Abhi sabse zyada kya bikta hai?")[lang],
-      example: `For ${client.name}: the one item people come back for.`,
+      example: `For ${brand.name}: the one item people come back for.`,
       required: false,
     },
     {
@@ -165,11 +165,11 @@ const FOLLOW_UP_REASON: Words = w(
   "Ek baat website nahi batati: aap hafte mein kitne orders le sakte ho.",
 );
 
-function newSession(client: Pick<Client, "brand" | "name">, lang: Language, updatedAt: string): QuestionnaireSession {
+function newSession(brand: Pick<Brand, "brand" | "name">, lang: Language, updatedAt: string): QuestionnaireSession {
   return {
     sessionId: crypto.randomUUID(),
     chatLanguage: lang,
-    questions: questionsFor(client, lang),
+    questions: questionsFor(brand, lang),
     answers: {},
     followUps: [],
     updatedAt,
@@ -215,7 +215,7 @@ export function viewOf(record: QuestionnaireRecord): QuestionnaireView {
   const summary = questions.flatMap((q) => {
     const raw = session.answers[q.id];
     if (raw === undefined) return [];
-    // Records made before this field existed have none; they count as the client's.
+    // Records made before this field existed have none; they count as the brand's.
     const answeredBy = record.answeredBy?.[q.id] ?? "client";
     return [{ questionId: q.id, question: q.text, answer: readable(q, raw), followUp: followUpIds.has(q.id), answeredBy }];
   });
@@ -225,8 +225,8 @@ export function viewOf(record: QuestionnaireRecord): QuestionnaireView {
 }
 
 /** Writes a fresh question list in the chosen language. Answers from an older list are dropped. */
-export function start(record: QuestionnaireRecord, client: Client, lang: Language) {
-  record.state = { status: "in_progress", session: newSession(client, lang, new Date().toISOString()), approvedAt: null };
+export function start(record: QuestionnaireRecord, brand: Brand, lang: Language) {
+  record.state = { status: "in_progress", session: newSession(brand, lang, new Date().toISOString()), approvedAt: null };
   record.reviews = 0;
   record.answeredBy = {};
 }
@@ -302,10 +302,10 @@ function factsFrom(session: QuestionnaireSession): Questionnaire {
 export const isApproved = (record: QuestionnaireRecord | undefined) =>
   record?.state.status === "approved" && REQUIRED_QUESTIONNAIRE_KEYS.every((key) => record.facts?.[key] !== undefined);
 
-function answeredSession(client: Client, lang: Language, at: Date, complete: boolean): QuestionnaireSession {
-  const session = newSession(client, lang, at.toISOString());
+function answeredSession(brand: Brand, lang: Language, at: Date, complete: boolean): QuestionnaireSession {
+  const session = newSession(brand, lang, at.toISOString());
   const answers: Record<string, string> = complete
-    ? { offer: "yes", type: "product", goal: "more_customers", lang, customer: client.brand.audience, order: "25to50", sellers: "The one people come back for", capacity: "50" }
+    ? { offer: "yes", type: "product", goal: "more_customers", lang, customer: brand.brand.audience, order: "25to50", sellers: "The one people come back for", capacity: "50" }
     : { offer: "yes", type: "product", goal: `${OTHER}Shops ko stock karwana, aur online orders badhana` };
   session.answers = answers;
   if (complete) session.followUps = [followUpFor(lang)];
@@ -313,25 +313,25 @@ function answeredSession(client: Client, lang: Language, at: Date, complete: boo
 }
 
 /** Established brands are approved; Meow Meow Tweet is half-way, in Hinglish; new brands have not started. */
-export function buildQuestionnaires(clients: Client[]): Record<string, QuestionnaireRecord> {
+export function buildQuestionnaires(brands: Brand[]): Record<string, QuestionnaireRecord> {
   const now = new Date();
   return Object.fromEntries(
-    clients.map((client) => {
-      if (client.id === "meow-meow-tweet") {
-        const session = answeredSession(client, "hinglish", subHours(now, 1), false);
-        return [client.id, { state: { status: "in_progress", session, approvedAt: null }, facts: null, reviews: 0, answeredBy: {} }];
+    brands.map((brand) => {
+      if (brand.id === "meow-meow-tweet") {
+        const session = answeredSession(brand, "hinglish", subHours(now, 1), false);
+        return [brand.id, { state: { status: "in_progress", session, approvedAt: null }, facts: null, reviews: 0, answeredBy: {} }];
       }
-      if (client.status === "archived") return [client.id, notStarted()];
-      const at = subDays(new Date(client.createdAt), -1);
+      if (brand.status === "archived") return [brand.id, notStarted()];
+      const at = subDays(new Date(brand.createdAt), -1);
       const record: QuestionnaireRecord = {
-        state: { status: "in_progress", session: answeredSession(client, "en", at, true), approvedAt: null },
+        state: { status: "in_progress", session: answeredSession(brand, "en", at, true), approvedAt: null },
         facts: null,
         reviews: 1,
         answeredBy: {},
       };
       review(record, undefined);
       record.state.approvedAt = at.toISOString();
-      return [client.id, record];
+      return [brand.id, record];
     }),
   );
 }

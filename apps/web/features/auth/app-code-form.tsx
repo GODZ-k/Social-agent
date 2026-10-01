@@ -13,7 +13,7 @@ import { Notice } from "@/components/auth/notice";
 import { StatusIcon } from "@/components/auth/status-icon";
 import { SubmitButton } from "@/components/auth/submit-button";
 import { errorCopy } from "./error-copy";
-import { useAuthSubmit } from "./use-auth-submit";
+import { useAuthSubmit, whenLocked } from "./use-auth-submit";
 
 const WRONG = "That code isn't right. Enter the code showing now; it changes every 30 seconds.";
 
@@ -35,13 +35,7 @@ export function AppCodeForm({
   const code = useWatch({ control: form.control, name: "code" });
 
   function submit(values: Values) {
-    run(
-      () => verify(values.code),
-      undefined,
-      (failure) => {
-        if (failure.code === "too_many_attempts") onPaused(failure);
-      },
-    );
+    run(() => verify(values.code), undefined, whenLocked(onPaused));
   }
 
   const wrong = error?.code === "code_wrong";

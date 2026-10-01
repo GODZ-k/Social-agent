@@ -3,6 +3,7 @@ import { cache } from "react";
 import { parseISO } from "date-fns";
 import type { Platform } from "@social-agent/shared";
 import { getViewer } from "@/lib/auth/viewer";
+import { clone } from "./clone";
 import { getDb } from "./mock/db";
 import * as account from "./mock/account";
 import * as admin from "./mock/admin";
@@ -26,7 +27,7 @@ import type {
   BestTimeSlot,
   BrandCard,
   CalendarMonth,
-  Client,
+  Brand,
   FrontendErrorDetail,
   ObsAgents,
   ObsFilter,
@@ -49,25 +50,23 @@ import type {
 
 /**
  * Reads, called from server components. Every function is deduplicated per
- * request with React.cache, so a layout and a page asking for the same client
+ * request with React.cache, so a layout and a page asking for the same brand
  * share one lookup.
  *
  * Swapping the mock for the real API means replacing a function body with
- * `return api<Client[]>("/brands")` and nothing above this layer changes.
+ * `return api<Brand[]>("/brands")` and nothing above this layer changes.
  * A missing or inaccessible record is `null`, never a thrown error, so pages
  * can decide between notFound() and an empty state.
  */
 
-const clone = <T,>(v: T): T => structuredClone(v);
-
-/** Mirrors the API: admins reach every client, everyone else only the clients they own. */
-function canSee(viewer: Viewer, client: Client): boolean {
-  return viewer.role === "admin" || client.ownerId === viewer.id;
+/** Mirrors the API: admins reach every brand, everyone else only the brands they own. */
+function canSee(viewer: Viewer, brand: Brand): boolean {
+  return viewer.role === "admin" || brand.ownerId === viewer.id;
 }
 
-const canAccess = cache(async (client: Client) => {
+const canAccess = cache(async (brand: Brand) => {
   const viewer = await getViewer();
-  return canSee(viewer, client);
+  return canSee(viewer, brand);
 });
 
 const isAdmin = cache(async () => {
@@ -75,146 +74,146 @@ const isAdmin = cache(async () => {
   return viewer.role === "admin";
 });
 
-const findClient = cache(async (id: string): Promise<Client | null> => {
-  const client = getDb().clients.find((c) => c.id === id);
-  if (!client || !(await canAccess(client))) return null;
-  return client;
+const findBrand = cache(async (id: string): Promise<Brand | null> => {
+  const brand = getDb().brands.find((c) => c.id === id);
+  if (!brand || !(await canAccess(brand))) return null;
+  return brand;
 });
 
-const reachable = cache(async (): Promise<Client[]> => {
+const reachable = cache(async (): Promise<Brand[]> => {
   const viewer = await getViewer();
-  return getDb().clients.filter((c) => canSee(viewer, c));
+  return getDb().brands.filter((c) => canSee(viewer, c));
 });
 
 /* Brands */
 
-/** Active brands the viewer can open. Archived ones are in `listBrands`. */
-export const listClients = cache(async (): Promise<Client[]> => {
-  const clients = await reachable();
-  const active = clients.filter((c) => c.status === "active");
+/** Active brands the viewer can open. Archived ones are in `listBrandCards`. */
+export const listActiveBrands = cache(async (): Promise<Brand[]> => {
+  const brands = await reachable();
+  const active = brands.filter((c) => c.status === "active");
   return clone(active);
 });
 
-export const getClient = cache(async (id: string): Promise<Client | null> => {
-  const client = await findClient(id);
-  return client && clone(client);
+export const getBrand = cache(async (id: string): Promise<Brand | null> => {
+  const brand = await findBrand(id);
+  return brand && clone(brand);
 });
 
 /** "Your brands" and the brand switcher: every brand, archived ones included. */
-export const listBrands = cache(async (): Promise<BrandCard[]> => {
-  const clients = await reachable();
+export const listBrandCards = cache(async (): Promise<BrandCard[]> => {
+  const brands = await reachable();
   const db = getDb();
-  return clients.map((client) => admin.brandCardOf(db, client));
+  return brands.map((brand) => admin.brandCardOf(db, brand));
 });
 
 /* Onboarding */
 
-export const getOnboarding = cache(async (clientId: string): Promise<OnboardingState | null> => {
-  const client = await findClient(clientId);
-  if (!client) return null;
+export const getOnboarding = cache(async (brandId: string): Promise<OnboardingState | null> => {
+  const brand = await findBrand(brandId);
+  if (!brand) return null;
   const db = getDb();
-  settleResearch(db, client);
-  return settings.onboardingOf(db, client);
+  settleResearch(db, brand);
+  return settings.onboardingOf(db, brand);
 });
 
-export const getQuestionnaire = cache(async (clientId: string): Promise<QuestionnaireView | null> => {
-  if (!(await findClient(clientId))) return null;
-  const record = getDb().questionnaires[clientId];
+export const getQuestionnaire = cache(async (brandId: string): Promise<QuestionnaireView | null> => {
+  if (!(await findBrand(brandId))) return null;
+  const record = getDb().questionnaires[brandId];
   return record ? questionnaire.viewOf(record) : null;
 });
 
-export const getResearch = cache(async (clientId: string): Promise<ResearchView | null> => {
-  const client = await findClient(clientId);
-  if (!client) return null;
+export const getResearch = cache(async (brandId: string): Promise<ResearchView | null> => {
+  const brand = await findBrand(brandId);
+  if (!brand) return null;
   const db = getDb();
-  const view = settleResearch(db, client);
+  const view = settleResearch(db, brand);
   return view && clone(view);
 });
 
 /* Strategy */
 
-const findStrategy = async (clientId: string) => {
-  if (!(await findClient(clientId))) return null;
-  const strategy = getDb().strategies.find((s) => s.clientId === clientId);
+const findStrategy = async (brandId: string) => {
+  if (!(await findBrand(brandId))) return null;
+  const strategy = getDb().strategies.find((s) => s.brandId === brandId);
   return strategy ? strategies.settle(strategy) : null;
 };
 
-export const getStrategy = cache(async (clientId: string): Promise<Strategy | null> => {
-  const strategy = await findStrategy(clientId);
+export const getStrategy = cache(async (brandId: string): Promise<Strategy | null> => {
+  const strategy = await findStrategy(brandId);
   return strategy && clone(strategy);
 });
 
 /** Every version, newest first; each after the first carries the owner's `changeNote`. */
-export const listStrategyVersions = cache(async (clientId: string): Promise<StrategyVersion[]> => {
-  const strategy = await findStrategy(clientId);
+export const listStrategyVersions = cache(async (brandId: string): Promise<StrategyVersion[]> => {
+  const strategy = await findStrategy(brandId);
   const db = getDb();
   return strategy ? strategies.versions(db, strategy) : [];
 });
 
 /* Posts */
 
-export const listPosts = cache(async (clientId: string): Promise<PostView[]> => {
-  if (!(await findClient(clientId))) return [];
+export const listPosts = cache(async (brandId: string): Promise<PostView[]> => {
+  if (!(await findBrand(brandId))) return [];
   const db = getDb();
-  return posts.postsOf(db, clientId);
+  return posts.postsOf(db, brandId);
 });
 
 /** The content list, soonest first, filtered by state and platform. */
-export const listContent = cache(async (clientId: string, state?: PostState, platform?: Platform): Promise<PostView[]> => {
-  if (!(await findClient(clientId))) return [];
+export const listContent = cache(async (brandId: string, state?: PostState, platform?: Platform): Promise<PostView[]> => {
+  if (!(await findBrand(brandId))) return [];
   const db = getDb();
-  return posts.content(db, clientId, { state, platform });
+  return posts.content(db, brandId, { state, platform });
 });
 
 /** Posts waiting for approval, soonest first: the review panel and the swipe stack. */
-export const listReviewQueue = cache(async (clientId: string): Promise<PostView[]> => {
-  if (!(await findClient(clientId))) return [];
+export const listReviewQueue = cache(async (brandId: string): Promise<PostView[]> => {
+  if (!(await findBrand(brandId))) return [];
   const db = getDb();
-  return posts.content(db, clientId, { state: "needs_approval" });
+  return posts.content(db, brandId, { state: "needs_approval" });
 });
 
-export const getThisWeek = cache(async (clientId: string): Promise<ThisWeek | null> => {
-  if (!(await findClient(clientId))) return null;
+export const getThisWeek = cache(async (brandId: string): Promise<ThisWeek | null> => {
+  if (!(await findBrand(brandId))) return null;
   const db = getDb();
-  return posts.thisWeek(db, clientId);
+  return posts.thisWeek(db, brandId);
 });
 
 export const getPost = cache(async (postId: string): Promise<PostView | null> => {
   const db = getDb();
   const post = db.posts.find((p) => p.id === postId);
-  if (!post || !(await findClient(post.clientId))) return null;
+  if (!post || !(await findBrand(post.brandId))) return null;
   return posts.viewOf(db, post);
 });
 
 /** The strategy's best times on a date ("YYYY-MM-DD"), for the date and time picker. */
-export const getBestTimes = cache(async (clientId: string, platform: Platform, date: string): Promise<BestTimeSlot[]> => {
-  const strategy = await findStrategy(clientId);
+export const getBestTimes = cache(async (brandId: string, platform: Platform, date: string): Promise<BestTimeSlot[]> => {
+  const strategy = await findStrategy(brandId);
   if (!strategy) return [];
   return posts.bestTimesOn(strategy, parseISO(date), platform);
 });
 
 /** One month ("YYYY-MM") of posts and free best times. */
-export const getCalendarMonth = cache(async (clientId: string, month: string): Promise<CalendarMonth | null> => {
-  if (!(await findClient(clientId))) return null;
-  await findStrategy(clientId);
+export const getCalendarMonth = cache(async (brandId: string, month: string): Promise<CalendarMonth | null> => {
+  if (!(await findBrand(brandId))) return null;
+  await findStrategy(brandId);
   const db = getDb();
-  return posts.calendarMonth(db, clientId, month);
+  return posts.calendarMonth(db, brandId, month);
 });
 
 /* Analytics */
 
-export const getAnalytics = cache(async (clientId: string): Promise<Analytics | null> => {
-  if (!(await findClient(clientId))) return null;
-  const analytics = getDb().analytics.find((a) => a.clientId === clientId);
+export const getAnalytics = cache(async (brandId: string): Promise<Analytics | null> => {
+  if (!(await findBrand(brandId))) return null;
+  const analytics = getDb().analytics.find((a) => a.brandId === brandId);
   return analytics ? clone(analytics) : null;
 });
 
-export const getAnalyticsReport = cache(async (clientId: string, range: AnalyticsRange = 30): Promise<AnalyticsReport | null> => {
-  const client = await findClient(clientId);
-  if (!client) return null;
+export const getAnalyticsReport = cache(async (brandId: string, range: AnalyticsRange = 30): Promise<AnalyticsReport | null> => {
+  const brand = await findBrand(brandId);
+  if (!brand) return null;
   const db = getDb();
-  const benchmark = db.research[clientId]!.benchmark;
-  return report(db, client, range, benchmark);
+  const benchmark = db.research[brandId]!.benchmark;
+  return report(db, brand, range, benchmark);
 });
 
 /* Account */
@@ -227,16 +226,16 @@ export const getAccount = cache(async (): Promise<AccountView> => {
 
 /* Settings */
 
-export const listSocialAccounts = cache(async (clientId: string): Promise<SocialAccountRow[]> => {
-  const client = await findClient(clientId);
+export const listSocialAccounts = cache(async (brandId: string): Promise<SocialAccountRow[]> => {
+  const brand = await findBrand(brandId);
   const db = getDb();
-  return client ? settings.socialAccounts(db, client) : [];
+  return brand ? settings.socialAccounts(db, brand) : [];
 });
 
-export const getPreferences = cache(async (clientId: string): Promise<Preferences | null> => {
-  const client = await findClient(clientId);
+export const getPreferences = cache(async (brandId: string): Promise<Preferences | null> => {
+  const brand = await findBrand(brandId);
   const db = getDb();
-  return client && settings.preferencesOf(db, client);
+  return brand && settings.preferencesOf(db, brand);
 });
 
 /* Admin */
@@ -254,7 +253,7 @@ export const getAdminClient = cache(async (clientId: string): Promise<AdminClien
   const db = getDb();
   const person = db.people.find((p) => p.id === clientId);
   if (!person) return null;
-  const owned = db.clients.filter((c) => c.ownerId === clientId);
+  const owned = db.brands.filter((c) => c.ownerId === clientId);
   const active = owned.filter((c) => c.status === "active");
   const archived = owned.filter((c) => c.status === "archived");
   return {

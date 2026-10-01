@@ -4,6 +4,7 @@ import type {
   mediaTypeSchema,
   postArtSchema,
   postFormatSchema,
+  postMetricsSchema,
   postStatusSchema,
 } from "../schema/post.schema.js";
 
@@ -12,3 +13,4 @@ export type PostStatus = z.infer<typeof postStatusSchema>;
 export type MediaType = z.infer<typeof mediaTypeSchema>;
 export type MediaSource = z.infer<typeof mediaSourceSchema>;
 export type PostArt = z.infer<typeof postArtSchema>;
+export type PostMetrics = z.infer<typeof postMetricsSchema>;

@@ -7,6 +7,7 @@ import { RangePicker } from "./range-picker";
 import { FilterMenu } from "./filter-menu";
 import { ReleasePicker } from "./release-picker";
 import { signozLogsUrl } from "./signoz";
+import { TOOLBAR_PILL_CLASS } from "./toolbar-pill";
 
 const TABS = [
   { key: "overview", label: "Overview", href: "/admin/observability" },
@@ -64,12 +65,7 @@ export function ObsTabs({
         <FilterMenu brandId={brandId} />
         {active === "frontend" && releases && activeReleaseId && <ReleasePicker releases={releases} activeId={activeReleaseId} />}
         {active === "server" && (
-          <a
-            href={signozLogsUrl()}
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex items-center gap-1.5 rounded-full border bg-card px-3.5 py-1.5 text-[0.8125rem] font-medium hover:bg-accent"
-          >
+          <a href={signozLogsUrl()} target="_blank" rel="noreferrer" className={TOOLBAR_PILL_CLASS}>
             Open in SigNoz <ExternalLink className="size-3.5" />
           </a>
         )}

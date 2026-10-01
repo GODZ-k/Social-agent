@@ -1,15 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { format, formatDistanceToNow } from "date-fns";
 import { Monitor, Smartphone } from "lucide-react";
 import type { DeviceSession } from "@/lib/types";
-import { useTwoFactorMethods } from "@/lib/auth/client";
 import { Badge } from "@repo/ui/components/badge";
 import { Button } from "@repo/ui/components/button";
+import { TwoFactorSetupFlow } from "@/features/auth/two-factor-setup-flow";
 import { AccountRow, AccountSection } from "./account-row";
 import { ChangePasswordForm } from "./change-password-form";
+import { TwoFactorSection } from "./two-factor-section";
 import { SignOutDevicesButton } from "./sign-out-devices-button";
 
 function activityLine(session: DeviceSession): string {
@@ -17,6 +17,15 @@ function activityLine(session: DeviceSession): string {
   return `${session.location}. Last active ${formatDistanceToNow(new Date(session.lastActiveAt), { addSuffix: true })}.`;
 }
 
+/**
+ * The setup steps are drawn for a full auth page: a 34px heading across a 25rem column.
+ * Dropped into the dialog they read as a page stuffed into a card, so the pane lends them
+ * its own measure and heading scale. Restyling here rather than forking the steps keeps one
+ * copy of the wizard for both the page and this dialog.
+ */
+function InPane({ children }: { children: React.ReactNode }) {
+  return <div className="mx-auto w-full max-w-100 pt-1 [&_:is(h1,h2)]:text-[1.375rem] [&_:is(h1,h2)]:tracking-[-0.02em] sm:[&_:is(h1,h2)]:text-[1.375rem]">{children}</div>;
+}
 /**
  * BA-2's "Security" tab: how you sign in and where you are signed in.
  * Everything here happens in the dialog. The pages behind /sign-in, /verify and
@@ -27,18 +36,33 @@ export function SecurityTab({
   passwordChangedAt,
   sessions,
   isAdmin,
-  onLeave,
 }: {
   passwordChangedAt: string;
   sessions: DeviceSession[];
   isAdmin: boolean;
-  onLeave: () => void;
 }) {
   const [changingPassword, setChangingPassword] = useState(false);
-  // Read here rather than in the dialog: this is the only pane that shows it.
-  const { methods } = useTwoFactorMethods();
-  const twoFactorOn = methods.length > 0;
+  const [turningOnTwoFactor, setTurningOnTwoFactor] = useState(false);
   const others = sessions.filter((session) => !session.current).length;
+
+  if (turningOnTwoFactor) {
+    const lede = isAdmin
+      ? "Admin accounts need a second step after the password. It takes about a minute."
+      : "Add a second step after your password. It takes about a minute.";
+    return (
+      <InPane>
+        <TwoFactorSetupFlow
+          lede={lede}
+          onDone={() => setTurningOnTwoFactor(false)}
+          skip={
+            <Button type="button" variant="ghost" size="lg" className="w-full" onClick={() => setTurningOnTwoFactor(false)}>
+              Cancel
+            </Button>
+          }
+        />
+      </InPane>
+    );
+  }
 
   return (
     <>
@@ -60,26 +84,7 @@ export function SecurityTab({
         )}
       </AccountSection>
 
-      <AccountSection title="Two-factor sign-in">
-        <AccountRow
-          label="Two-factor"
-          action={
-            <Button variant={twoFactorOn ? "outline" : "default"} size="sm" asChild onClick={onLeave}>
-              <Link href={twoFactorOn ? "/two-factor/manage" : "/two-factor/setup"}>{twoFactorOn ? "Manage" : "Turn on"}</Link>
-            </Button>
-          }
-        >
-          <p className="flex flex-wrap items-center gap-2 font-medium">
-            {twoFactorOn ? "On" : "Off"}
-            {twoFactorOn && <Badge variant="success">Protected</Badge>}
-          </p>
-          <p className="type-label mt-1 text-muted-foreground">
-            {isAdmin
-              ? "A second step after your password. Admin accounts need at least one method, so it can't be turned off."
-              : "A second step after your password. Takes about a minute to set up."}
-          </p>
-        </AccountRow>
-      </AccountSection>
+      <TwoFactorSection isAdmin={isAdmin} onTurnOn={() => setTurningOnTwoFactor(true)} />
 
       {/* The device list is the row, not a column beside one: it needs the width. */}
       <AccountSection title="Where you're signed in">

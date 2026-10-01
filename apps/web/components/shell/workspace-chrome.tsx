@@ -1,4 +1,4 @@
-import { getClient, listClients } from "@/lib/api/server";
+import { getBrand, listActiveBrands } from "@/lib/api/server";
 import { getViewer } from "@/lib/auth/viewer";
 import type { WorkspaceBasePath } from "@/lib/workspace-path";
 import { BrandTheme } from "@repo/ui/components/brand-theme";
@@ -11,7 +11,7 @@ import { WorkspaceNav } from "./workspace-nav";
  * stays instant: the chrome streams in under Suspense while the page's own
  * loading state shows. A missing brand leaves the bar without a switcher; the
  * page decides on notFound(). `basePath` tells every link inside whether it is
- * building the client's own tree or the admin's mirror of it.
+ * building the brand's own tree or the admin's mirror of it.
  */
 export async function WorkspaceChrome({
   params,
@@ -22,14 +22,14 @@ export async function WorkspaceChrome({
   basePath?: WorkspaceBasePath;
 }) {
   const { brandId } = await params;
-  const [viewer, client, clients] = await Promise.all([getViewer(), getClient(brandId), listClients()]);
-  const actingForClient = client !== null && viewer.role === "admin";
+  const [viewer, brand, brands] = await Promise.all([getViewer(), getBrand(brandId), listActiveBrands()]);
+  const actingInBrand = brand !== null && viewer.role === "admin";
   return (
     <>
-      <BrandTheme color={client?.accent} />
-      <TopBar viewer={viewer} client={client ?? undefined} clients={clients} basePath={basePath} />
-      {actingForClient && <AdminActingNote />}
-      {client && <WorkspaceNav brandId={brandId} pendingApprovals={client.stats.pendingApprovals} basePath={basePath} />}
+      <BrandTheme color={brand?.accent} />
+      <TopBar viewer={viewer} brand={brand ?? undefined} brands={brands} basePath={basePath} />
+      {actingInBrand && <AdminActingNote />}
+      {brand && <WorkspaceNav brandId={brandId} pendingApprovals={brand.stats.pendingApprovals} basePath={basePath} />}
     </>
   );
 }

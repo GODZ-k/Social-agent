@@ -95,7 +95,6 @@ export function useSignUpFlow({ redirectTo }: Redirect) {
   async function signUpWithPassword({ name, email, password }: { name: string; email: string; password: string }): Promise<AuthResult<AuthStep>> {
     const names = splitName(name);
     const { error } = await signUp.password({ emailAddress: email, password, ...names });
-    console.log("signUpWithPassword", { error });
     const authError = error ? toAuthError(error) : null;
     // Never reveal that an email is registered: go to the code step as if it were new.
     if (authError?.code === "email_in_use") {

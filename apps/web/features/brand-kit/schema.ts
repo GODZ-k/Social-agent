@@ -1,6 +1,6 @@
 import { z } from "zod";
 import type { BrandKit, BusinessInfo, Platform } from "@social-agent/shared";
-import type { ClientPatch, NewClientInput, ScanResult } from "@/lib/types";
+import type { BrandEdit, NewBrandDraft, ScanResult } from "@/lib/types";
 import { isValidHex } from "@/lib/utils";
 
 export const PLATFORMS = ["instagram", "facebook", "tiktok", "linkedin"] as const satisfies readonly Platform[];
@@ -81,7 +81,7 @@ function toBusinessInfo(values: Values): BusinessInfo {
 }
 
 /** What Settings sends when the kit changes. */
-export function toPatch(values: Values): Required<Pick<ClientPatch, "name" | "industry" | "brand" | "platforms" | "business">> {
+export function toPatch(values: Values): Required<Pick<BrandEdit, "name" | "industry" | "brand" | "platforms" | "business">> {
   return {
     name: values.name,
     industry: values.industry,
@@ -91,7 +91,7 @@ export function toPatch(values: Values): Required<Pick<ClientPatch, "name" | "in
   };
 }
 
-/** What onboarding sends to create the client. */
-export function toInput(values: Values, url: string): NewClientInput {
+/** What onboarding sends to create the brand. */
+export function toInput(values: Values, url: string): NewBrandDraft {
   return { url, ...toPatch(values) };
 }

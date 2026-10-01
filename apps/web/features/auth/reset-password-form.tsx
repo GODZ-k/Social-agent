@@ -5,7 +5,7 @@ import { Controller, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { usePasswordReset } from "@/lib/auth/client";
-import { AUTH_POLICY, checkPassword, passwordAllowed } from "@/lib/auth/rules";
+import { AUTH_POLICY, checkPassword, passwordAllowed, passwordErrorFrom } from "@/lib/auth/rules";
 import { AuthHeading } from "@/components/auth/auth-heading";
 import { Notice } from "@/components/auth/notice";
 import { PasswordField } from "@/components/auth/password-field";
@@ -34,9 +34,9 @@ export function ResetPasswordForm({ token }: { token?: string }) {
   if (!ready) return <div className="skeleton h-80 w-full" role="status" aria-label="Loading" />;
   if (!canSetPassword || error?.code === "link_expired") return <ResetLinkExpired />;
 
-  const leaked = error?.code === "password_leaked" ? true : undefined;
+  const passwordError = passwordErrorFrom(error);
+  const leaked = passwordError?.code === "password_leaked" ? true : undefined;
   const rules = checkPassword(password, email ?? "", leaked);
-  const passwordError = error?.code === "password_leaked" || error?.code === "password_too_short" ? error : null;
 
   function submit(values: Values) {
     if (!passwordAllowed(rules)) return;

@@ -14,23 +14,23 @@ import { APP_NAME } from "@/lib/utils";
 const PROMISES = [
   { ok: true, text: "Publish the posts you approve, at the times you approve." },
   { ok: true, text: "Read likes, saves and reach so the plan gets better." },
-  { ok: true, text: "The client can disconnect any time in Settings." },
-  { ok: false, text: "It never messages the client's followers or changes their profile." },
+  { ok: true, text: "The brand can disconnect any time in Settings." },
+  { ok: false, text: "It never messages the brand's followers or changes their profile." },
 ];
 
 /**
- * Connect where to post, for an admin building a brand on a client's behalf (S17b in admin
- * context, 2026-09-28). The client can connect later themselves instead, with or without a link.
+ * Connect where to post, for an admin building a brand on a brand's behalf (S17b in admin
+ * context, 2026-09-28). The brand can connect later themselves instead, with or without a link.
  */
 export function AdminConnectAccounts({
-  clientId,
+  brandId,
   personName,
   platforms,
   initialAccounts,
   onContinue,
   onBack,
 }: {
-  clientId: string;
+  brandId: string;
   personName: string;
   platforms: Platform[];
   initialAccounts: SocialAccount[];
@@ -77,7 +77,7 @@ export function AdminConnectAccounts({
         {platforms.map((platform) => (
           <ConnectAccountRow
             key={platform}
-            clientId={clientId}
+            brandId={brandId}
             platform={platform}
             account={accounts.find((a) => a.platform === platform) ?? null}
             primary={remaining[0] === platform}
@@ -101,11 +101,11 @@ export function AdminConnectAccounts({
       <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
         {connectedCount === 0 ? (
           <div className="flex w-full flex-wrap items-center gap-2">
-            <Button variant="outline" className="max-[560px]:w-full" disabled={skip.isPending} onClick={() => skip.run(clientId)}>
+            <Button variant="outline" className="max-[560px]:w-full" disabled={skip.isPending} onClick={() => skip.run(brandId)}>
               {skip.isPending && <LoaderCircle className="animate-spin" />}
-              Skip, the client connects later
+              Skip, the brand connects later
             </Button>
-            <Button variant="ghost" className="max-[560px]:w-full" disabled={sendLink.isPending} onClick={() => sendLink.run(clientId)}>
+            <Button variant="ghost" className="max-[560px]:w-full" disabled={sendLink.isPending} onClick={() => sendLink.run(brandId)}>
               {sendLink.isPending ? <LoaderCircle className="animate-spin" /> : <Mail />}
               Send {personName} a link to connect
             </Button>

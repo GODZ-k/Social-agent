@@ -4,6 +4,9 @@ import { useState } from "react";
 import { Panel } from "@repo/ui/components/states";
 import { Segmented } from "@repo/ui/components/segmented";
 import { StackedBars } from "./stacked-bars";
+import { PanelHeader } from "@repo/ui/components/panel-header";
+import { PanelStat } from "@repo/ui/components/panel-stat";
+import { ChartLegend } from "@repo/ui/components/chart-legend";
 import { formatTokens, formatUsd } from "./format";
 
 type Metric = "tokens" | "cost";
@@ -16,16 +19,16 @@ export function UsageByAgentPanel({ byAgent }: { byAgent: { agent: string; input
 
   return (
     <Panel>
-      <div className="mb-4 flex items-start justify-between gap-3">
-        <div>
-          <h2 className="type-heading">Usage by agent</h2>
-          <p className="type-label mt-1">Which agents use the most.</p>
-        </div>
-        <div className="shrink-0 text-right">
-          <p className="type-number text-xl">{metric === "tokens" ? formatTokens(totalTokens) : formatUsd(totalCost)}</p>
-          <p className="type-label mt-0.5">{metric === "tokens" ? "Total tokens" : "Total cost"}</p>
-        </div>
-      </div>
+      <PanelHeader
+        title="Usage by agent"
+        description="Which agents use the most."
+        right={
+          <PanelStat
+            value={metric === "tokens" ? formatTokens(totalTokens) : formatUsd(totalCost)}
+            caption={metric === "tokens" ? "Total tokens" : "Total cost"}
+          />
+        }
+      />
       <Segmented
         label="Metric"
         value={metric}
@@ -37,16 +40,13 @@ export function UsageByAgentPanel({ byAgent }: { byAgent: { agent: string; input
         className="mb-4"
       />
       {metric === "tokens" && (
-        <div className="mb-3 flex flex-wrap gap-4 text-[0.8125rem]">
-          <span className="flex items-center gap-1.5">
-            <i aria-hidden className="inline-block size-2 rounded-full" style={{ background: "var(--brand)" }} />
-            Input
-          </span>
-          <span className="flex items-center gap-1.5">
-            <i aria-hidden className="inline-block size-2 rounded-full" style={{ background: "color-mix(in srgb, var(--brand) 42%, var(--card))" }} />
-            Output
-          </span>
-        </div>
+        <ChartLegend
+          className="mb-3"
+          items={[
+            { label: "Input", color: "var(--brand)" },
+            { label: "Output", color: "color-mix(in srgb, var(--brand) 42%, var(--card))" },
+          ]}
+        />
       )}
       <StackedBars
         rows={byAgent.map((a) => ({

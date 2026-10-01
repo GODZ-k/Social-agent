@@ -3,6 +3,8 @@ import { format, parseISO } from "date-fns";
 import { Activity, AlertCircle, Check, ChevronRight } from "lucide-react";
 import type { AttentionItem, ObsRange } from "@/lib/types";
 import { Panel } from "@repo/ui/components/states";
+import { PanelHeader } from "@repo/ui/components/panel-header";
+import { PanelStat } from "@repo/ui/components/panel-stat";
 import { rangePhrase } from "./format";
 
 const TARGET_HREF: Record<AttentionItem["kind"], (id: string) => string> = {
@@ -21,16 +23,12 @@ const LINK_LABEL: Record<AttentionItem["kind"], string> = {
 export function AttentionPanel({ items, clearedOnTheirOwn, range }: { items: AttentionItem[]; clearedOnTheirOwn: number; range: ObsRange }) {
   return (
     <Panel>
-      <div className="mb-4 flex items-baseline justify-between gap-3">
-        <div>
-          <h2 className="type-heading">Needs attention</h2>
-          <p className="type-label mt-1">Problems from {rangePhrase(range)}, newest first.</p>
-        </div>
-        <div className="shrink-0 text-right">
-          <p className="type-number text-xl">{items.length}</p>
-          <p className="type-label mt-0.5">Open</p>
-        </div>
-      </div>
+      <PanelHeader
+        title="Needs attention"
+        description={`Problems from ${rangePhrase(range)}, newest first.`}
+        right={<PanelStat value={items.length} caption="Open" />}
+        align="baseline"
+      />
       {items.length === 0 ? (
         <p className="text-muted-foreground">Nothing needs you right now.</p>
       ) : (

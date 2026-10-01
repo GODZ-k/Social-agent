@@ -352,9 +352,9 @@ export function server(range: ObsRange, filter: ObsFilter): ObsServer {
       { name: "Clerk", note: "Checks who is signed in", calls: 8_400, failed: 0, p95Ms: 6 },
     ],
     errorGroups: [
-      { id: "se_1", message: "brand_research insert timed out after 30 s", route: "POST /api/v1/brands/:brandId/research", times: 29, clients: 3, lastSeenAt: subMinutes(now(), 40).toISOString(), traceId: "tr_01ha94bc72" },
-      { id: "se_2", message: "Instagram token exchange failed: 400 invalid_grant", route: "GET /api/v1/oauth/:platform/callback", times: 3, clients: 2, lastSeenAt: subHours(now(), 2).toISOString(), traceId: "tr_01ha93ff10" },
-      { id: "se_3", message: "Firecrawl scrape failed: 502 Bad Gateway", route: "POST /api/v1/scans", times: 2, clients: 2, lastSeenAt: subHours(now(), 16).toISOString(), traceId: "tr_01ha91aa02" },
+      { id: "se_1", message: "brand_research insert timed out after 30 s", route: "POST /api/v1/brands/:brandId/research", times: 29, brands: 3, lastSeenAt: subMinutes(now(), 40).toISOString(), traceId: "tr_01ha94bc72" },
+      { id: "se_2", message: "Instagram token exchange failed: 400 invalid_grant", route: "GET /api/v1/oauth/:platform/callback", times: 3, brands: 2, lastSeenAt: subHours(now(), 2).toISOString(), traceId: "tr_01ha93ff10" },
+      { id: "se_3", message: "Firecrawl scrape failed: 502 Bad Gateway", route: "POST /api/v1/scans", times: 2, brands: 2, lastSeenAt: subHours(now(), 16).toISOString(), traceId: "tr_01ha91aa02" },
     ],
     slowRequests: byBrand(
       [
@@ -370,10 +370,10 @@ export function server(range: ObsRange, filter: ObsFilter): ObsServer {
 
 function frontendErrors(fixed: string[]): FrontendErrorRow[] {
   const rows: FrontendErrorRow[] = [
-    { id: "fe_platforms_undefined", message: "TypeError: Cannot read properties of undefined (reading 'platforms')", page: "/c/:clientId/approvals", effect: "Blank page after pressing Approve", status: "unresolved", newInRelease: true, people: 5, times: 14, firstSeenAt: subHours(now(), 19).toISOString(), lastSeenAt: subMinutes(now(), 12).toISOString(), traceId: "tr_01hb01aaee" },
+    { id: "fe_platforms_undefined", message: "TypeError: Cannot read properties of undefined (reading 'platforms')", page: "/c/:brandId/approvals", effect: "Blank page after pressing Approve", status: "unresolved", newInRelease: true, people: 5, times: 14, firstSeenAt: subHours(now(), 19).toISOString(), lastSeenAt: subMinutes(now(), 12).toISOString(), traceId: "tr_01hb01aaee" },
     { id: "fe_chunk_load", message: "ChunkLoadError: Loading chunk 812 failed", page: "/onboarding", effect: "Tab opened before the release, needs a reload", status: "unresolved", newInRelease: true, people: 3, times: 4, firstSeenAt: subHours(now(), 20).toISOString(), lastSeenAt: subHours(now(), 2).toISOString(), traceId: "tr_01hb02bbff" },
-    { id: "fe_hydration_tz", message: "Hydration failed: server and browser rendered different text", page: "/c/:clientId/calendar", effect: "Post times shown in the wrong time zone, then corrected", status: "unresolved", newInRelease: false, people: 2, times: 9, firstSeenAt: subDays(now(), 6).toISOString(), lastSeenAt: subHours(now(), 5).toISOString(), traceId: "tr_01hb03ccgg" },
-    { id: "fe_invalid_time", message: "RangeError: Invalid time value", page: "/c/:clientId/strategy", effect: "Best times card did not load", status: "unresolved", newInRelease: false, people: 1, times: 2, firstSeenAt: subDays(now(), 3).toISOString(), lastSeenAt: subDays(now(), 1).toISOString(), traceId: "tr_01hb04ddhh" },
+    { id: "fe_hydration_tz", message: "Hydration failed: server and browser rendered different text", page: "/c/:brandId/calendar", effect: "Post times shown in the wrong time zone, then corrected", status: "unresolved", newInRelease: false, people: 2, times: 9, firstSeenAt: subDays(now(), 6).toISOString(), lastSeenAt: subHours(now(), 5).toISOString(), traceId: "tr_01hb03ccgg" },
+    { id: "fe_invalid_time", message: "RangeError: Invalid time value", page: "/c/:brandId/strategy", effect: "Best times card did not load", status: "unresolved", newInRelease: false, people: 1, times: 2, firstSeenAt: subDays(now(), 3).toISOString(), lastSeenAt: subDays(now(), 1).toISOString(), traceId: "tr_01hb04ddhh" },
   ];
   return rows.map((row) => (fixed.includes(row.id) ? { ...row, status: "fixed" } : row));
 }
@@ -444,7 +444,7 @@ export function frontendError(id: string, fixed: string[]): FrontendErrorDetail 
       { name: "Safari", times: onSafari },
       { name: "Edge", times: row.times - onChrome - onSafari },
     ].filter((b) => b.times > 0),
-    clients: [
+    brands: [
       { ...BRANDS.tartine, times: 6, lastAt: seen.toISOString() },
       { ...BRANDS.meow, times: 4, lastAt: subHours(now(), 1).toISOString() },
       { ...BRANDS.northbound, times: 2, lastAt: subHours(now(), 3).toISOString() },

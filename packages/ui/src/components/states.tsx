@@ -3,13 +3,47 @@
 import { useState } from "react";
 import { ArrowLeft, CircleAlert, Copy, Check } from "lucide-react";
 import { Button } from "./button";
+import { IconCircle } from "./icon-circle";
 import { cn } from "../lib/utils";
 
-const SUPPORT_EMAIL = "support@thescaleagency.org";
+/** Only used where a caller doesn't pass its own `supportEmail`. */
+const DEFAULT_SUPPORT_EMAIL = "support@thescaleagency.org";
 
 /** Short id for the person to quote to support. Prefers Next.js's own digest; falls back for errors caught without one. */
 function referenceFor(error: Error & { digest?: string }) {
   return error.digest ?? Math.floor(1_000_000_000 + Math.random() * 9_000_000_000).toString();
+}
+
+/**
+ * The reference id plus its copy-to-clipboard state, shared by `ErrorReference`
+ * and `ErrorState` so the two don't keep their own copies of the same clipboard
+ * dance (and the same 2s "Copied" timeout).
+ */
+function useCopyableReference(error: Error & { digest?: string }) {
+  const [reference] = useState(() => referenceFor(error));
+  const [copied, setCopied] = useState(false);
+
+  async function copy() {
+    try {
+      await navigator.clipboard.writeText(reference);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // clipboard unavailable; the reference is still visible to copy by hand
+    }
+  }
+
+  return { reference, copied, copy };
+}
+
+/** The reference pill's own copy button: identical in `ErrorReference` and `ErrorState`. */
+function CopyReferenceButton({ reference, copied, onCopy }: { reference: string; copied: boolean; onCopy: () => void }) {
+  return (
+    <Button variant="outline" size="sm" onClick={onCopy} aria-label={`Copy reference ${reference}`}>
+      {copied ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
+      {copied ? "Copied" : "Copy"}
+    </Button>
+  );
 }
 
 type StateMarkKind = "missing" | "error" | "done";
@@ -74,19 +108,15 @@ export function GoBackButton({ children = "Go back" }: { children?: React.ReactN
  * `ErrorState` so a page that writes its own title and lede can still end on the same
  * copy-a-reference block.
  */
-export function ErrorReference({ error }: { error: Error & { digest?: string } }) {
-  const [reference] = useState(() => referenceFor(error));
-  const [copied, setCopied] = useState(false);
-
-  async function copyReference() {
-    try {
-      await navigator.clipboard.writeText(reference);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      // clipboard unavailable; the reference is still visible to copy by hand
-    }
-  }
+export function ErrorReference({
+  error,
+  /** Defaults to Cadence's own support address; pass another for a white-labelled surface. */
+  supportEmail = DEFAULT_SUPPORT_EMAIL,
+}: {
+  error: Error & { digest?: string };
+  supportEmail?: string;
+}) {
+  const { reference, copied, copy } = useCopyableReference(error);
 
   return (
     <div className="mt-7 flex flex-col items-center gap-2">
@@ -94,15 +124,12 @@ export function ErrorReference({ error }: { error: Error & { digest?: string } }
         <span>
           Reference <b className="font-semibold text-foreground tabular-nums">{reference}</b>
         </span>
-        <Button variant="outline" size="sm" onClick={copyReference} aria-label={`Copy reference ${reference}`}>
-          {copied ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
-          {copied ? "Copied" : "Copy"}
-        </Button>
+        <CopyReferenceButton reference={reference} copied={copied} onCopy={copy} />
       </div>
       <p className="max-w-xs text-center text-xs text-muted-foreground">
         If it keeps happening, send this reference to{" "}
-        <a href={`mailto:${SUPPORT_EMAIL}`} className="font-medium text-tint-foreground underline underline-offset-2">
-          {SUPPORT_EMAIL}
+        <a href={`mailto:${supportEmail}`} className="font-medium text-tint-foreground underline underline-offset-2">
+          {supportEmail}
         </a>
         .
       </p>
@@ -166,20 +193,18 @@ export function Panel({ className, ...props }: React.ComponentProps<"section">) 
  * reference row only shows for real error boundaries (they pass `onRetry`); a not-found copy
  * has nothing to retry and no reference to give.
  */
-export function ErrorState({ error, onRetry }: { error: Error & { digest?: string }; onRetry?: () => void }) {
-  const [reference] = useState(() => referenceFor(error));
-  const [copied, setCopied] = useState(false);
+export function ErrorState({
+  error,
+  onRetry,
+  /** Defaults to Cadence's own support address; pass another for a white-labelled surface. */
+  supportEmail = DEFAULT_SUPPORT_EMAIL,
+}: {
+  error: Error & { digest?: string };
+  onRetry?: () => void;
+  supportEmail?: string;
+}) {
+  const { reference, copied, copy } = useCopyableReference(error);
   const showReference = Boolean(onRetry);
-
-  async function copyReference() {
-    try {
-      await navigator.clipboard.writeText(reference);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      // clipboard unavailable; the reference is still visible to copy by hand
-    }
-  }
 
   return (
     <div role="alert" className="mx-auto flex max-w-md flex-col items-center gap-3 py-16 text-center">
@@ -197,15 +222,12 @@ export function ErrorState({ error, onRetry }: { error: Error & { digest?: strin
             <span>
               Reference <span className="font-medium text-foreground tabular-nums">{reference}</span>
             </span>
-            <Button variant="outline" size="sm" onClick={copyReference} aria-label={`Copy reference ${reference}`}>
-              {copied ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
-              {copied ? "Copied" : "Copy"}
-            </Button>
+            <CopyReferenceButton reference={reference} copied={copied} onCopy={copy} />
           </div>
           <p className="text-xs text-muted-foreground">
             If it keeps happening, send this reference to{" "}
-            <a href={`mailto:${SUPPORT_EMAIL}`} className="underline underline-offset-2">
-              {SUPPORT_EMAIL}
+            <a href={`mailto:${supportEmail}`} className="underline underline-offset-2">
+              {supportEmail}
             </a>
             .
           </p>
@@ -228,7 +250,7 @@ export function EmptyState({
 }) {
   return (
     <div className="mx-auto flex max-w-md flex-col items-center gap-2.5 py-14 text-center">
-      {icon && <div className="mb-1 grid size-12 place-items-center rounded-full bg-tint text-tint-foreground [&_svg]:size-5">{icon}</div>}
+      {icon && <IconCircle className="mb-1 size-12 bg-tint text-tint-foreground [&_svg]:size-5">{icon}</IconCircle>}
       <p className="type-heading">{title}</p>
       <p className="text-muted-foreground">{description}</p>
       {action && <div className="mt-3">{action}</div>}

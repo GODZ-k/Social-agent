@@ -28,8 +28,6 @@ export function formatMs(ms: number): string {
 
 export const formatTokens = (n: number) => formatCompact(n);
 
-export const formatPercent = (n: number) => `${n}%`;
-
 const AVATAR_COLORS = ["#8a4b2a", "#c2410c", "#0f766e", "#9f1239", "#2f6fde", "#b45309", "#0e7490"];
 
 /** A stable colour for a client's initials avatar, picked from its name so the same client always matches. */

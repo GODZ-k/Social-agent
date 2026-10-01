@@ -29,7 +29,17 @@ function groupKey(secret: string): string {
  * Step 2 with an authenticator app: add the account, then type its first code.
  * No QR code yet (it needs a QR library); the "open in app" link covers phones and the key covers the rest.
  */
-export function ConnectAppStep({ setup, confirm, onConfirmed }: { setup: AuthenticatorSetup; confirm: (code: string) => Promise<AuthResult<string[]>>; onConfirmed: (codes: string[]) => void }) {
+export function ConnectAppStep({
+  setup,
+  confirm,
+  onConfirmed,
+  headingLevel,
+}: {
+  setup: AuthenticatorSetup;
+  confirm: (code: string) => Promise<AuthResult<string[]>>;
+  onConfirmed: (codes: string[]) => void;
+  headingLevel?: 1 | 2;
+}) {
   const { pending, error, setError, run } = useAuthSubmit();
   const form = useForm<Values>({ resolver: zodResolver(schema), defaultValues: { code: "" } });
   const code = useWatch({ control: form.control, name: "code" });
@@ -43,7 +53,9 @@ export function ConnectAppStep({ setup, confirm, onConfirmed }: { setup: Authent
   return (
     <>
       <SetupProgress step={2} />
-      <AuthHeading title="Connect your authenticator app">Add {APP_NAME} to the app, then type the 6-digit code it shows.</AuthHeading>
+      <AuthHeading title="Connect your authenticator app" level={headingLevel}>
+        Add {APP_NAME} to the app, then type the 6-digit code it shows.
+      </AuthHeading>
       <div className="mt-7 grid gap-4 rounded-[1.25rem] bg-card p-4.5 shadow-raised">
         <ol className="grid list-decimal gap-2 pl-4.5 text-sm leading-[1.45] text-muted-foreground [&_b]:font-medium [&_b]:text-foreground">
           <li>

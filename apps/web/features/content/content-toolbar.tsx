@@ -1,11 +1,10 @@
 "use client";
 
-import { ChevronDown, Layers, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import type { Platform } from "@social-agent/shared";
 import type { PostState } from "@/lib/types";
 import { Segmented } from "@repo/ui/components/segmented";
-import { PLATFORM_LABEL, PlatformIcon } from "@repo/ui/components/social/platform";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@repo/ui/components/dropdown-menu";
+import { PlatformFilterDropdown } from "@/components/filters/platform-filter-dropdown";
 
 export type StatusFilter = "" | PostState;
 
@@ -47,21 +46,7 @@ export function ContentToolbar({
       />
 
       <div className="flex items-center gap-2 max-[900px]:w-full">
-        <DropdownMenu>
-          <DropdownMenuTrigger className="pressable flex h-9 shrink-0 items-center gap-1.5 rounded-full bg-card px-3.5 text-sm font-medium ring-1 ring-border">
-            <Layers className="size-4 text-muted-foreground" />
-            {platform ? PLATFORM_LABEL[platform] : "All platforms"}
-            <ChevronDown className="size-3.5 text-muted-foreground" />
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start">
-            <DropdownMenuItem onSelect={() => onPlatformChange("")}>All platforms</DropdownMenuItem>
-            {platforms.map((p) => (
-              <DropdownMenuItem key={p} onSelect={() => onPlatformChange(p)}>
-                <PlatformIcon platform={p} /> {PLATFORM_LABEL[p]}
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <PlatformFilterDropdown platform={platform} onChange={onPlatformChange} platforms={platforms} />
 
         <label className="relative w-64 max-[900px]:min-w-0 max-[900px]:flex-1">
           <span className="sr-only">Search posts</span>

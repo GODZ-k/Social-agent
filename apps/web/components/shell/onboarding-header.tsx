@@ -4,7 +4,7 @@ import { BarDivider } from "./bar-divider";
 import { BrandBackLink } from "./brand-back-link";
 import { AccountMenu } from "./account-menu";
 
-/** Logo and account only, so nothing pulls away from the step. A client adding a brand gets a way back to their last one. */
+/** Logo and account only, so nothing pulls away from the step. A brand adding a brand gets a way back to their last one. */
 export function OnboardingHeader({ viewer, backTo }: { viewer: Viewer; backTo?: { id: string; name: string } }) {
   return (
     <TopBarFrame wordmark>

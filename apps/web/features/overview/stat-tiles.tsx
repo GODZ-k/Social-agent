@@ -1,31 +1,31 @@
 import Link from "next/link";
 import { format, parseISO } from "date-fns";
 import { ChevronRight } from "lucide-react";
-import type { Client, PostView } from "@/lib/types";
+import type { Brand, PostView } from "@/lib/types";
 import { formatCompact, formatDelta } from "@/lib/utils";
 import { workspaceHref, type WorkspaceBasePath } from "@/lib/workspace-path";
 import { StatTile } from "./stat-tile";
 
 /** Followers and engagement read as pending until an account is connected and posting starts. */
 export function StatTiles({
-  client,
+  brand,
   reviewPosts,
   scheduledPosts,
   basePath = "/c",
 }: {
-  client: Client;
+  brand: Brand;
   reviewPosts: PostView[];
   scheduledPosts: PostView[];
   basePath?: WorkspaceBasePath;
 }) {
-  const connected = client.accounts.some((a) => a.status === "connected");
+  const connected = brand.accounts.some((a) => a.status === "connected");
   const next = scheduledPosts[0];
 
   return (
     <dl className="grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-5">
       <StatTile label="Needs approval" value={String(reviewPosts.length)}>
         {reviewPosts.length > 0 ? (
-          <Link href={workspaceHref(basePath, client.id, "/approvals")} className="inline-flex items-center gap-0.5 font-medium text-tint-foreground hover:underline">
+          <Link href={workspaceHref(basePath, brand.id, "/approvals")} className="inline-flex items-center gap-0.5 font-medium text-tint-foreground hover:underline">
             Review now <ChevronRight className="size-3.5" />
           </Link>
         ) : (
@@ -40,8 +40,8 @@ export function StatTiles({
       </StatTile>
 
       {connected ? (
-        <StatTile label="Followers" value={formatCompact(client.stats.followers)}>
-          <span className={deltaTone(client.stats.followersDelta)}>{deltaLine(client.stats.followersDelta)}</span>
+        <StatTile label="Followers" value={formatCompact(brand.stats.followers)}>
+          <span className={deltaTone(brand.stats.followersDelta)}>{deltaLine(brand.stats.followersDelta)}</span>
         </StatTile>
       ) : (
         <StatTile label="Followers">
@@ -50,8 +50,8 @@ export function StatTiles({
       )}
 
       {connected ? (
-        <StatTile label="Engagement" value={`${client.stats.engagementRate}%`}>
-          <span className={deltaTone(client.stats.engagementDelta)}>{deltaLine(client.stats.engagementDelta)}</span>
+        <StatTile label="Engagement" value={`${brand.stats.engagementRate}%`}>
+          <span className={deltaTone(brand.stats.engagementDelta)}>{deltaLine(brand.stats.engagementDelta)}</span>
         </StatTile>
       ) : (
         <StatTile label="Engagement">

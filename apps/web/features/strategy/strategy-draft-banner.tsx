@@ -28,7 +28,7 @@ export function StrategyDraftBanner({ strategy, onAskForChanges }: { strategy: S
         <Button variant="outline" className="flex-1 lg:flex-none" onClick={onAskForChanges}>
           Ask for changes
         </Button>
-        <Button className="flex-1 lg:flex-none" disabled={start.isPending} onClick={() => start.run(strategy.clientId)}>
+        <Button className="flex-1 lg:flex-none" disabled={start.isPending} onClick={() => start.run(strategy.brandId)}>
           <Check />
           {start.isPending ? "Starting" : "Start now"}
         </Button>

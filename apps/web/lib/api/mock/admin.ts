@@ -1,10 +1,10 @@
 import "server-only";
 import { subDays } from "date-fns";
-import type { AdminClientRow, BrandCard, Client, PendingScan } from "@/lib/types";
+import type { AdminClientRow, BrandCard, Brand, PendingScan } from "@/lib/types";
 import { OWNERS, type MockPerson } from "./seed-people";
 import type { SeedData } from "./seed";
 
-/** The admin's view of clients (people): what needs them, derived from the brands. */
+/** The admin's view of brands (people): what needs them, derived from the brands. */
 
 /**
  * A scan read before this session, waiting for the admin to check it. Held here
@@ -49,21 +49,21 @@ export function clearPendingScan(clientId: string): void {
   if (i >= 0) PENDING_SCANS.splice(i, 1);
 }
 
-export function brandCardOf(db: SeedData, client: Client): BrandCard {
-  const pendingApprovals = db.posts.filter((p) => p.clientId === client.id && p.status === "in_review").length;
+export function brandCardOf(db: SeedData, brand: Brand): BrandCard {
+  const pendingApprovals = db.posts.filter((p) => p.brandId === brand.id && p.status === "in_review").length;
   return {
-    id: client.id,
-    name: client.name,
-    url: client.url,
-    accent: client.accent,
-    status: client.status,
-    stage: client.stage,
+    id: brand.id,
+    name: brand.name,
+    url: brand.url,
+    accent: brand.accent,
+    status: brand.status,
+    stage: brand.stage,
     pendingApprovals,
   };
 }
 
 export function rowOf(db: SeedData, person: MockPerson): AdminClientRow {
-  const brands = db.clients.filter((c) => c.ownerId === person.id && c.status === "active");
+  const brands = db.brands.filter((c) => c.ownerId === person.id && c.status === "active");
   const cards = brands.map((brand) => brandCardOf(db, brand));
   const postsToApprove = cards.reduce((n, card) => n + card.pendingApprovals, 0);
   const expiredConnections = brands.flatMap((brand) =>
@@ -84,9 +84,9 @@ export function rowOf(db: SeedData, person: MockPerson): AdminClientRow {
     .filter((scan) => scan.ownerId === person.id)
     .map((scan) => ({ kind: "scan" as const, brandName: scan.brandName, at: scan.at }));
   const failedRuns = [...failedResearch, ...failedScans];
-  const { invitedAt, lastSignedInAt, lastActivity, ...client } = person;
+  const { invitedAt, lastSignedInAt, lastActivity, ...brand } = person;
   return {
-    ...structuredClone(client),
+    ...structuredClone(brand),
     brandCount: brands.length,
     brands: cards,
     postsToApprove,

@@ -1,5 +1,8 @@
 import { Panel } from "@repo/ui/components/states";
+import { PanelHeader } from "@repo/ui/components/panel-header";
+import { PanelStat } from "@repo/ui/components/panel-stat";
 import { TrendArea } from "./trend-area";
+import { ChartLegend } from "@repo/ui/components/chart-legend";
 import { hourLabel } from "./format";
 
 /** An hourly line panel: title, a running total, a top legend, then the chart. Reused across Overview, Agents and Server. */
@@ -37,32 +40,17 @@ export function HourlyPanel({
 
   return (
     <Panel>
-      <div className="mb-4 flex items-start justify-between gap-3">
-        <div>
-          <h2 className="type-heading">{title}</h2>
-          <p className="type-label mt-1">{description}</p>
-        </div>
-        {total && (
-          <div className="shrink-0 text-right">
-            <p className="type-number text-xl">{total}</p>
-            {caption && <p className="type-label mt-0.5">{caption}</p>}
-          </div>
-        )}
-      </div>
+      <PanelHeader title={title} description={description} right={total && <PanelStat value={total} caption={caption} />} />
       {(toolbar || secondaryLabel) && (
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           {toolbar}
           {secondaryLabel && (
-            <div className="flex flex-wrap gap-4 text-[0.8125rem]">
-              <span className="flex items-center gap-1.5">
-                <i aria-hidden className="inline-block size-2 rounded-full" style={{ background: primaryColor ?? "var(--brand)" }} />
-                {primaryLabel}
-              </span>
-              <span className="flex items-center gap-1.5">
-                <i aria-hidden className="inline-block size-2 rounded-full" style={{ background: secondaryColor ?? "color-mix(in srgb, var(--brand) 42%, var(--card))" }} />
-                {secondaryLabel}
-              </span>
-            </div>
+            <ChartLegend
+              items={[
+                { label: primaryLabel, color: primaryColor ?? "var(--brand)" },
+                { label: secondaryLabel, color: secondaryColor ?? "color-mix(in srgb, var(--brand) 42%, var(--card))" },
+              ]}
+            />
           )}
         </div>
       )}

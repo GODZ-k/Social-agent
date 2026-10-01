@@ -10,19 +10,18 @@
 import { generateMessageId, type ConnectConnectionAdapter, type UIMessage } from "@tanstack/ai-react";
 import { EventType, type StreamChunk } from "@tanstack/ai/client";
 import { format, parseISO } from "date-fns";
-import type { Client, PostView } from "@/lib/types";
+import type { Brand, PostView } from "@/lib/types";
 import { PLATFORM_LABEL } from "@repo/ui/components/social/platform";
-
-const listFormat = new Intl.ListFormat("en", { type: "conjunction" });
+import { formatList, unconnectedPlatforms } from "@/lib/utils";
 
 /** Matches a question about what's waiting on the owner, in the chat and in the mock reply. */
 export const APPROVAL_INTENT = /(approve|review|waiting|pending)/i;
 
 /** What the mock knows about the open workspace. Set by the chat panel. */
-let context: Client | undefined;
+let context: Brand | undefined;
 let reviewPosts: PostView[] = [];
-export const setAgentContext = (client: Client | undefined, posts: PostView[] = []) => {
-  context = client;
+export const setAgentContext = (brand: Brand | undefined, posts: PostView[] = []) => {
+  context = brand;
   reviewPosts = posts;
 };
 
@@ -61,10 +60,10 @@ function reply(question: string): string {
     }
     const first = reviewPosts[0]!;
     const when = first.scheduledFor ? parseISO(first.scheduledFor) : null;
-    const unconnected = context.platforms.filter((p) => context!.accounts.find((a) => a.platform === p)?.status !== "connected");
+    const unconnected = unconnectedPlatforms(context);
     const whenLine = when ? ` The first goes out ${format(when, "EEE")} at ${format(when, "h:mm a")}.` : "";
     const platformsLine = unconnected.length
-      ? ` ${listFormat.format(unconnected.map((p) => PLATFORM_LABEL[p]))} still ${unconnected.length === 1 ? "needs" : "need"} connecting before ${unconnected.length === 1 ? "it" : "these"} can publish.`
+      ? ` ${formatList(unconnected.map((p) => PLATFORM_LABEL[p]))} still ${unconnected.length === 1 ? "needs" : "need"} connecting before ${unconnected.length === 1 ? "it" : "these"} can publish.`
       : "";
     return `${reviewPosts.length} ${reviewPosts.length === 1 ? "post needs" : "posts need"} your approval.${whenLine}${platformsLine} Tap a post to see it.`;
   }

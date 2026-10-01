@@ -5,6 +5,7 @@ import { format, parseISO } from "date-fns";
 import { ChevronDown } from "lucide-react";
 import type { Release } from "@/lib/types";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@repo/ui/components/dropdown-menu";
+import { TOOLBAR_PILL_CLASS } from "./toolbar-pill";
 
 /** The Frontend tab's toolbar: which release the release-check panel compares, newest first. */
 export function ReleasePicker({ releases, activeId }: { releases: Release[]; activeId: string }) {
@@ -28,10 +29,7 @@ export function ReleasePicker({ releases, activeId }: { releases: Release[]; act
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button
-          type="button"
-          className="inline-flex items-center gap-1.5 rounded-full border bg-card px-3.5 py-1.5 text-[0.8125rem] font-medium hover:bg-accent"
-        >
+        <button type="button" className={TOOLBAR_PILL_CLASS}>
           {label} <ChevronDown className="size-3.5" />
         </button>
       </DropdownMenuTrigger>

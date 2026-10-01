@@ -1,6 +1,6 @@
 import { format, parseISO } from "date-fns";
 import { getAnalyticsReport, listReviewQueue } from "@/lib/api/server";
-import type { AnalyticsRange, AnalyticsReport, Client } from "@/lib/types";
+import type { AnalyticsRange, AnalyticsReport, Brand } from "@/lib/types";
 import { PLATFORM_LABEL } from "@repo/ui/components/social/platform";
 import type { WorkspaceBasePath } from "@/lib/workspace-path";
 import { AnalyticsEmpty } from "./analytics-empty";
@@ -11,24 +11,25 @@ import { DayByDayPanel } from "./day-by-day-panel";
 import { PostsPanel } from "./posts-panel";
 import { ComparisonSection } from "./comparison-section";
 import { LearnedSection } from "./learned-section";
-import { listFormat, postsLabel } from "./report-format";
+import { postsLabel } from "./report-format";
+import { formatList } from "@/lib/utils";
 
 /** Reads the analytics report and shows the empty state, the first week, or a full month's verdict. */
 export async function AnalyticsBody({
   brandId,
-  client,
+  brand,
   basePath = "/c",
   range,
 }: {
   brandId: string;
-  client: Client;
+  brand: Brand;
   basePath?: WorkspaceBasePath;
   range: AnalyticsRange;
 }) {
   const report = await getAnalyticsReport(brandId, range);
   if (!report || report.phase === "empty") {
     const reviewPosts = await listReviewQueue(brandId);
-    return <AnalyticsEmpty client={client} reviewPosts={reviewPosts} basePath={basePath} />;
+    return <AnalyticsEmpty brand={brand} reviewPosts={reviewPosts} basePath={basePath} />;
   }
 
   const period = periodLabel(report);
@@ -42,7 +43,7 @@ export async function AnalyticsBody({
       {report.phase === "month" && <SummaryBanner report={report} />}
       <KpiRow report={report} />
       <DayByDayPanel report={report} />
-      <PostsPanel report={report} brand={client.brand} />
+      <PostsPanel report={report} brand={brand.brand} />
       <ComparisonSection report={report} />
       <LearnedSection report={report} brandId={brandId} basePath={basePath} />
     </div>
@@ -57,6 +58,6 @@ function periodLabel(report: AnalyticsReport): string {
     return `${from} to ${to}, ${posts} so far.`;
   }
   const platforms = report.platforms.map((p) => PLATFORM_LABEL[p]);
-  const where = platforms.length ? ` on ${listFormat.format(platforms)}` : "";
+  const where = platforms.length ? ` on ${formatList(platforms)}` : "";
   return `${from} to ${to}, ${posts}${where}. Compared with small shops like yours, from your research.`;
 }

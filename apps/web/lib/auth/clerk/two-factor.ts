@@ -78,15 +78,30 @@ export function useTwoFactorSetup() {
     }
   }
 
-  /** Confirms the first code from the app and returns the backup codes to show once. */
+  /**
+   * Confirms the first code from the app and returns the backup codes to show once,
+   * or none if this instance will not mint them.
+   *
+   * The two calls are kept apart on purpose. Once `verifyTOTP` returns, two-factor is
+   * already on and that code is spent, so a failure to mint backup codes must not be
+   * reported as a failure to turn it on: doing that stranded people on the code step,
+   * retyping codes that could never work, while their account was in fact protected.
+   * Clerk answers `POST /v1/me/backup_codes` with 403 when the instance has backup
+   * codes switched off, which is exactly that case.
+   */
   async function confirmAuthenticatorApp(code: string): Promise<AuthResult<string[]>> {
     try {
       const totp = await requireUser(user).verifyTOTP({ code });
       if (totp.backupCodes?.length) return succeed(totp.backupCodes);
-      const backup = await createBackupCode();
-      return succeed(backup.codes);
     } catch (error) {
       return fail(error);
+    }
+
+    try {
+      const backup = await createBackupCode();
+      return succeed(backup.codes);
+    } catch {
+      return succeed([]);
     }
   }
 
@@ -97,7 +112,7 @@ export function useTwoFactorSetup() {
   return { startAuthenticatorApp, confirmAuthenticatorApp, createPasskey };
 }
 
-// ---------- Managing methods from the account page ----------
+// ---------- Managing methods from the account dialog ----------
 
 function methodsOf(user: UserResource | null | undefined): TwoFactorMethod[] {
   if (!user?.totpEnabled) return [];

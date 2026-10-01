@@ -1,6 +1,10 @@
 import type { FailedActionRow } from "@/lib/types";
 import { Panel } from "@repo/ui/components/states";
 import { RowList, type RowListColumn } from "./row-list";
+import { PanelHeader } from "@repo/ui/components/panel-header";
+import { PanelStat } from "@repo/ui/components/panel-stat";
+import { FailedCount } from "@repo/ui/components/failed-count";
+import { RateBar } from "@repo/ui/components/rate-bar";
 
 const COLUMNS: RowListColumn<FailedActionRow>[] = [
   {
@@ -14,22 +18,8 @@ const COLUMNS: RowListColumn<FailedActionRow>[] = [
     ),
   },
   { header: "Tried", align: "right", render: (a) => a.tried },
-  { header: "Failed", align: "right", render: (a) => <span className={a.failed > 0 ? "font-medium text-destructive" : ""}>{a.failed}</span> },
-  {
-    header: "Failure rate",
-    align: "right",
-    render: (a) => {
-      const rate = Math.round((a.failed / a.tried) * 100);
-      return (
-        <span className="flex items-center gap-2">
-          <span className="tabular-nums">{rate}%</span>
-          <span className="h-1.5 w-10 shrink-0 overflow-hidden rounded-full bg-secondary">
-            <span className="block h-full rounded-full bg-destructive" style={{ width: `${rate}%` }} />
-          </span>
-        </span>
-      );
-    },
-  },
+  { header: "Failed", align: "right", render: (a) => <FailedCount count={a.failed} /> },
+  { header: "Failure rate", align: "right", render: (a) => <RateBar pct={Math.round((a.failed / a.tried) * 100)} /> },
 ];
 
 /** Things people tried to do that did not work, worst rate first. */
@@ -38,16 +28,11 @@ export function FailedActionsPanel({ actions }: { actions: FailedActionRow[] }) 
   const sorted = [...actions].sort((a, b) => b.failed / b.tried - a.failed / a.tried);
   return (
     <Panel>
-      <div className="mb-4 flex items-start justify-between gap-3">
-        <div>
-          <h2 className="type-heading">Failed actions</h2>
-          <p className="type-label mt-1">Things people tried to do that did not work, worst rate first.</p>
-        </div>
-        <div className="shrink-0 text-right">
-          <p className="type-number text-xl">{total}</p>
-          <p className="type-label mt-0.5">Failed</p>
-        </div>
-      </div>
+      <PanelHeader
+        title="Failed actions"
+        description="Things people tried to do that did not work, worst rate first."
+        right={<PanelStat value={total} caption="Failed" />}
+      />
       <RowList columns={COLUMNS} rows={sorted} rowKey={(a) => a.action} />
     </Panel>
   );

@@ -5,7 +5,9 @@ import type { AgentRunRow } from "@/lib/types";
 import { Panel } from "@repo/ui/components/states";
 import { Badge } from "@repo/ui/components/badge";
 import { RowList, type RowListColumn } from "./row-list";
-import { avatarColor, formatUsd } from "./format";
+import { PanelHeader } from "@repo/ui/components/panel-header";
+import { BrandBadge } from "./brand-badge";
+import { formatUsd } from "./format";
 
 const STATUS_VARIANT = { ok: "success", error: "danger", running: "tint" } as const;
 const STATUS_LABEL = { ok: "OK", error: "Error", running: "Running" } as const;
@@ -15,18 +17,7 @@ const COLUMNS: RowListColumn<AgentRunRow>[] = [
   { header: "Started", width: "8rem", render: (r) => <span className="text-muted-foreground">{format(parseISO(r.startedAt), "d MMM, h:mm a")}</span> },
   { header: "Agent", width: "9rem", render: (r) => <span className="flex items-center gap-1.5 font-medium"><Bot className="size-4 text-muted-foreground" />{r.agent}</span> },
   { header: "Asked to", main: true, render: (r) => <span className="block truncate">{r.task}</span> },
-  {
-    header: "Client",
-    width: "9rem",
-    render: (r) => (
-      <span className="flex items-center gap-1.5">
-        <span aria-hidden className="grid size-5 shrink-0 place-items-center rounded-full text-[0.625rem] font-semibold text-white" style={{ background: avatarColor(r.brandName) }}>
-          {r.brandName.charAt(0)}
-        </span>
-        {r.brandName}
-      </span>
-    ),
-  },
+  { header: "Client", width: "9rem", render: (r) => <BrandBadge name={r.brandName} /> },
   {
     header: "Status",
     render: (r) => {
@@ -45,8 +36,7 @@ const COLUMNS: RowListColumn<AgentRunRow>[] = [
 export function RecentRunsPanel({ runs }: { runs: AgentRunRow[] }) {
   return (
     <Panel>
-      <h2 className="type-heading">Recent runs</h2>
-      <p className="type-label mt-1 mb-4">Every agent run, newest first. Open one to see each step.</p>
+      <PanelHeader title="Recent runs" description="Every agent run, newest first. Open one to see each step." />
       <RowList columns={COLUMNS} rows={runs} rowKey={(r) => r.id} href={(r) => `/admin/observability/agents/${r.id}`} cardBelow="lg" />
       <Link href="/admin/observability/agents?range=30d" className="mt-4 inline-flex items-center gap-0.5 text-sm font-medium text-tint-foreground hover:underline">
         All runs

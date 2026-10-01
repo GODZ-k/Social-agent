@@ -17,19 +17,17 @@ export function ApprovalActions({ onReject, onAsk, onApprove }: Props) {
       <div className="mt-6 grid w-full grid-cols-2 gap-2 sm:grid-cols-[1fr_1.3fr_1fr]">
         <Button
           type="button"
-          size="lg"
           variant="outline"
           className="col-start-1 row-start-1 text-destructive sm:col-auto sm:row-auto sm:px-3"
           onClick={onReject}
         >
           <X /> Reject
         </Button>
-        <Button type="button" size="lg" variant="outline" className="col-span-2 sm:col-auto sm:px-3" onClick={onAsk}>
+        <Button type="button" variant="outline" className="col-span-2 sm:col-auto sm:px-3" onClick={onAsk}>
           <Pencil /> Ask for changes
         </Button>
         <Button
           type="button"
-          size="lg"
           className="col-start-2 row-start-1 bg-success text-white hover:brightness-105 sm:col-auto sm:row-auto sm:px-3"
           onClick={onApprove}
         >

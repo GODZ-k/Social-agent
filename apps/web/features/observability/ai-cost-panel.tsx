@@ -1,5 +1,7 @@
 import { format, parseISO, isToday } from "date-fns";
 import { Panel } from "@repo/ui/components/states";
+import { PanelHeader } from "@repo/ui/components/panel-header";
+import { PanelStat } from "@repo/ui/components/panel-stat";
 import { formatUsd } from "./format";
 import { niceCeil } from "./trend-area";
 
@@ -22,16 +24,7 @@ export function AiCostPanel({ byDay }: { byDay: { date: string; cost: number }[]
 
   return (
     <Panel>
-      <div className="mb-4 flex items-start justify-between gap-3">
-        <div>
-          <h2 className="type-heading">AI cost</h2>
-          <p className="type-label mt-1">What the agents cost per day.</p>
-        </div>
-        <div className="shrink-0 text-right">
-          <p className="type-number text-xl">{formatUsd(total)}</p>
-          <p className="type-label mt-0.5">Last 7 days</p>
-        </div>
-      </div>
+      <PanelHeader title="AI cost" description="What the agents cost per day." right={<PanelStat value={formatUsd(total)} caption="Last 7 days" />} />
       <div className="relative text-muted-foreground" style={{ aspectRatio: `${width} / ${height}` }}>
         <svg viewBox={`0 0 ${width} ${height}`} className="absolute inset-0 size-full" role="img" aria-label="AI cost per day, last 7 days">
           {gridValues.map((v, i) => (

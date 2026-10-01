@@ -1,14 +1,16 @@
 import Link from "next/link";
 import { format, parseISO } from "date-fns";
 import { ChartNoAxesCombined, Link2 } from "lucide-react";
-import type { Client, PostView } from "@/lib/types";
+import type { Brand, PostView } from "@/lib/types";
 import { workspaceHref, type WorkspaceBasePath } from "@/lib/workspace-path";
 import { PLATFORM_LABEL } from "@repo/ui/components/social/platform";
 import { Panel } from "@repo/ui/components/states";
 import { Button } from "@repo/ui/components/button";
+import { IconCircle } from "@repo/ui/components/icon-circle";
+import { formatList, unconnectedPlatforms } from "@/lib/utils";
 import { AnalyticsPreviewChart } from "./analytics-preview-chart";
 import { EmptyStep } from "./empty-step";
-import { listFormat, postsLabel } from "./report-format";
+import { postsLabel } from "./report-format";
 
 const WHEN_STEPS = [
   { title: "A day after the first post", body: "How many people saw it, saved it and followed you, for each post." },
@@ -18,16 +20,16 @@ const WHEN_STEPS = [
 
 /** Nothing has published yet: what's blocking it, and what this page looks like once it does. */
 export function AnalyticsEmpty({
-  client,
+  brand,
   reviewPosts,
   basePath = "/c",
 }: {
-  client: Client;
+  brand: Brand;
   reviewPosts: PostView[];
   basePath?: WorkspaceBasePath;
 }) {
-  const unconnected = client.platforms.filter((p) => client.accounts.find((a) => a.platform === p)?.status !== "connected");
-  const unconnectedNames = listFormat.format(unconnected.map((p) => PLATFORM_LABEL[p]));
+  const unconnected = unconnectedPlatforms(brand);
+  const unconnectedNames = formatList(unconnected.map((p) => PLATFORM_LABEL[p]));
   const pending = reviewPosts.length;
   const firstPost = reviewPosts[0];
   const scheduled = firstPost?.scheduledFor ? parseISO(firstPost.scheduledFor) : null;
@@ -38,9 +40,9 @@ export function AnalyticsEmpty({
       <Panel>
         <div className="grid gap-8 lg:grid-cols-[1.1fr_1fr]">
           <div>
-            <span className="mb-4 grid size-12 place-items-center rounded-full bg-tint text-tint-foreground">
+            <IconCircle className="mb-4 size-12 bg-tint text-tint-foreground">
               <ChartNoAxesCombined className="size-5" />
-            </span>
+            </IconCircle>
             <h2 className="type-heading">No results yet, because nothing has gone out</h2>
             <p className="mt-1.5 max-w-[52ch] text-muted-foreground">
               {scheduled
@@ -57,7 +59,7 @@ export function AnalyticsEmpty({
                     body="Posts can’t go out, and results can’t come back, until they’re connected."
                   >
                     <Button asChild size="sm">
-                      <Link href={workspaceHref(basePath, client.id, "/settings?tab=accounts")}>
+                      <Link href={workspaceHref(basePath, brand.id, "/settings?tab=accounts")}>
                         <Link2 />
                         Connect
                       </Link>
@@ -71,7 +73,7 @@ export function AnalyticsEmpty({
                     body="Nothing is published without your approval."
                   >
                     <Button asChild variant="outline" size="sm">
-                      <Link href={workspaceHref(basePath, client.id, "/approvals")}>Review {postsLabel(pending)}</Link>
+                      <Link href={workspaceHref(basePath, brand.id, "/approvals")}>Review {postsLabel(pending)}</Link>
                     </Button>
                   </EmptyStep>
                 )}

@@ -5,6 +5,7 @@ import { AlertCircle } from "lucide-react";
 import type { RunStep } from "@/lib/types";
 import { Panel } from "@repo/ui/components/states";
 import { Segmented } from "@repo/ui/components/segmented";
+import { PanelHeader } from "@repo/ui/components/panel-header";
 import { formatMs } from "./format";
 
 const KIND_LABEL = { step: "Step", agent: "Agent", tool: "Tool" } as const;
@@ -16,8 +17,7 @@ export function StepDetailPanel({ step }: { step: RunStep }) {
 
   return (
     <Panel>
-      <h2 className="type-heading">{step.name}</h2>
-      <p className="type-label mt-1 mb-4">The failed step.</p>
+      <PanelHeader title={step.name} description="The failed step." />
       <div className="mb-5 grid grid-cols-2 gap-4 sm:grid-cols-4">
         <div>
           <p className="type-label">Type</p>

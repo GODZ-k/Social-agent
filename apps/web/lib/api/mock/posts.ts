@@ -1,10 +1,11 @@
 import "server-only";
 import { addDays, endOfDay, endOfMonth, format, isSameDay, parseISO, startOfDay, startOfMonth } from "date-fns";
 import type { Platform, Weekday } from "@social-agent/shared";
+import { parseTimeSlot, time24Of } from "@/lib/best-times";
 import type {
   BestTimeSlot,
   CalendarMonth,
-  Client,
+  Brand,
   ContentFilters,
   Post,
   PostState,
@@ -16,47 +17,47 @@ import type { SeedData } from "./seed";
 
 /** Derived post views: state, theme, ordering, the week, the month and best times. Pure over the store. */
 
-const isConnected = (client: Client, platform: Platform) =>
-  client.accounts.some((a) => a.platform === platform && a.status === "connected");
+const isConnected = (brand: Brand, platform: Platform) =>
+  brand.accounts.some((a) => a.platform === platform && a.status === "connected");
 
-export function stateOf(post: Post, client: Client): PostState {
+export function stateOf(post: Post, brand: Brand): PostState {
   if (post.failure) return "failed";
   if (post.status === "in_review") return "needs_approval";
   if (post.status === "published") return "published";
   if (post.status === "draft" || post.status === "rejected") return post.status;
   // Approved and scheduled posts wait while their account is not connected.
-  return isConnected(client, post.platform) ? "scheduled" : "waiting_for_connection";
+  return isConnected(brand, post.platform) ? "scheduled" : "waiting_for_connection";
 }
 
 export function viewOf(db: SeedData, post: Post): PostView {
-  const client = db.clients.find((c) => c.id === post.clientId)!;
-  const strategy = db.strategies.find((s) => s.clientId === post.clientId);
+  const brand = db.brands.find((c) => c.id === post.brandId)!;
+  const strategy = db.strategies.find((s) => s.brandId === post.brandId);
   const theme = strategy?.pillars.find((p) => p.id === post.pillarId)?.name ?? post.pillarId;
-  return { ...structuredClone(post), state: stateOf(post, client), theme };
+  return { ...structuredClone(post), state: stateOf(post, brand), theme };
 }
 
 const whenOf = (post: Post) => post.scheduledFor ?? post.publishedAt ?? "9999";
 
 export const soonestFirst = (a: Post, b: Post) => whenOf(a).localeCompare(whenOf(b));
 
-export function postsOf(db: SeedData, clientId: string): PostView[] {
-  const own = db.posts.filter((p) => p.clientId === clientId);
+export function postsOf(db: SeedData, brandId: string): PostView[] {
+  const own = db.posts.filter((p) => p.brandId === brandId);
   return own.map((post) => viewOf(db, post));
 }
 
-export function content(db: SeedData, clientId: string, filters: ContentFilters): PostView[] {
-  const views = postsOf(db, clientId);
+export function content(db: SeedData, brandId: string, filters: ContentFilters): PostView[] {
+  const views = postsOf(db, brandId);
   const matching = views.filter(
     (p) => (!filters.state || p.state === filters.state) && (!filters.platform || p.platform === filters.platform),
   );
   return matching.sort(soonestFirst);
 }
 
-export function thisWeek(db: SeedData, clientId: string): ThisWeek {
+export function thisWeek(db: SeedData, brandId: string): ThisWeek {
   // Rolling seven days from today, not the calendar week, so "Today" is always the first tile.
   const from = startOfDay(new Date());
   const to = endOfDay(addDays(from, 6));
-  const posts = postsOf(db, clientId)
+  const posts = postsOf(db, brandId)
     .filter((p) => {
       const when = parseISO(whenOf(p));
       return when >= from && when <= to;
@@ -68,8 +69,8 @@ export function thisWeek(db: SeedData, clientId: string): ThisWeek {
 }
 
 /** The next post waiting for approval after this one, soonest first, wrapping to the start. */
-export function nextWaiting(db: SeedData, clientId: string, afterId: string): string | null {
-  const waiting = db.posts.filter((p) => p.clientId === clientId && p.status === "in_review" && !p.failure).sort(soonestFirst);
+export function nextWaiting(db: SeedData, brandId: string, afterId: string): string | null {
+  const waiting = db.posts.filter((p) => p.brandId === brandId && p.status === "in_review" && !p.failure).sort(soonestFirst);
   const index = waiting.findIndex((p) => p.id === afterId);
   const next = waiting.slice(index + 1)[0] ?? waiting.find((p) => p.id !== afterId);
   return next?.id ?? null;
@@ -77,18 +78,14 @@ export function nextWaiting(db: SeedData, clientId: string, afterId: string): st
 
 const WEEKDAYS: Weekday[] = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
 
-const SLOT = /^(\w{3})\s+(\d{1,2}):(\d{2})\s*(am|pm)$/i;
-
 /** "Tue 7:30am" becomes { day: "tue", time: "07:30", label: "7:30am" }. */
 function parseSlot(slot: string) {
-  const match = SLOT.exec(slot.trim());
-  if (!match) return null;
-  const [, day, hour, minute, meridiem] = match;
-  const h = (Number(hour) % 12) + (meridiem!.toLowerCase() === "pm" ? 12 : 0);
+  const parsed = parseTimeSlot(slot);
+  if (!parsed) return null;
   return {
-    day: day!.toLowerCase() as Weekday,
-    time: `${String(h).padStart(2, "0")}:${minute}`,
-    label: `${Number(hour)}:${minute}${meridiem!.toLowerCase()}`,
+    day: parsed.day.toLowerCase() as Weekday,
+    time: time24Of(parsed),
+    label: `${Number(parsed.hour)}:${parsed.minute}${parsed.meridiem}`,
   };
 }
 
@@ -105,12 +102,12 @@ export function bestTimesOn(strategy: Strategy | undefined, date: Date, platform
 }
 
 /** Every day of the month with its posts and the best times still free. */
-export function calendarMonth(db: SeedData, clientId: string, month: string): CalendarMonth {
+export function calendarMonth(db: SeedData, brandId: string, month: string): CalendarMonth {
   const first = startOfMonth(parseISO(`${month}-01`));
   const last = endOfMonth(first);
   const today = startOfDay(new Date());
-  const strategy = db.strategies.find((s) => s.clientId === clientId);
-  const posts = postsOf(db, clientId).sort(soonestFirst);
+  const strategy = db.strategies.find((s) => s.brandId === brandId);
+  const posts = postsOf(db, brandId).sort(soonestFirst);
   const days: CalendarMonth["days"] = [];
   for (let day = first; day <= last; day = addDays(day, 1)) {
     const onDay = posts.filter((p) => isSameDay(parseISO(whenOf(p)), day));

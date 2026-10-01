@@ -4,6 +4,7 @@
 import type { AgentRunDetail } from "@/lib/types";
 import { Panel } from "@repo/ui/components/states";
 import { RankedBars } from "@repo/ui/components/social/charts";
+import { PanelHeader } from "@repo/ui/components/panel-header";
 import { CopyField } from "./copy-field";
 import { formatUsd } from "./format";
 
@@ -11,8 +12,7 @@ import { formatUsd } from "./format";
 export function AboutRunPanel({ run }: { run: AgentRunDetail }) {
   return (
     <Panel>
-      <h2 className="type-heading">About this run</h2>
-      <p className="type-label mt-1 mb-4">IDs to share when reporting it.</p>
+      <PanelHeader title="About this run" description="IDs to share when reporting it." />
       <table className="w-full text-sm">
         <tbody>
           <tr className="border-b">
@@ -24,7 +24,7 @@ export function AboutRunPanel({ run }: { run: AgentRunDetail }) {
             <td className="py-2 text-right"><CopyField value={run.traceId} /></td>
           </tr>
           <tr className="border-b">
-            <td className="py-2 pr-3 text-muted-foreground">Client</td>
+            <td className="py-2 pr-3 text-muted-foreground">Brand</td>
             <td className="py-2 text-right font-medium">{run.brandName}</td>
           </tr>
           <tr>

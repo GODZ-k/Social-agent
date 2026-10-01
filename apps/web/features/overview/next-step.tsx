@@ -1,13 +1,12 @@
 import Link from "next/link";
 import { format, parseISO } from "date-fns";
 import { ArrowRight, CircleAlert } from "lucide-react";
-import type { Client, PostView } from "@/lib/types";
+import type { Brand, PostView } from "@/lib/types";
 import { workspaceHref, type WorkspaceBasePath } from "@/lib/workspace-path";
 import { PLATFORM_LABEL, PlatformIcon } from "@repo/ui/components/social/platform";
 import { Button } from "@repo/ui/components/button";
+import { formatList, unconnectedPlatforms } from "@/lib/utils";
 import { FailedNextStep } from "./failed-next-step";
-
-const listFormat = new Intl.ListFormat("en", { type: "conjunction" });
 
 interface Action {
   href: string;
@@ -25,20 +24,20 @@ interface Step {
 
 /** The single most useful thing to do for this client right now. */
 export function NextStep({
-  client,
+  brand,
   reviewPosts,
   failedPosts = [],
   basePath = "/c",
 }: {
-  client: Client;
+  brand: Brand;
   reviewPosts: PostView[];
   /** Posts the network refused (FL-2): these come before every other next step. */
   failedPosts?: PostView[];
   basePath?: WorkspaceBasePath;
 }) {
-  if (failedPosts.length > 0) return <FailedNextStep posts={failedPosts} client={client} basePath={basePath} />;
+  if (failedPosts.length > 0) return <FailedNextStep posts={failedPosts} brand={brand} basePath={basePath} />;
 
-  const step = nextStep(client, reviewPosts, basePath);
+  const step = nextStep(brand, reviewPosts, basePath);
 
   return (
     <section className="flex flex-wrap items-start justify-between gap-x-8 gap-y-4 rounded-xl bg-tint p-5 md:p-6">
@@ -68,9 +67,9 @@ export function NextStep({
 }
 
 /** Ordered by what blocks the loop first: approvals, then unconnected accounts, then the stage. */
-function nextStep(client: Client, reviewPosts: PostView[], basePath: WorkspaceBasePath): Step {
-  const base = workspaceHref(basePath, client.id);
-  const unconnected = client.platforms.filter((p) => client.accounts.find((a) => a.platform === p)?.status !== "connected");
+function nextStep(brand: Brand, reviewPosts: PostView[], basePath: WorkspaceBasePath): Step {
+  const base = workspaceHref(basePath, brand.id);
+  const unconnected = unconnectedPlatforms(brand);
   const pending = reviewPosts.length;
 
   if (pending > 0) {
@@ -95,7 +94,7 @@ function nextStep(client: Client, reviewPosts: PostView[], basePath: WorkspaceBa
         ? `${pending === 1 ? "It" : "The first one"} goes out ${format(when, "EEEE d MMMM")} at ${format(when, "h:mm a")} if you approve it.`
         : "Nothing is published until you approve it.",
       warning: unconnected.length
-        ? `${listFormat.format(unconnected.map((p) => PLATFORM_LABEL[p]))} ${unconnected.length === 1 ? "isn't" : "aren't"} connected yet, so approved posts can't publish.`
+        ? `${formatList(unconnected.map((p) => PLATFORM_LABEL[p]))} ${unconnected.length === 1 ? "isn't" : "aren't"} connected yet, so approved posts can't publish.`
         : undefined,
       actions,
     };
@@ -103,13 +102,13 @@ function nextStep(client: Client, reviewPosts: PostView[], basePath: WorkspaceBa
 
   if (unconnected.length > 0) {
     return {
-      title: `Connect ${listFormat.format(unconnected.map((p) => PLATFORM_LABEL[p]))} so posts can go out`,
+      title: `Connect ${formatList(unconnected.map((p) => PLATFORM_LABEL[p]))} so posts can go out`,
       body: "The agent can plan and draft without it, but approved posts have nowhere to publish until the account is connected.",
       actions: [{ href: `${base}/settings?tab=accounts`, label: "Connect accounts", variant: "default" }],
     };
   }
 
-  if (client.stage === "strategy") {
+  if (brand.stage === "strategy") {
     return {
       title: "The strategy is ready to read",
       body: "Check the pillars and posting rhythm, then let the agent start drafting.",
@@ -117,7 +116,7 @@ function nextStep(client: Client, reviewPosts: PostView[], basePath: WorkspaceBa
     };
   }
 
-  if (client.stage === "learning") {
+  if (brand.stage === "learning") {
     return {
       title: "The agent has learned something",
       body: "Last month's results changed what it plans to post. See what and why.",

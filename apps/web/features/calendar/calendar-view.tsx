@@ -14,7 +14,7 @@ import { LazyPostSheet } from "@/features/post/lazy-post-sheet";
 import { AgendaList } from "./agenda-list";
 import { CalendarLegend } from "./calendar-legend";
 import { CalendarNotConnectedAlert } from "./calendar-not-connected-alert";
-import { CalendarPlatformFilter } from "./calendar-platform-filter";
+import { PlatformFilterDropdown } from "@/components/filters/platform-filter-dropdown";
 import { EmptyMonthNote } from "./empty-month-note";
 import { freeDayCount, groupByDay, monthDays, monthSummary, postsInMonth, waitingPlatforms } from "./calendar-model";
 import { MonthGrid } from "./month-grid";
@@ -99,7 +99,7 @@ export function CalendarView({
       <PageHeader
         title="Calendar"
         description="What goes out and when. Open any post to change its time or wording."
-        actions={<CalendarPlatformFilter platform={platform} onChange={setPlatform} platforms={platforms} />}
+        actions={<PlatformFilterDropdown platform={platform} onChange={setPlatform} platforms={platforms} align="end" />}
       />
 
       <CalendarNotConnectedAlert waitingPlatforms={disconnectedPlatforms} brandId={brandId} basePath={basePath} />

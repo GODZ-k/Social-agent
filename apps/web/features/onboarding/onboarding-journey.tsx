@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { readResearch } from "@/lib/api/actions";
-import type { Client, OnboardingState, OnboardingStep, QuestionnaireView, ResearchView, SocialAccountRow } from "@/lib/types";
+import type { Brand, OnboardingState, OnboardingStep, QuestionnaireView, ResearchView, SocialAccountRow } from "@/lib/types";
 import { SkeletonRows } from "@repo/ui/components/states";
 import { OnboardingSteps } from "@/features/onboarding/onboarding-steps";
 import { ConnectAccounts } from "@/features/onboarding/connect-accounts";
@@ -17,19 +17,19 @@ const STEP_NUMBER: Record<OnboardingStep, 2 | 3> = { brand_kit: 2, connect: 2, q
 
 /** Everything after the brand kit is saved: connect, the questionnaire, then research (S17b/c, S18, S19). */
 export function OnboardingJourney({
-  client,
+  brand,
   onboarding,
   questionnaire,
   research,
   accounts,
   personName,
 }: {
-  client: Client;
+  brand: Brand;
   onboarding: OnboardingState;
   questionnaire: QuestionnaireView | null;
   research: ResearchView | null;
   accounts: SocialAccountRow[];
-  /** Set when an admin is building this brand for a client; changes the connect step. */
+  /** Set when an admin is building this brand for a brand; changes the connect step. */
   personName: string | null;
 }) {
   const [step, setStep] = useState(onboarding.step);
@@ -39,7 +39,7 @@ export function OnboardingJourney({
   const [questionnaireView, setQuestionnaireView] = useState(questionnaire);
   // Also local: a rescan clears the client's connections server-side too (so connect isn't
   // skipped on a leftover "already connected" flag), and `ConnectAccounts` reads them from here.
-  const [liveClient, setLiveClient] = useState(client);
+  const [liveBrand, setLiveBrand] = useState(brand);
   // Where "Change your connections" was clicked from, so its own "Continue" returns there
   // instead of always forcing the questionnaire — null on the ordinary forward path.
   const [returnStep, setReturnStep] = useState<OnboardingStep | null>(null);
@@ -61,8 +61,8 @@ export function OnboardingJourney({
   // A rescan is treated as a genuine first scan: the kit is replaced outright, and connect, the
   // questionnaire and research all restart, so nothing here skips ahead on state from the earlier
   // pass. Saving it is also how this overlay closes now: there's no Previous, only through.
-  function handleKitReset(freshClient: Client) {
-    setLiveClient(freshClient);
+  function handleKitReset(freshBrand: Brand) {
+    setLiveBrand(freshBrand);
     setQuestionnaireView(null);
     setResearchView(null);
     setReturnStep(null);
@@ -75,7 +75,7 @@ export function OnboardingJourney({
     if (!polling) return;
     let cancelled = false;
     const timer = setInterval(async () => {
-      const read = await readResearch(liveClient.id);
+      const read = await readResearch(liveBrand.id);
       if (cancelled || !read.ok) return;
       setResearchView(read.data);
       if (read.data.status === "done") setStep("done");
@@ -84,7 +84,7 @@ export function OnboardingJourney({
       cancelled = true;
       clearInterval(timer);
     };
-  }, [polling, liveClient.id]);
+  }, [polling, liveBrand.id]);
 
   return (
     <>
@@ -105,24 +105,24 @@ export function OnboardingJourney({
       )}
 
       {editingKit ? (
-        <OnboardingBrandKitEdit client={liveClient} accounts={accounts} onReset={handleKitReset} />
+        <OnboardingBrandKitEdit brand={liveBrand} accounts={accounts} onReset={handleKitReset} />
       ) : (
         <>
           {step === "connect" &&
             (personName ? (
               <AdminConnectAccounts
-                clientId={liveClient.id}
+                brandId={liveBrand.id}
                 personName={personName}
-                platforms={liveClient.platforms}
-                initialAccounts={liveClient.accounts}
+                platforms={liveBrand.platforms}
+                initialAccounts={liveBrand.accounts}
                 onContinue={continueFromConnect}
                 onBack={() => setEditingKit(true)}
               />
             ) : (
               <ConnectAccounts
-                clientId={liveClient.id}
-                platforms={liveClient.platforms}
-                initialAccounts={liveClient.accounts}
+                brandId={liveBrand.id}
+                platforms={liveBrand.platforms}
+                initialAccounts={liveBrand.accounts}
                 onContinue={continueFromConnect}
                 onBack={() => setEditingKit(true)}
               />
@@ -130,7 +130,7 @@ export function OnboardingJourney({
 
           {step === "questionnaire" && (
             <QuestionnaireChat
-              clientId={liveClient.id}
+              brandId={liveBrand.id}
               initial={questionnaireView}
               onApproved={(next) => {
                 setResearchView(next);
@@ -144,12 +144,12 @@ export function OnboardingJourney({
             (!researchView ? (
               <SkeletonRows rows={3} className="mx-auto max-w-3xl" />
             ) : researchView.status === "failed" ? (
-              <ResearchFailed clientId={liveClient.id} onRetried={setResearchView} basePath={basePath} />
+              <ResearchFailed brandId={liveBrand.id} onRetried={setResearchView} basePath={basePath} />
             ) : (
-              <ResearchRunning name={liveClient.name} research={researchView} />
+              <ResearchRunning name={liveBrand.name} research={researchView} />
             ))}
 
-          {step === "done" && researchView && <ResearchDone clientId={liveClient.id} research={researchView} basePath={basePath} />}
+          {step === "done" && researchView && <ResearchDone brandId={liveBrand.id} research={researchView} basePath={basePath} />}
         </>
       )}
     </>

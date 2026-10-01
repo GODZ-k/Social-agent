@@ -8,10 +8,10 @@ import { motion } from "motion/react";
 import { Send, Square } from "lucide-react";
 import { APPROVAL_INTENT, mockAgentConnection, setAgentContext } from "./agent-connection";
 import { getReviewQueuePosts } from "@/lib/api/actions";
-import type { Client, PostView } from "@/lib/types";
+import type { Brand, PostView } from "@/lib/types";
 import { workspaceHref, type WorkspaceBasePath } from "@/lib/workspace-path";
 import { spring } from "@repo/ui/lib/motion";
-import { cn } from "@/lib/utils";
+import { cn, unconnectedPlatforms } from "@/lib/utils";
 import { Sheet } from "@repo/ui/components/sheet";
 import { Button } from "@repo/ui/components/button";
 import { PostChip } from "@/features/overview/post-chip";
@@ -23,35 +23,35 @@ const textOf = (message: UIMessage) => message.parts.map((p) => (p.type === "tex
 export function AgentChat({
   open,
   onOpenChange,
-  client,
+  brand,
   basePath = "/c",
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  client?: Client;
+  brand?: Brand;
   basePath?: WorkspaceBasePath;
 }) {
   const pathname = usePathname();
   const [reviewPosts, setReviewPosts] = useState<PostView[]>([]);
 
   useEffect(() => {
-    if (!client) return;
+    if (!brand) return;
     let active = true;
-    // A read, but the chat is a client component, so it goes through an action like a write does.
-    getReviewQueuePosts(client.id).then((result) => {
+    // A read, but the chat is a brand component, so it goes through an action like a write does.
+    getReviewQueuePosts(brand.id).then((result) => {
       if (active && result.ok) setReviewPosts(result.data);
     });
     return () => {
       active = false;
     };
-  }, [client]);
+  }, [brand]);
 
-  useEffect(() => setAgentContext(client, reviewPosts), [client, reviewPosts]);
+  useEffect(() => setAgentContext(brand, reviewPosts), [brand, reviewPosts]);
 
   const { messages, sendMessage, isLoading, stop, error } = useChat({
     connection: mockAgentConnection,
-    // A new thread per client, so one client's conversation never shows under another.
-    threadId: client?.id ?? "all-clients",
+    // A new thread per brand, so one brand's conversation never shows under another.
+    threadId: brand?.id ?? "all-brands",
   });
 
   const [draft, setDraft] = useState("");
@@ -85,15 +85,15 @@ export function AgentChat({
   // when there's something waiting on the owner (matches S04's seeded opening exchange).
   const greeted = useRef(false);
   useEffect(() => {
-    if (greeted.current || !open || !client || messages.length > 0 || reviewPosts.length === 0) return;
+    if (greeted.current || !open || !brand || messages.length > 0 || reviewPosts.length === 0) return;
     greeted.current = true;
     send(OPENING_QUESTION);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- send() closes over reviewPosts/isLoading; the ref guard makes this fire once
-  }, [open, client, messages.length, reviewPosts]);
+  }, [open, brand, messages.length, reviewPosts]);
 
   const last = messages[messages.length - 1];
   const waiting = isLoading && last?.role === "user";
-  const unconnected = client?.platforms.filter((p) => client.accounts.find((a) => a.platform === p)?.status !== "connected") ?? [];
+  const unconnected = brand ? unconnectedPlatforms(brand) : [];
   const askedTexts = new Set(messages.filter((m) => m.role === "user").map(textOf));
   const chips = SUGGESTIONS.filter((s) => !askedTexts.has(s)).slice(0, 2);
 
@@ -103,7 +103,7 @@ export function AgentChat({
       onOpenChange={onOpenChange}
       title="Ask the agent"
       description={
-        client ? `About ${client.name}. It can read, plan and draft; it never publishes.` : "About any of your clients"
+        brand ? `About ${brand.name}. It can read, plan and draft; it never publishes.` : "About any of your clients"
       }
       className="max-md:inset-0 max-md:max-h-none max-md:rounded-none [&>div:first-child]:hidden [&_footer]:border-t-0"
       footer={
@@ -160,7 +160,7 @@ export function AgentChat({
       <div className="flex min-h-[40dvh] flex-col gap-3 pt-1" aria-live="polite">
         {messages.length === 0 && (
           <p className="my-auto max-w-[34ch] text-muted-foreground">
-            Ask about {client ? `${client.name}'s` : "a client's"} results, what&apos;s scheduled, or what to post next.
+            Ask about {brand ? `${brand.name}'s` : "a client's"} results, what&apos;s scheduled, or what to post next.
           </p>
         )}
 
@@ -186,19 +186,19 @@ export function AgentChat({
               >
                 {text}
               </div>
-              {client && posts?.map((post) => (
-                <PostChip key={post.id} post={post} brand={client.brand} href={`${pathname}?post=${post.id}`} className="w-full max-w-80" />
+              {brand && posts?.map((post) => (
+                <PostChip key={post.id} post={post} brand={brand.brand} href={`${pathname}?post=${post.id}`} className="w-full max-w-80" />
               ))}
-              {client && posts && posts.length > 0 && (
+              {brand && posts && posts.length > 0 && (
                 <div className="flex flex-wrap gap-2">
                   <Button size="sm" asChild>
-                    <Link href={workspaceHref(basePath, client.id, "/approvals")}>
+                    <Link href={workspaceHref(basePath, brand.id, "/approvals")}>
                       Review {reviewPosts.length} {reviewPosts.length === 1 ? "post" : "posts"}
                     </Link>
                   </Button>
                   {unconnected.length > 0 && (
                     <Button size="sm" variant="outline" asChild>
-                      <Link href={workspaceHref(basePath, client.id, "/settings?tab=accounts")}>Connect accounts</Link>
+                      <Link href={workspaceHref(basePath, brand.id, "/settings?tab=accounts")}>Connect accounts</Link>
                     </Button>
                   )}
                 </div>

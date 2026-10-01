@@ -3,6 +3,7 @@
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { Filter } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@repo/ui/components/dropdown-menu";
+import { TOOLBAR_PILL_CLASS } from "./toolbar-pill";
 
 /** The clients the observability mock has numbers for. */
 const BRAND_OPTIONS = [
@@ -30,15 +31,12 @@ export function FilterMenu({ brandId }: { brandId: string | null }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button
-          type="button"
-          className="inline-flex items-center gap-1.5 rounded-full border bg-card px-3.5 py-1.5 text-[0.8125rem] font-medium hover:bg-accent"
-        >
+        <button type="button" className={TOOLBAR_PILL_CLASS}>
           <Filter className="size-4" /> {active ? active.name : "Add filter"}
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuLabel>Client</DropdownMenuLabel>
+        <DropdownMenuLabel>Brand</DropdownMenuLabel>
         {BRAND_OPTIONS.map((b) => (
           <DropdownMenuItem key={b.id} onSelect={() => setBrand(b.id)} aria-selected={b.id === brandId}>
             {b.name}

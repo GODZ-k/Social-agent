@@ -1,14 +1,13 @@
 import Link from "next/link";
-import { format, parseISO } from "date-fns";
 import { ChevronRight } from "lucide-react";
 import type { BrandKit } from "@social-agent/shared";
 import type { PostView } from "@/lib/types";
 import { PostArt } from "@repo/ui/components/social/post-art";
-import { PLATFORM_LABEL, PlatformIcon } from "@repo/ui/components/social/platform";
-import { FORMAT_NAME } from "@repo/ui/components/social/format-badge";
 import { Button } from "@repo/ui/components/button";
 import { PostStateBadge } from "./post-state-badge";
-import { formatDetail, relativeDayLabel } from "./format-post";
+import { formatDetail } from "./format-post";
+import { PlatformFormatLine } from "./platform-format";
+import { ScheduleLine } from "./schedule";
 import { DraftingCardRow } from "./drafting-card-row";
 import { FailedCardRow } from "./failed-card-row";
 import { NewBadge } from "./new-badge";
@@ -53,20 +52,9 @@ export function ContentCards({
                   {newIds.has(post.id) && <NewBadge />}
                 </span>
                 <span className="type-label truncate">Theme: {post.theme}</span>
-                <span className="flex items-center gap-1.5 text-sm">
-                  <PlatformIcon platform={post.platform} className="size-3.5 text-muted-foreground" />
-                  <b className="font-medium">
-                    {PLATFORM_LABEL[post.platform]} {FORMAT_NAME[post.format].toLowerCase()}
-                  </b>
-                  {detail && <span className="text-muted-foreground">, {detail}</span>}
-                </span>
+                <PlatformFormatLine platform={post.platform} format={post.format} detail={detail} />
                 <PostStateBadge post={post} />
-                {when && (
-                  <span className="flex items-baseline gap-1.5 text-sm">
-                    <span className="tabular-nums">{format(parseISO(when), "EEE d MMM, h:mm a")}</span>
-                    <span className="type-label">{relativeDayLabel(parseISO(when))}</span>
-                  </span>
-                )}
+                <ScheduleLine when={when} />
               </span>
             </Link>
             {post.state === "needs_approval" ? (

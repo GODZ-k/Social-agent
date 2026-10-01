@@ -15,6 +15,14 @@ interface ModalProps {
   description?: string;
   children: React.ReactNode;
   className?: string;
+  /**
+   * Radix closes the card on a click or focus outside it. Another library's modal
+   * counts as outside, so a dialog that can raise one passes a guard here and
+   * calls `preventDefault()` for interactions that belong to it.
+   */
+  onInteractOutside?: (event: Event) => void;
+  /** Same, for Escape: the topmost thing on screen should be what it closes. */
+  onEscapeKeyDown?: (event: KeyboardEvent) => void;
 }
 
 /**
@@ -23,7 +31,7 @@ interface ModalProps {
  * for a panel beside the page's content, and it keeps a thumb's reach on phones.
  * This one fills the screen below 640px, where a centred card has nowhere to sit.
  */
-export function Modal({ open, onOpenChange, title, description, children, className }: ModalProps) {
+export function Modal({ open, onOpenChange, title, description, children, className, onInteractOutside, onEscapeKeyDown }: ModalProps) {
   const reduceMotion = useReducedMotion();
   const enter = reduceMotion ? { opacity: 1 } : { opacity: 1, scale: 1, y: 0 };
   const exit = reduceMotion ? { opacity: 0 } : { opacity: 0, scale: 0.98, y: 8 };
@@ -44,7 +52,7 @@ export function Modal({ open, onOpenChange, title, description, children, classN
             </Dialog.Overlay>
             {/* Centred by the grid, never by a transform: the card's own transform belongs to the animation. */}
             <div className="pointer-events-none fixed inset-0 z-50 grid place-items-center sm:p-6">
-              <Dialog.Content asChild forceMount>
+              <Dialog.Content asChild forceMount onInteractOutside={onInteractOutside} onEscapeKeyDown={onEscapeKeyDown}>
                 <motion.div
                   className={cn(
                     "pointer-events-auto relative flex w-full flex-col overflow-hidden bg-card shadow-floating outline-none",

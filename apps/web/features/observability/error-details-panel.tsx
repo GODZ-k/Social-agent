@@ -2,13 +2,13 @@ import { format, parseISO } from "date-fns";
 import type { FrontendErrorDetail } from "@/lib/types";
 import { Panel } from "@repo/ui/components/states";
 import { RankedBars } from "@repo/ui/components/social/charts";
+import { PanelHeader } from "@repo/ui/components/panel-header";
 
 /** Where it shows up: page, release, devices, and which browsers saw it. */
 export function ErrorDetailsPanel({ error }: { error: FrontendErrorDetail }) {
   return (
     <Panel>
-      <h2 className="type-heading">Details</h2>
-      <p className="type-label mt-1 mb-4">Where it shows up.</p>
+      <PanelHeader title="Details" description="Where it shows up." />
       <div className="grid grid-cols-2 gap-4">
         <div>
           <p className="type-label">Page</p>
