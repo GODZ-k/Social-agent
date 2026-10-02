@@ -18,7 +18,7 @@ export function StrategyDraftBanner({ strategy, onAskForChanges }: { strategy: S
     <Panel className="flex flex-wrap items-center gap-5 bg-tint shadow-none lg:flex-nowrap">
       <CountdownRing minutes={minutes} />
       <div className="min-w-0 flex-1">
-        <h2 className="type-heading">Your first month is ready to check</h2>
+        <h2 className="type-heading">Your first week is ready to check</h2>
         <p className="type-label mt-1">
           It starts on its own in {minutes} minute{minutes === 1 ? "" : "s"} if you change nothing. Starting only lets
           the agent draft posts; each one still waits for your approval.

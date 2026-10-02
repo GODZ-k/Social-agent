@@ -10,7 +10,7 @@ import { updateBrand } from "@/lib/api/actions";
 import { useServerAction } from "@/lib/api/use-server-action";
 import { useScan } from "@/features/onboarding/use-scan";
 import type { Brand, SocialAccountRow } from "@/lib/types";
-import { brandStyle, prettyUrl } from "@/lib/utils";
+import { prettyUrl } from "@/lib/utils";
 import { brandKitSchema, toValues, toPatch, type Values } from "@/features/brand-kit/schema";
 import { useEditableCard, type CardKey } from "@/features/brand-kit/use-editable-card";
 import type { CardControls } from "@/features/brand-kit/editable-card";
@@ -89,53 +89,51 @@ export function SettingsBrandKitForm({ brand, accounts }: { brand: Brand; accoun
   }
 
   return (
-    <div className="brand-scope" style={brandStyle(preview.brand.colors[0]!.hex)}>
-      <Form {...form}>
-        <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_20rem] lg:gap-12">
-          <div className="grid gap-4">
-            <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-secondary p-4">
-              <p className="type-label">Read from {prettyUrl(brand.url)}. Edits you make here are always kept.</p>
-              <Button type="button" variant="outline" size="sm" disabled={scanning} onClick={() => setRescanUrl(brand.url)}>
-                {scanning ? <LoaderCircle className="animate-spin" /> : <RefreshCw />}
-                {scanning ? "Reading your website" : "Read my website again"}
+    <Form {...form}>
+      <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_20rem] lg:gap-12">
+        <div className="grid gap-4">
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-secondary p-4">
+            <p className="type-label">Read from {prettyUrl(brand.url)}. Edits you make here are always kept.</p>
+            <Button type="button" variant="outline" size="sm" disabled={scanning} onClick={() => setRescanUrl(brand.url)}>
+              {scanning ? <LoaderCircle className="animate-spin" /> : <RefreshCw />}
+              {scanning ? "Reading your website" : "Read my website again"}
+            </Button>
+          </div>
+          {rescan.status === "done" && rescan.result && (
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-tint p-4">
+              <p className="type-label !text-tint-foreground">Found fresh details. Fields you&apos;ve edited keep your wording.</p>
+              <Button type="button" variant="tint" size="sm" onClick={applyRescan}>
+                Use these
               </Button>
             </div>
-            {rescan.status === "done" && rescan.result && (
-              <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-tint p-4">
-                <p className="type-label !text-tint-foreground">Found fresh details. Fields you&apos;ve edited keep your wording.</p>
-                <Button type="button" variant="tint" size="sm" onClick={applyRescan}>
-                  Use these
-                </Button>
-              </div>
-            )}
-            {rescan.status === "error" && rescan.error && <p className="type-label text-destructive">{rescan.error}</p>}
+          )}
+          {rescan.status === "error" && rescan.error && <p className="type-label text-destructive">{rescan.error}</p>}
 
-            <BusinessCard form={form} {...cardPropsWithSave("business")} />
-            <ContactDetailsCard form={form} {...cardPropsWithSave("contact")} />
-            <AudienceCard form={form} {...cardPropsWithSave("audience")} />
-            <VoiceCard form={form} {...cardPropsWithSave("voice")} />
-            <LooksCard form={form} {...cardPropsWithSave("looks")} />
-            <PlatformsStatusCard form={form} brandId={brand.id} accounts={accounts} onToggle={togglePlatform} />
-          </div>
-
-          <BrandPreview brand={preview.brand} hook={preview.hook}>
-            <div className="mt-3 grid gap-1.5 rounded-xl bg-secondary/60 p-4 text-[0.8125rem] leading-relaxed">
-              <p className="flex items-start gap-2">
-                <Globe className="mt-0.5 size-3.5 shrink-0 text-muted-foreground" />
-                <span>
-                  {isValid(scannedAt) && isValid(editedAt)
-                    ? `Read from ${prettyUrl(brand.url)} on ${format(scannedAt, "d MMM")}. You last edited it on ${format(editedAt, "d MMM")}.`
-                    : `Read from ${prettyUrl(brand.url)}. Edits you make here are always kept.`}
-                </span>
-              </p>
-              <p className="flex items-start gap-2">
-                <Pencil className="mt-0.5 size-3.5 shrink-0 text-muted-foreground" />
-                <span>Edits apply to posts written from now on. Posts already drafted keep their wording.</span>
-              </p>
-            </div>
-          </BrandPreview>
+          <BusinessCard form={form} {...cardPropsWithSave("business")} />
+          <ContactDetailsCard form={form} {...cardPropsWithSave("contact")} />
+          <AudienceCard form={form} {...cardPropsWithSave("audience")} />
+          <VoiceCard form={form} {...cardPropsWithSave("voice")} />
+          <LooksCard form={form} {...cardPropsWithSave("looks")} />
+          <PlatformsStatusCard form={form} brandId={brand.id} accounts={accounts} onToggle={togglePlatform} />
         </div>
-      </Form>
-    </div>
+
+        <BrandPreview brand={preview.brand} hook={preview.hook}>
+          <div className="mt-3 grid gap-1.5 rounded-xl bg-secondary/60 p-4 text-[0.8125rem] leading-relaxed">
+            <p className="flex items-start gap-2">
+              <Globe className="mt-0.5 size-3.5 shrink-0 text-muted-foreground" />
+              <span>
+                {isValid(scannedAt) && isValid(editedAt)
+                  ? `Read from ${prettyUrl(brand.url)} on ${format(scannedAt, "d MMM")}. You last edited it on ${format(editedAt, "d MMM")}.`
+                  : `Read from ${prettyUrl(brand.url)}. Edits you make here are always kept.`}
+              </span>
+            </p>
+            <p className="flex items-start gap-2">
+              <Pencil className="mt-0.5 size-3.5 shrink-0 text-muted-foreground" />
+              <span>Edits apply to posts written from now on. Posts already drafted keep their wording.</span>
+            </p>
+          </div>
+        </BrandPreview>
+      </div>
+    </Form>
   );
 }

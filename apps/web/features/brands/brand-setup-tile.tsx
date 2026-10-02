@@ -6,7 +6,7 @@ import { cn, prettyUrl } from "@/lib/utils";
 import { Badge } from "@repo/ui/components/badge";
 import { Button } from "@repo/ui/components/button";
 
-const STEPS = ["Read your website", "Check your brand kit", "Get your first month"] as const;
+const STEPS = ["Read your website", "Check your brand kit", "Get your first week"] as const;
 const CURRENT = STEPS.length - 1;
 const CURRENT_LABEL = STEPS[CURRENT];
 
@@ -16,8 +16,7 @@ const CURRENT_LABEL = STEPS[CURRENT];
  */
 async function setupDetail(brandId: string, step: OnboardingStep): Promise<string> {
   if (step === "connect") return "Connect your accounts to keep going.";
-  if (step === "research") return "The agent is researching your market.";
-  if (step === "done") return "Your first month is almost ready.";
+  if (step === "done") return "Your first week is almost ready.";
   const questionnaire = await getQuestionnaire(brandId);
   const session = questionnaire?.session;
   if (!session) return "A few quick questions, about 5 minutes.";
@@ -72,7 +71,7 @@ export async function BrandSetupTile({ brand }: { brand: Brand }) {
       <div className="flex flex-wrap items-center justify-between gap-4 border-t pt-4 text-sm">
         <div>
           <p className="font-medium">{detail}</p>
-          <p className="type-label mt-0.5">The agent plans your first month from your answers. Pick up where you left off.</p>
+          <p className="type-label mt-0.5">The agent plans your first week from your answers. Pick up where you left off.</p>
         </div>
         <Button asChild className="max-[560px]:w-full">
           <Link href={`/onboarding?brandId=${brand.id}`}>Continue setup</Link>

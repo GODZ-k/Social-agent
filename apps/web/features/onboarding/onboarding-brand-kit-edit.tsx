@@ -8,7 +8,6 @@ import type { Platform } from "@social-agent/shared";
 import { rescanBrandKit } from "@/lib/api/actions";
 import { useServerAction } from "@/lib/api/use-server-action";
 import type { Brand, ScanResult, SocialAccountRow } from "@/lib/types";
-import { brandStyle } from "@/lib/utils";
 import { useScan } from "@/features/onboarding/use-scan";
 import { ScanProgress } from "@/features/onboarding/scan-progress";
 import { brandKitSchema, toPatch, toValues, type Values } from "@/features/brand-kit/schema";
@@ -98,49 +97,47 @@ function BrandKitEditForm({
   }
 
   return (
-    <div className="brand-scope" style={brandStyle(preview.brand.colors[0]!.hex)}>
-      <Form {...form}>
-        <form
-          onSubmit={form.handleSubmit((values) => save.run(brand.id, toPatch(values)))}
-          noValidate
-          className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_20rem] lg:gap-12"
-        >
-          <div className="grid gap-4">
-            <div className="flex items-center justify-between gap-3 rounded-xl bg-secondary p-4">
-              <p className="type-label">Edit anything below, or read your website again.</p>
-              <Button type="button" variant="outline" size="sm" onClick={onRescan}>
-                <RefreshCw aria-hidden />
-                Read my website again
-              </Button>
-            </div>
-
-            <BusinessCard form={form} {...cardProps("business")} />
-            <ContactDetailsCard form={form} {...cardProps("contact")} />
-            <AudienceCard form={form} {...cardProps("audience")} />
-            <VoiceCard form={form} {...cardProps("voice")} />
-            <LooksCard form={form} {...cardProps("looks")} />
-            <PlatformsStatusCard form={form} brandId={brand.id} accounts={accounts} onToggle={togglePlatform} />
-          </div>
-
-          <BrandPreview brand={preview.brand} hook={preview.hook}>
-            <div className="hidden lg:block">
-              <Button type="submit" className="mt-6 w-fit" disabled={save.isPending}>
-                {save.isPending ? <LoaderCircle className="animate-spin" /> : <Check aria-hidden />}
-                {save.isPending ? "Saving your brand kit" : "Looks right, continue"}
-              </Button>
-              <p className="type-label mt-2.5 text-center">Starts connecting and the questionnaire over, from this.</p>
-            </div>
-          </BrandPreview>
-
-          <div className="fixed inset-x-0 bottom-0 z-10 flex items-center justify-between gap-3 border-t bg-card p-4 shadow-floating lg:hidden">
-            <p className="type-label">Starts connecting and the questionnaire over.</p>
-            <Button type="submit" disabled={save.isPending}>
-              {save.isPending && <LoaderCircle className="animate-spin" />}
-              {save.isPending ? "Saving" : "Looks right, continue"}
+    <Form {...form}>
+      <form
+        onSubmit={form.handleSubmit((values) => save.run(brand.id, toPatch(values)))}
+        noValidate
+        className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_20rem] lg:gap-12"
+      >
+        <div className="grid gap-4">
+          <div className="flex items-center justify-between gap-3 rounded-xl bg-secondary p-4">
+            <p className="type-label">Edit anything below, or read your website again.</p>
+            <Button type="button" variant="outline" size="sm" onClick={onRescan}>
+              <RefreshCw aria-hidden />
+              Read my website again
             </Button>
           </div>
-        </form>
-      </Form>
-    </div>
+
+          <BusinessCard form={form} {...cardProps("business")} />
+          <ContactDetailsCard form={form} {...cardProps("contact")} />
+          <AudienceCard form={form} {...cardProps("audience")} />
+          <VoiceCard form={form} {...cardProps("voice")} />
+          <LooksCard form={form} {...cardProps("looks")} />
+          <PlatformsStatusCard form={form} brandId={brand.id} accounts={accounts} onToggle={togglePlatform} />
+        </div>
+
+        <BrandPreview brand={preview.brand} hook={preview.hook}>
+          <div className="hidden lg:block">
+            <Button type="submit" className="mt-6 w-fit" disabled={save.isPending}>
+              {save.isPending ? <LoaderCircle className="animate-spin" /> : <Check aria-hidden />}
+              {save.isPending ? "Saving your brand kit" : "Looks right, continue"}
+            </Button>
+            <p className="type-label mt-2.5 text-center">Starts connecting and the questionnaire over, from this.</p>
+          </div>
+        </BrandPreview>
+
+        <div className="fixed inset-x-0 bottom-0 z-10 flex items-center justify-between gap-3 border-t bg-card p-4 shadow-floating lg:hidden">
+          <p className="type-label">Starts connecting and the questionnaire over.</p>
+          <Button type="submit" disabled={save.isPending}>
+            {save.isPending && <LoaderCircle className="animate-spin" />}
+            {save.isPending ? "Saving" : "Looks right, continue"}
+          </Button>
+        </div>
+      </form>
+    </Form>
   );
 }

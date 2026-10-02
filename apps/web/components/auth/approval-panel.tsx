@@ -13,7 +13,7 @@ export function ApprovalPanel() {
     <AuthPanel
       label={`About ${APP_NAME}`}
       heading="You approve every post before it goes out."
-      body={`${APP_NAME} reads your website, plans your month and drafts posts that sound like you.`}
+      body={`${APP_NAME} reads your website, plans your week and drafts posts that sound like you.`}
     >
       <div aria-hidden className="absolute inset-x-5 -top-4 h-16 rounded-[1.375rem] bg-card/70 shadow-raised" />
       <div aria-hidden className="relative rounded-[1.5rem] bg-card p-3.5 shadow-floating">

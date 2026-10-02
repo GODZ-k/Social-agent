@@ -9,7 +9,6 @@ import { KvRow } from "@/features/brand-kit/kv-row";
 import { Input } from "@repo/ui/components/input";
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@repo/ui/components/form";
 
-/** "How you look": the colours and typefaces every post carries. */
 export function LooksCard({
   form,
   sources,

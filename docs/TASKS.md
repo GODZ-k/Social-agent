@@ -136,6 +136,34 @@ Intake design notes (agreed 2026-09-24):
 Phases nobody has opened yet, plus the one cross-cutting job that waits for a deploy.
 
 <details>
+<summary>Theme — 1 task</summary>
+
+| ID       | Task                                                                               | Priority  | Progress   | Notes                                                 |
+| -------- | ---------------------------------------------------------------------------------- | --------- | ---------- | ----------------------------------------------------- |
+| **TH-1** | Client-chosen workspace theme: the client picks it, the dashboard does not infer it | ![P3][p3] | ![0%][pr0] | replaces the removed brand retint; see the note below |
+
+**Removed first, on purpose (owner ruling, 2026-10-02).** The dashboard used to adopt the open
+brand's colour: `BrandTheme` set `--brand` and its derived properties on `<html>`, so every
+primary surface, tint and ring in the workspace followed whichever brand you were in. That is
+gone. `packages/ui/src/components/brand-theme.tsx` was deleted (with its `workspaceAccent`
+helper), its one caller in `apps/web/components/shell/workspace-chrome.tsx` removed, and the
+now-dead `html { transition: --brand 500ms ease; }` dropped from `globals.css`. The dashboard
+keeps its own `--brand` default.
+
+A brand's colour still appears where it identifies a brand, and that is deliberate: `BrandMark`,
+`BrandAvatar`, the admin brand cards and `brand-tile.tsx` (via `brandStyle`) each set `--brand`
+on their own subtree only. `brandProperties` and `BRAND_PROPERTIES` in
+`packages/ui/src/lib/utils.ts` stay for exactly that.
+
+**What TH-1 then needs:** somewhere to store the choice (a stored preference, not a colour
+derived from the brand kit), a picker in the account or settings dialog, and the existing
+per-subtree mechanism pointed at the stored value instead of at `brand.accent`. The CSS side
+already supports it — `:root, .brand-scope` derives every tint from `--brand`, so setting that
+one variable from a stored preference is most of the implementation.
+
+</details>
+
+<details>
 <summary>Phase 3 — posts, 10 endpoints, 6 tasks</summary>
 
 | ID      | Task                                                                                                   | Priority  | Progress   | Notes                                             |

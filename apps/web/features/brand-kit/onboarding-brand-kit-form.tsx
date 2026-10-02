@@ -8,7 +8,6 @@ import type { Platform } from "@social-agent/shared";
 import { createBrandForClient, createBrand } from "@/lib/api/actions";
 import { useServerAction } from "@/lib/api/use-server-action";
 import type { NewBrandDraft, ScanResult } from "@/lib/types";
-import { brandStyle } from "@/lib/utils";
 import { brandKitSchema, toInput, toValues, type Values } from "@/features/brand-kit/schema";
 import { useEditableCard } from "@/features/brand-kit/use-editable-card";
 import { BusinessCard } from "@/features/brand-kit/business-card";
@@ -60,7 +59,7 @@ export function OnboardingBrandKitForm({
   });
 
   return (
-    <div className="brand-scope" style={brandStyle(preview.brand.colors[0]!.hex)}>
+    <>
       <div className="mb-8 max-w-[40rem]">
         <h1 className="type-title">{heading}</h1>
         <p className="mt-2 text-muted-foreground">{description}</p>
@@ -104,6 +103,6 @@ export function OnboardingBrandKitForm({
           </div>
         </form>
       </Form>
-    </div>
+    </>
   );
 }

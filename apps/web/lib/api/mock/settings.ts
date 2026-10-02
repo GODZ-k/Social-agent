@@ -79,9 +79,10 @@ export function onboardingOf(db: SeedData, brand: Brand): OnboardingState {
   const questionnaire = db.questionnaires[brand.id]?.state.status ?? "not_started";
   const research = db.research[brand.id]?.view.status ?? null;
   const connected = connections.some((c) => c.state === "connected");
+  // An approved questionnaire ends onboarding. Discovery runs on from there, but it runs in the
+  // workspace, so it no longer holds this screen open; `research` is still reported for the caller.
   let step: OnboardingState["step"] = "done";
   if (!connected && !connectSkipped) step = "connect";
   else if (questionnaire !== "approved") step = "questionnaire";
-  else if (research !== "done") step = "research";
   return { brandId: brand.id, step, platforms: brand.platforms, connections, connectSkipped, questionnaire, research };
 }

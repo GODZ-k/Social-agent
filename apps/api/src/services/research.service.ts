@@ -1,4 +1,3 @@
-import type { BrandResearchRow, ResearchRunRow } from "@social-agent/db";
 import type { AudienceProfile, GrowthBrief, Research } from "@social-agent/shared";
 import { ResearchRepository } from "@/repositories/research.repository";
 import { enqueueResearch } from "@/research-queue";
@@ -11,7 +10,7 @@ export class ResearchService {
     /**
      * Starts business discovery for a brand, or returns the run it already has going: one active
      * run per brand. Needs the questionnaire the Account Manager approved; a website cannot tell us what the owner wants.
-     */
+    */
     static async start(user: AuthUser, brandId: string): Promise<{ research: Research; created: boolean }> {
         const brand = await BrandsService.findRow(user, brandId);
         if (!brand.questionnaire || !brand.questionnaireApprovedAt) throw new AppError("Answer the questionnaire before research can start.", 409, "QUESTIONNAIRE_REQUIRED");

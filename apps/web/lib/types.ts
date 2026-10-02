@@ -308,7 +308,8 @@ export interface PostPatch {
 /** One platform's account, as onboarding and Settings show it. */
 export type ConnectionState = "connected" | "expired" | "not_connected" | "connect_failed";
 
-export type OnboardingStep = "brand_kit" | "connect" | "questionnaire" | "research" | "done";
+/** Discovery is not a step: onboarding ends at the approved questionnaire and the run is watched from the workspace. */
+export type OnboardingStep = "brand_kit" | "connect" | "questionnaire" | "done";
 
 export interface OnboardingState {
   brandId: string;

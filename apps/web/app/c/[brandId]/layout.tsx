@@ -1,11 +1,11 @@
 import { Suspense } from "react";
 import { WorkspaceChrome } from "@/components/shell/workspace-chrome";
 import { WorkspaceChromeSkeleton } from "@/components/shell/workspace-chrome-skeleton";
+import { getOnboarding } from "@/lib/api/server";
+import { redirect } from "next/navigation";
+import { getViewer } from "@/lib/auth/viewer";
 
-/**
- * Renders at once: the chrome streams in under Suspense and the page under its
- * own loading.tsx, so a navigation into a workspace never shows a blank shell.
- */
+
 export default async function WorkspaceLayout({
   children,
   params,
@@ -13,6 +13,12 @@ export default async function WorkspaceLayout({
   children: React.ReactNode;
   params: Promise<{ brandId: string }>;
 }) {
+    const { brandId } = await params;
+    const viewer = await getViewer();
+    if (viewer.role !== "admin"){
+      const onboarding = await getOnboarding(brandId);
+      if (onboarding && onboarding.step !== "done") redirect(`/onboarding?brandId=${brandId}`);
+    }
   return (
     <div className="min-h-dvh">
       <Suspense fallback={<WorkspaceChromeSkeleton />}>

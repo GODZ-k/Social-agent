@@ -5,7 +5,7 @@ import { TopBarFrame } from "./top-bar-frame";
 import { BarDivider } from "./bar-divider";
 import { CrumbSlash } from "./crumb-slash";
 import { ClientsBackLink } from "./clients-back-link";
-import { ClientSwitcher } from "./client-switcher";
+import { BrandSwitcher } from "./client-switcher";
 import { AgentChatButton } from "./agent-chat-button";
 import { AccountMenu } from "./account-menu";
 import { toSwitcherBrand } from "./switcher-brand";
@@ -35,7 +35,7 @@ export function AdminBrandHeader({
       <BarDivider />
       <ClientsBackLink />
       <CrumbSlash />
-      <ClientSwitcher current={current} brands={switchable} basePath={basePath} />
+      <BrandSwitcher current={current} brands={switchable} basePath={basePath} />
       <div className="ml-auto flex shrink-0 items-center gap-2">
         <AgentChatButton brand={brand} basePath={basePath} />
         <Badge variant="outline" className="border-input text-foreground max-md:hidden">

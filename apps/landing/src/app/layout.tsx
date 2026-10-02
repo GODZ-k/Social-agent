@@ -24,7 +24,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: { default: `${APP_NAME}: an agent that runs your social media`, template: `%s | ${APP_NAME}` },
   description:
-    "Enter your website. Get a brand kit, a content strategy, and a month of posts ready for your approval. Nothing is published until you say so.",
+    "Enter your website. Get a brand kit, a content strategy, and a week of posts ready for your approval. Nothing is published until you say so.",
 };
 
 export const viewport: Viewport = {

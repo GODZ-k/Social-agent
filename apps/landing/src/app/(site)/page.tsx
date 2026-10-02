@@ -18,7 +18,7 @@ export default function HomePage() {
         </RevealItem>
         <RevealItem>
           <p className="mt-5 max-w-[52ch] text-[1.0625rem] text-muted-foreground md:text-lg">
-            An agent reads it, learns your brand, plans your social media and drafts a month of posts. You approve the
+            An agent reads it, learns your brand, plans your social media and drafts a week of posts. You approve the
             ones you like, and it publishes them.
           </p>
         </RevealItem>
@@ -67,7 +67,7 @@ export default function HomePage() {
 
       <Section
         title="It learns what works"
-        lead="After a month the agent shows you what it found and the posts behind each finding, then writes the next strategy from them."
+        lead="After a week the agent shows you what it found and the posts behind each finding, then writes the next strategy from them."
       >
         <ResultsStrip />
       </Section>

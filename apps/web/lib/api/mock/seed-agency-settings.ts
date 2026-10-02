@@ -32,7 +32,7 @@ const ALERT_COPY: Record<AlertKind, Pick<AlertRow, "label" | "description">> = {
   },
   new_client: {
     label: "A new client is onboarded",
-    description: "Their brand kit is drafted and their first month is ready to check.",
+    description: "Their brand kit is drafted and their first week is ready to check.",
   },
   questionnaire_ready: {
     label: "A client's questions are ready to check",

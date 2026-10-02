@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 const STEPS = [
   { label: "Read your website", detail: "Pages, colours, typefaces and how you write.", meta: "About a minute", icon: Clock },
   { label: "Check your brand kit", detail: "Fix anything that sounds wrong. Posts start from it.", meta: "About 3 minutes", icon: Pencil },
-  { label: "Get your first month", detail: "Themes, how often to post and the best times.", meta: "Ready to approve", icon: Calendar },
+  { label: "Get your first week", detail: "Themes, how often to post and the best times.", meta: "Ready to approve", icon: Calendar },
 ] as const;
 
 /** What happens next, shown once on the first onboarding screen (S01) before anything has started. */

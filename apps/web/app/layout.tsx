@@ -24,7 +24,7 @@ const body = Instrument_Sans({
 export const metadata: Metadata = {
   title: { default: APP_NAME, template: `%s | ${APP_NAME}` },
   description:
-    "Enter a website. Get a brand kit, a content strategy, and a month of posts ready for your approval.",
+    "Enter a website. Get a brand kit, a content strategy, and a week of posts ready for your approval.",
 };
 
 export const viewport: Viewport = {

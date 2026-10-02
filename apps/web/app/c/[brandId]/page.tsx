@@ -1,8 +1,10 @@
 import { Suspense } from "react";
 import { notFound, redirect } from "next/navigation";
-import { getBrand, listContent, listReviewQueue } from "@/lib/api/server";
+import { getBrand, getResearch, getStrategy, listContent, listReviewQueue } from "@/lib/api/server";
 import { getViewer } from "@/lib/auth/viewer";
 import type { WorkspaceBasePath } from "@/lib/workspace-path";
+import { deriveRun } from "@/features/run/run-steps";
+import { RunHero } from "@/features/run/run-hero";
 import { WorkspaceHeader } from "@/features/overview/workspace-header";
 import { NextStep } from "@/features/overview/next-step";
 import { LoopPanel } from "@/features/overview/loop-panel";
@@ -29,16 +31,23 @@ export default async function OverviewPage({
   // when reached from the client tree itself; the admin route composes this same page with its own basePath.
   if (viewer.role === "admin" && basePath === "/c") redirect(`/admin/c/${brandId}`);
 
-  const [reviewPosts, scheduledPosts, failedPosts] = await Promise.all([
+  const [reviewPosts, scheduledPosts, failedPosts, research, strategy] = await Promise.all([
     listReviewQueue(brandId),
     listContent(brandId, "scheduled"),
     listContent(brandId, "failed"),
+    getResearch(brandId),
+    getStrategy(brandId),
   ]);
+  const run = deriveRun(research, strategy);
 
   return (
     <div className="grid gap-5">
       <WorkspaceHeader brand={brand} basePath={basePath} />
-      <NextStep brand={brand} reviewPosts={reviewPosts} failedPosts={failedPosts} basePath={basePath} />
+      {run ? (
+        <RunHero run={run} brandId={brandId} basePath={basePath} />
+      ) : (
+        <NextStep brand={brand} reviewPosts={reviewPosts} failedPosts={failedPosts} basePath={basePath} />
+      )}
       <LoopPanel stage={brand.stage} />
       {/* The week's posts stream in on their own; the header and stats never wait for them. */}
       <Suspense fallback={<ThisWeekPanelSkeleton brandId={brandId} basePath={basePath} />}>

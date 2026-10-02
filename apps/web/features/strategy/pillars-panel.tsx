@@ -7,7 +7,7 @@ export function PillarsPanel({ pillars }: { pillars: ContentPillar[] }) {
     <Panel aria-labelledby="pillars-heading">
       <h2 id="pillars-heading" className="type-heading">What you&apos;ll post about</h2>
       <p className="type-label mt-1 mb-3 border-b border-border pb-3">
-        {pillars.length} themes, and each one&apos;s share of the month.
+        {pillars.length} themes, and each one&apos;s share of the week.
       </p>
       <ul>
         {pillars.map((pillar) => (

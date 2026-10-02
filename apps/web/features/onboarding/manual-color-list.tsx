@@ -8,14 +8,14 @@ import { Button } from "@repo/ui/components/button";
 import { Input } from "@repo/ui/components/input";
 import { FormControl, FormField, FormItem, FormMessage } from "@repo/ui/components/form";
 
-/** FL-1's colour editor: up to five swatches, the first becoming the workspace accent. */
+/** FL-1's colour editor: up to five swatches, the first being the one posts lead with. */
 export function ManualColorList({ control, max = 5 }: { control: Control<ManualValues>; max?: number }) {
   const colors = useFieldArray({ control, name: "colors" });
 
   return (
     <div className="grid gap-2.5">
       <p className="text-[0.8125rem] font-medium leading-none">Colours</p>
-      <p className="type-label -mt-1">The first colour becomes the workspace accent.</p>
+      <p className="type-label -mt-1">The first colour is the one posts lead with.</p>
       <ul className="grid gap-2.5">
         {colors.fields.map((item, i) => (
           <li key={item.id} className="grid grid-cols-[auto_minmax(0,1fr)_7.5rem_auto] items-start gap-2.5">

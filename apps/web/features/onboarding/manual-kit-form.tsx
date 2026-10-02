@@ -14,7 +14,7 @@ import { ManualContactCard } from "@/features/onboarding/manual-contact-card";
 import { ManualPlatformsCard } from "@/features/onboarding/manual-platforms-card";
 import { NeededChecklist } from "@/features/onboarding/needed-checklist";
 import { BrandPreview } from "@/features/brand-kit/brand-preview";
-import { brandStyle, isValidHex } from "@/lib/utils";
+import { isValidHex } from "@/lib/utils";
 import { Button } from "@repo/ui/components/button";
 import { Form } from "@repo/ui/components/form";
 
@@ -58,41 +58,41 @@ export function ManualKitForm({ onContinue }: { onContinue: (values: ManualValue
   const allDone = checklistItems.every((item) => item.done);
 
   return (
-    <div className="brand-scope" style={brandStyle(previewBrand.colors[0]!.hex)}>
-      <div className="mb-8 max-w-[40rem]">
-        <h1 className="type-title">Tell us about your business</h1>
-        <p className="mt-2 text-muted-foreground">
-          Every post starts from this brand kit. About five minutes, and you can change all of it later.
-        </p>
-      </div>
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onContinue)} noValidate className="grid gap-8 pb-20 lg:grid-cols-[minmax(0,1fr)_20rem] lg:gap-12 lg:pb-0">
-          <div className="grid gap-4">
-            <ManualBusinessCard form={form} />
-            <ManualAudienceCard form={form} />
-            <ManualVoiceCard form={form} />
-            <ManualLooksCard form={form} />
-            <ManualContactCard form={form} />
-            <ManualPlatformsCard form={form} />
-          </div>
-
-          <BrandPreview brand={previewBrand} hook={live.tagline || "Your headline here"}>
-            <div className="hidden lg:block">
-              <NeededChecklist items={checklistItems} allDone={allDone} />
-            </div>
-          </BrandPreview>
-
-          <div className="fixed inset-x-0 bottom-0 z-10 flex items-center justify-between gap-3 border-t bg-card p-4 shadow-floating lg:hidden">
-            <p className="type-label">
-              {checklistItems.filter((i) => i.done).length} of {checklistItems.length} needed parts done
-            </p>
-            <Button type="submit" size="lg" disabled={!allDone}>
-              Continue
-              <ArrowRight aria-hidden />
-            </Button>
-          </div>
-        </form>
-      </Form>
+    <>
+    <div className="mb-8 max-w-[40rem]">
+      <h1 className="type-title">Tell us about your business</h1>
+      <p className="mt-2 text-muted-foreground">
+        Every post starts from this brand kit. About five minutes, and you can change all of it later.
+      </p>
     </div>
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onContinue)} noValidate className="grid gap-8 pb-20 lg:grid-cols-[minmax(0,1fr)_20rem] lg:gap-12 lg:pb-0">
+        <div className="grid gap-4">
+          <ManualBusinessCard form={form} />
+          <ManualAudienceCard form={form} />
+          <ManualVoiceCard form={form} />
+          <ManualLooksCard form={form} />
+          <ManualContactCard form={form} />
+          <ManualPlatformsCard form={form} />
+        </div>
+
+        <BrandPreview brand={previewBrand} hook={live.tagline || "Your headline here"}>
+          <div className="hidden lg:block">
+            <NeededChecklist items={checklistItems} allDone={allDone} />
+          </div>
+        </BrandPreview>
+
+        <div className="fixed inset-x-0 bottom-0 z-10 flex items-center justify-between gap-3 border-t bg-card p-4 shadow-floating lg:hidden">
+          <p className="type-label">
+            {checklistItems.filter((i) => i.done).length} of {checklistItems.length} needed parts done
+          </p>
+          <Button type="submit" size="lg" disabled={!allDone}>
+            Continue
+            <ArrowRight aria-hidden />
+          </Button>
+        </div>
+      </form>
+    </Form>
+    </>
   );
 }

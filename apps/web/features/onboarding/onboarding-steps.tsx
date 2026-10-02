@@ -1,7 +1,7 @@
 import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const STEPS = ["Read your website", "Check your brand kit", "Get your first month"] as const;
+const STEPS = ["Read your website", "Check your brand kit", "Get your first week"] as const;
 
 /** The onboarding step bar: shown on every onboarding screen. On phone only the current step keeps its label. */
 export function OnboardingSteps({ current }: { current: 1 | 2 | 3 }) {

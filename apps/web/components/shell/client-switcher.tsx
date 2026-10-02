@@ -9,7 +9,7 @@ import { HeaderMenu, HeaderMenuItem, HeaderMenuItemText, HeaderMenuLabel, Header
 import { ADMIN_CLIENTS_PATH } from "./admin-nav-items";
 
 /** The admin's switcher inside a brand: every client's brand, with whose it is. */
-export function ClientSwitcher({
+export function BrandSwitcher({
   current,
   brands,
   basePath = "/c",

@@ -178,7 +178,8 @@ export async function updateBrand(id: string, patch: BrandEdit): Promise<ActionR
     await wait(600);
     const brand = await requireBrand(id);
     Object.assign(brand, patch);
-    // The workspace accent always follows the first brand colour.
+    // A brand's stored accent follows its first colour. It marks the brand (avatars, tiles); it does
+    // not theme the dashboard (owner ruling, 2026-10-02).
     if (patch.brand) brand.accent = patch.brand.colors[0]?.hex ?? brand.accent;
     // The kit's "last edited" date only moves when a kit field (not preferences) changed.
     if (patch.name || patch.industry || patch.brand || patch.business || patch.platforms) {

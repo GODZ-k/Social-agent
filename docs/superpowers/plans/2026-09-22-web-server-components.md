@@ -71,7 +71,7 @@ The workspace layout (Task A) fetches `client` and `clients` in parallel and ren
 Files to create or rewrite:
 
 - `components/shell/logo.tsx` (server): the `Logo` from the old top bar.
-- `components/shell/top-bar.tsx` (server): header markup. Composes `<Logo />`, `<ClientSwitcher />` when `client` is set, `<AgentChatButton client={client} />`, the settings link, `<ThemeMenu />`, the Admin badge (`viewer.role === "admin"`), `<UserButton />` (Clerk, already a client component).
+- `components/shell/top-bar.tsx` (server): header markup. Composes `<Logo />`, `<BrandSwitcher />` when `client` is set, `<AgentChatButton client={client} />`, the settings link, `<ThemeMenu />`, the Admin badge (`viewer.role === "admin"`), `<UserButton />` (Clerk, already a client component).
 - `components/shell/client-switcher.tsx` (client): the dropdown. Props `{ current: Client; clients: Client[]; isAdmin: boolean }`. Uses `useRouter` for navigation as today.
 - `components/shell/agent-chat-button.tsx` (client): the Sparkles button plus the `chatMounted`/`chatOpen` state and the `next/dynamic` import of `AgentChat` (`ssr: false`). Props `{ client?: Client }`.
 - `components/shell/workspace-nav.tsx` (client): unchanged content.

@@ -1,7 +1,7 @@
 import { Minus } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const STEPS = ["Website skipped", "Fill in your brand kit", "Get your first month"] as const;
+const STEPS = ["Website skipped", "Fill in your brand kit", "Get your first week"] as const;
 
 /** The onboarding step bar for the manual FL-1 path: step 1 reads as skipped, not done, since no site was read. */
 export function ManualOnboardingSteps() {

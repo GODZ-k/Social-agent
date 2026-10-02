@@ -14,7 +14,7 @@ export function ColorList({ control, max = 6 }: { control: Control<Values>; max?
   return (
     <div className="grid gap-2.5">
       <p className="text-[0.8125rem] font-medium leading-none">Brand colours</p>
-      <p className="type-label -mt-1">The first colour becomes the workspace accent.</p>
+      <p className="type-label -mt-1">The first colour is the one posts lead with.</p>
       <ul className="grid gap-2.5">
         {colors.fields.map((item, i) => (
           <li key={item.id} className="grid grid-cols-[auto_minmax(0,1fr)_7.5rem_auto] items-start gap-2.5">

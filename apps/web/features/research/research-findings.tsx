@@ -15,8 +15,9 @@ const BOTTLENECK_LABEL: Record<GrowthBrief["bottleneck"]["kind"], string> = {
 
 /**
  * The growth brief and audience profile, read together: what holds sales back, who to talk to,
- * and where the brand can win. Shared by onboarding's research-done screen (S19b) and the
- * research page (S21), so it holds only the findings, not a page title or a call to action.
+ * and where the brand can win. It holds only the findings, not a page title or a call to action,
+ * so the research page (S21) supplies those around it. Since 2026-10-02 that page is the only
+ * place the brief and the profile are shown: onboarding no longer waits for discovery.
  */
 export function ResearchFindings({ research }: { research: ResearchView }) {
   const brief = research.growthBrief?.content;

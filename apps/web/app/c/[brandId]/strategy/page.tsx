@@ -4,6 +4,8 @@ import { getBrand, getResearch, getStrategy } from "@/lib/api/server";
 import { workspaceHref, type WorkspaceBasePath } from "@/lib/workspace-path";
 import { PageHeader, EmptyState } from "@repo/ui/components/states";
 import { Button } from "@repo/ui/components/button";
+import { deriveRun } from "@/features/run/run-steps";
+import { RunProgressPanel } from "@/features/run/run-progress-panel";
 import { StrategyBanner } from "@/features/strategy/strategy-banner";
 import { WhyThisPlan } from "@/features/strategy/why-this-plan";
 import { VersionChangesPanel } from "@/features/strategy/version-changes-panel";
@@ -26,18 +28,23 @@ export default async function StrategyPage({
   if (!brand) notFound();
 
   if (!strategy) {
+    const run = deriveRun(research, strategy);
     return (
       <>
         <PageHeader title="Strategy" description="What the agent will post, how often and why." />
-        <EmptyState
-          title="No strategy yet"
-          description="No strategy has been drafted for this brand yet."
-          action={
-            <Button asChild>
-              <Link href={workspaceHref(basePath, brandId)}>Back to overview</Link>
-            </Button>
-          }
-        />
+        {run ? (
+          <RunProgressPanel run={run} />
+        ) : (
+          <EmptyState
+            title="No strategy yet"
+            description="No strategy has been drafted for this brand yet."
+            action={
+              <Button asChild>
+                <Link href={workspaceHref(basePath, brandId)}>Back to overview</Link>
+              </Button>
+            }
+          />
+        )}
       </>
     );
   }

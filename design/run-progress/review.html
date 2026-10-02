@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Run progress — review sheet</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400..700&display=swap" rel="stylesheet">
+<style>
+  :root { --ink: #1a1d26; --soft: #5f6879; --line: #e1e4ea; --bg: #eef0f4; --card: #fff; }
+  * { box-sizing: border-box; margin: 0; }
+  body { background: var(--bg); color: var(--ink); font-family: "Instrument Sans", system-ui, sans-serif; padding: 32px 24px 64px; }
+  h1 { font-size: 1.5rem; letter-spacing: -0.02em; }
+  .lede { color: var(--soft); margin-top: 6px; max-width: 70ch; }
+  h2 { font-size: 1.0625rem; margin: 40px 0 4px; letter-spacing: -0.01em; }
+  h2 small { font-weight: 400; color: var(--soft); font-size: 0.8125rem; margin-left: 8px; }
+  .row { display: flex; gap: 20px; align-items: flex-start; overflow-x: auto; padding: 14px 2px 4px; }
+  .cell { background: var(--card); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; flex: none; }
+  .cap { font-size: 11px; color: var(--soft); padding: 7px 10px; border-bottom: 1px solid var(--line); letter-spacing: 0.04em; text-transform: uppercase; }
+  .frame { position: relative; overflow: hidden; }
+  iframe { border: 0; display: block; transform-origin: 0 0; }
+  /* 1440 shown at 0.42, 768 at 0.56, 390 at 0.78 — each ~605px tall on screen. */
+  .w1440 .frame { width: 605px; height: 420px; } .w1440 iframe { width: 1440px; height: 1000px; transform: scale(0.42); }
+  .w768  .frame { width: 430px; height: 420px; } .w768  iframe { width: 768px;  height: 750px;  transform: scale(0.56); }
+  .w390  .frame { width: 304px; height: 420px; } .w390  iframe { width: 390px;  height: 538px;  transform: scale(0.78); }
+  .tall.w1440 .frame { height: 714px; } .tall.w1440 iframe { height: 1700px; }
+  .tall.w768  .frame { height: 700px; } .tall.w768  iframe { height: 1250px; }
+  .tall.w390  .frame { height: 702px; } .tall.w390  iframe { height: 900px; }
+  footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--line); color: var(--soft); font-size: 13px; max-width: 80ch; }
+  footer p + p { margin-top: 8px; }
+  code { font-family: ui-monospace, Consolas, monospace; font-size: 0.9em; }
+</style>
+</head>
+<body>
+  <h1>Run progress — review sheet</h1>
+  <p class="lede">
+    What the client sees while business discovery and then the strategy are running. Built from the
+    real tokens and the existing <code>scan-step</code> pattern, so it reads the same as the website
+    scan they have already seen. Each screen at 1440, 768 and 390.
+  </p>
+
+  <h2>1. Overview <small>the whole page while a run is on &mdash; top of the page at each width</small></h2>
+  <div class="row">
+    <div class="cell tall w1440"><div class="cap">1440</div><div class="frame"><iframe src="rp1-overview-running.html" title="Overview at 1440"></iframe></div></div>
+    <div class="cell tall w768"><div class="cap">768</div><div class="frame"><iframe src="rp1-overview-running.html" title="Overview at 768"></iframe></div></div>
+    <div class="cell tall w390"><div class="cap">390</div><div class="frame"><iframe src="rp1-overview-running.html" title="Overview at 390"></iframe></div></div>
+  </div>
+
+  <h2>2. Strategy page — researching <small>~5 minutes</small></h2>
+  <div class="row">
+    <div class="cell w1440"><div class="cap">1440</div><div class="frame"><iframe src="rp2-strategy-researching.html" title="Researching at 1440"></iframe></div></div>
+    <div class="cell w768"><div class="cap">768</div><div class="frame"><iframe src="rp2-strategy-researching.html" title="Researching at 768"></iframe></div></div>
+    <div class="cell w390"><div class="cap">390</div><div class="frame"><iframe src="rp2-strategy-researching.html" title="Researching at 390"></iframe></div></div>
+  </div>
+
+  <h2>3. Strategy page — writing the plan <small>~45 seconds</small></h2>
+  <div class="row">
+    <div class="cell w1440"><div class="cap">1440</div><div class="frame"><iframe src="rp3-strategy-writing.html" title="Writing at 1440"></iframe></div></div>
+    <div class="cell w768"><div class="cap">768</div><div class="frame"><iframe src="rp3-strategy-writing.html" title="Writing at 768"></iframe></div></div>
+    <div class="cell w390"><div class="cap">390</div><div class="frame"><iframe src="rp3-strategy-writing.html" title="Writing at 390"></iframe></div></div>
+  </div>
+
+  <footer>
+    <p><b>One hero on the overview, not one tile per phase.</b> The order never varies, so the heading stays <i>Getting your first week ready</i> for the whole run; only the step line and the meter move. The meter uses the loop track’s own vocabulary — filled segments in <code>--brand-2</code>, the live one in <code>--brand</code> with a single sweep across it — so it is the one thing on the page that moves, and it is the only primary button on the page.</p>
+    <p><b>The page behind it is the real overview.</b> Where the agent is, this week, the stat tiles and the brand kit all render at this point in the live app. The first version replaced the whole page with the tile, which is why it looked bare — the client is meant to see a workspace that is already theirs, with one thing in it still running.</p>
+    <p><b>One list, not two.</b> Research and strategy are separate runs on the server, but the client sees one five-step list that fills in. Splitting it would make them watch two progress bars for one outcome.</p>
+    <p><b>Steps, not a percentage bar.</b> The runs report a named step, never a percentage, so a bar would be invented. The scan screen already made this choice.</p>
+    <p><b>The overview tile has an action, the page does not.</b> On the overview the client is passing through, so the tile offers "Watch it". On the strategy page they are already watching, so there is nothing to press.</p>
+  </footer>
+</body>
+</html>
