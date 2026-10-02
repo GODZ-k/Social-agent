@@ -12,7 +12,7 @@ export default async function BrandsPage() {
   if (viewer.role === "admin") redirect("/admin/clients");
 
   // if (brands.length === 1) {
-  //   const brand = brands[0]!;
+  //   const brand = brands[0]!;rm 
   //   redirect(brand.stage === "onboarding" ? `/onboarding?brandId=${brand.id}` : `/c/${brand.id}`);
   // }
 
