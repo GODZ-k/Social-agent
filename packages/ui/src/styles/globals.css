@@ -15,21 +15,21 @@
  * ruling, 2026-10-02 — the document-wide retint was removed).
  */
 :root {
-  --brand: rgb(237, 133, 48);
+  --brand: #963c00;
   --brand-foreground: #ffffff;
 
-  --background: #f5f6f8;
-  --foreground: #1a1d26;
+  --background: #f5f5f4;
+  --foreground: #0c0a09;
   --card: #ffffff;
-  --card-foreground: #1a1d26;
+  --card-foreground: #0c0a09;
   --popover: #ffffff;
-  --popover-foreground: #1a1d26;
+  --popover-foreground: #0c0a09;
   --secondary: #eceef2;
-  --secondary-foreground: #1a1d26;
+  --secondary-foreground: #0c0a09;
   --muted: #eceef2;
   --muted-foreground: #5f6879;
   --accent: #eceef2;
-  --accent-foreground: #1a1d26;
+  --accent-foreground: #0c0a09;
   --destructive: #cf3f57;
   --success: #178a5e;
   --warning: #b7740a;
@@ -97,18 +97,18 @@
 
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --background: #0f1116;
+  --background: #0c0a09;
   --foreground: #eceef2;
-  --card: #171a21;
-  --card-foreground: #eceef2;
+  --card: #1c1917;
+  --card-foreground: #f5f5f4;
   --popover: #1b1f28;
-  --popover-foreground: #eceef2;
+  --popover-foreground: #f5f5f4;
   --secondary: #1f232c;
-  --secondary-foreground: #eceef2;
+  --secondary-foreground: #f5f5f4;
   --muted: #1f232c;
   --muted-foreground: #9aa3b2;
   --accent: #232833;
-  --accent-foreground: #eceef2;
+  --accent-foreground: #f5f5f4;
   --destructive: #ec6b80;
   --success: #4cc596;
   --warning: #e5a53d;
