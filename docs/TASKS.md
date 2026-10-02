@@ -3,9 +3,9 @@
 ![phase 1](https://img.shields.io/badge/phase_1-done-brightgreen)
 ![phase 2A](https://img.shields.io/badge/phase_2A-done-brightgreen)
 ![phase 2B](https://img.shields.io/badge/phase_2B-in_progress-orange)
-![open decisions](https://img.shields.io/badge/open_decisions-8-blue)
+![open decisions](https://img.shields.io/badge/open_decisions-9-blue)
 ![known gaps](https://img.shields.io/badge/known_gaps-13-lightgrey)
-![updated](https://img.shields.io/badge/updated-2026--09--23-lightgrey)
+![updated](https://img.shields.io/badge/updated-2026--10--02-lightgrey)
 
 *What is in flight now, what comes next, what waits, and everything already landed.*
 
@@ -299,7 +299,7 @@ Parked on purpose, cross-cutting:
 
 ## Open decisions
 
-Nine on the list; eight are open, and D-9 is parked rather than undecided.
+Ten on the list; nine are open, and D-9 is parked rather than undecided.
 
 | ID      | Decision                                                                                              | Priority  | Status                |
 | ------- | ----------------------------------------------------------------------------------------------------- | --------- | --------------------- |
@@ -312,9 +312,61 @@ Nine on the list; eight are open, and D-9 is parked rather than undecided.
 | **D-7** | Chat scope: shared per brand or private per user                                                      | ![P3][p3] | ![open][open] Q8      |
 | **D-8** | Billing provider(s)                                                                                   | ![P3][p3] | ![open][open]         |
 | **D-9** | `brand_members` (several people per brand)                                                            | ![P3][p3] | ![later][later]       |
+| **D-10** | Does `LoopStage` get a `research` value? Business discovery is 95 % built and no stage describes it (see the note below) | ![P1][p1] | ![open][open]         |
 
 The Q numbers point at the open questions in the endpoint catalogue. D-9 is not designed
 yet; it is a later idea rather than a decision waiting on anyone.
+
+<a id="d-10-where-business-discovery-belongs"></a>
+
+### D-10: where business discovery belongs (raised 2026-10-02)
+
+Business discovery (2B-1) is **not** strategy; it is the input to strategy. It writes a growth
+brief and an audience profile to `research_runs` and `brand_research` through the Growth
+Consultant and the Audience Researcher, and produces no pillars, no cadence and no posting
+times. The Strategist (2B-2) then reads them through `BrandContext`. It sits under phase 2B
+because 2B's milestone is "the brand ends up with an active strategy" and discovery is a
+prerequisite of that milestone, which is grouping by milestone rather than by domain.
+
+Five artefacts currently disagree about it, which is the thing to settle:
+
+| Artefact | What it says |
+| --- | --- |
+| `docs/MEMORY.md` loop | `URL → scan → brand kit → strategy → posts`; research is not mentioned |
+| `docs/PRD.md` diagram | `onboard → strategy → content → approve → publish → analytics → learnings`; no research node |
+| `brands.stage` (`LoopStage`) | `onboarding \| strategy \| content \| approval \| publishing \| learning`; no research value |
+| This board | files discovery as 2B-1 under "Phase 2B — Strategy" |
+| `apps/web` routes | `/c/[brandId]/strategy/research`, a sub-page of strategy |
+| The API | `/brands/:brandId/research` and its own tables: a first-class phase |
+
+**Why it needs deciding rather than leaving.** A brand that has submitted its questionnaire
+and is four minutes into a five-minute research run is in no honest stage: not `onboarding`,
+not `strategy`. Two things already designed depend on knowing:
+
+- The weekly-cycle poller reads `stage` to decide what is due. With no research value it
+  cannot tell "waiting on research" from "ready for strategy", and could start strategy
+  generation for a brand that has no brief yet.
+- The workspace overview branches on stage in `next-step.tsx`, which handles only `"strategy"`
+  and `"learning"`, so a brand opened from the brands list mid-research gets no "researching"
+  next step. A narrow case — during onboarding the client is normally still on the onboarding
+  screen — and **not** a reason to build research UI: that already exists in two deliberate
+  variants. `onboarding-journey.tsx` makes research part of step 3 ("Get your first month",
+  shared with the questionnaire) and renders `ResearchRunning` / `ResearchFailed` /
+  `ResearchDone`; `/c/[brandId]/strategy/research` uses the banner treatment
+  (`ResearchRunningBanner`, `ResearchFindings`, `RunResearchButton`) because that page is for
+  re-runs and for reading the findings later. Keep the client-facing wording as it is: the
+  client never needs to learn that "business discovery" is a phase.
+
+Two ways out:
+
+1. **Add a `research` value to `LoopStage`**, between `onboarding` and `strategy`. Honest, and
+   makes the poller trivial. Costs a migration, the enum in `packages/shared`, and one more
+   branch in `next-step.tsx`. No new screens: the research UI is already built.
+2. Leave the enum and read `research_runs.status` instead, treating stage as coarse. Cheaper
+   now; every consumer then joins two sources to answer "what is happening with this brand".
+
+Whichever is chosen, the loop in `MEMORY.md` and the diagram in `PRD.md` need research added:
+as written, neither tells a new reader that a 95 %-built feature exists.
 
 <a id="related"></a>
 

@@ -4,7 +4,7 @@
 ![branch](https://img.shields.io/badge/branch-backend-blue)
 ![phase](https://img.shields.io/badge/phase-2B_discovery_built-orange)
 ![decisions in force](https://img.shields.io/badge/decisions_in_force-15-blue)
-![updated](https://img.shields.io/badge/updated-2026--09--30-lightgrey)
+![updated](https://img.shields.io/badge/updated-2026--10--02-lightgrey)
 
 *The short brief that gets an agent or a new session up to speed. Load it before anything else.*
 
@@ -29,9 +29,13 @@ The agency owner is the **admin**; a **client** is a business owner who buys the
 **brand** is one website plus the social accounts managed for it, and a client can own any
 number of brands.
 
-The loop: paste a URL → brand scan → proposed brand kit the owner edits → strategy (pillars,
-cadence, best times) → posts → human approval → publish → analytics → learnings → better
-strategy. Nine specialist agents and six workflows do the thinking
+The loop: paste a URL → brand scan → proposed brand kit the owner edits → questionnaire the
+Account Manager asks → business discovery (growth brief + audience profile) → strategy
+(pillars, cadence, best times) → posts → human approval → publish → analytics → learnings →
+better strategy. The questionnaire and business discovery were missing from this line until
+2026-10-02, though both are built: discovery is research that *feeds* strategy, not strategy
+itself, and no `brands.stage` value describes it yet (open decision D-10 in
+[`TASKS.md`](./TASKS.md)). Nine specialist agents and six workflows do the thinking
 (`apps/api/src/mastra/README.md`); scheduling, publishing and metrics are plain code.
 
 > [!IMPORTANT]
