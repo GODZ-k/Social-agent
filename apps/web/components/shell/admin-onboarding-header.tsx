@@ -6,10 +6,7 @@ import { CrumbSlash } from "./crumb-slash";
 import { ClientsBackLink } from "./clients-back-link";
 import { AccountMenu } from "./account-menu";
 
-/**
- * An admin building a brand for a brand that does not exist yet (2026-09-28): "‹ Clients /
- * <name>'s new brand". Same crumb as `AdminBrandHeader`, but there is no brand to switch to yet.
- */
+
 export function AdminOnboardingHeader({ viewer, personName }: { viewer: Viewer; personName: string }) {
   return (
     <TopBarFrame wordmark>
