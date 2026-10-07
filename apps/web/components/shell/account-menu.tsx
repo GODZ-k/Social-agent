@@ -15,7 +15,7 @@ import { AccountAvatar } from "@repo/ui/components/account-avatar";
  * it on demand keeps all of that out of the JavaScript every page downloads.
  * `ssr: false` because it only ever renders from a click.
  */
-const loadAccountDialog = () => import("@/features/account/account-dialog");
+const loadAccountDialog = () => import("@/components/account/account-dialog");
 const AccountDialog = dynamic(() => loadAccountDialog().then((m) => m.AccountDialog), { ssr: false });
 
 /** Who is signed in, their account, the theme and signing out. The theme lives here, not in the bar. */

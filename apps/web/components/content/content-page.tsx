@@ -1,8 +1,8 @@
 import { notFound } from "next/navigation";
 import { getBrand, getStrategy, listContent } from "@/lib/api/server";
 import type { WorkspaceBasePath } from "@/lib/workspace-path";
-import { ContentWorkspace } from "@/features/content/content-workspace";
-import { ReviewPostSheet } from "@/features/post/review-post-sheet";
+import { ContentWorkspace } from "@/components/content/content-workspace";
+import { ReviewPostSheet } from "@/components/post/review-post-sheet";
 
 export default async function ContentPage({
   params,

@@ -2,10 +2,10 @@
 
 import { usePathname } from "next/navigation";
 import { ADMIN_CLIENTS_PATH, ADMIN_NAV_ITEMS } from "./admin-nav-items";
-import { RailFrame } from "./rail-frame";
+import { RailFrame } from "./frames";
 import { RailLink } from "./rail-link";
-import { AdminTabBarFrame } from "./admin-tab-bar-frame";
-import { TabLink } from "./tab-link";
+import { AdminTabBarFrame } from "./frames";
+import { TabLink } from "./tab-content";
 
 /** The admin area's places: Clients and Observability, as a rail on desktop and a tab bar below 1024px. */
 export function AdminNav({

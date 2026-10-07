@@ -7,7 +7,7 @@ import { getViewerRole } from "@/lib/auth/viewer";
 import { AuthFrame } from "@/components/auth/auth-frame";
 import { SignOutButton } from "@/components/auth/sign-out-button";
 import { TwoFactorPanel } from "@/components/auth/two-factor-panel";
-import { TwoFactorSetup } from "@/features/auth/two-factor-setup";
+import { TwoFactorSetup } from "@/components/auth/two-factor-setup";
 
 export const metadata: Metadata = { title: "Turn on two-factor" };
 

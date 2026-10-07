@@ -1,12 +1,12 @@
 import { notFound } from "next/navigation";
 import { getFrontendError } from "@/lib/api/server";
-import { ErrorDetailHeader } from "@/features/observability/error-detail-header";
-import { ErrorStats } from "@/features/observability/error-stats";
-import { HourlyPanel } from "@/features/observability/hourly-panel";
-import { WhatPersonDidPanel } from "@/features/observability/what-person-did-panel";
-import { StackTracePanel } from "@/features/observability/stack-trace-panel";
-import { ErrorDetailsPanel } from "@/features/observability/error-details-panel";
-import { WhoHitItPanel } from "@/features/observability/who-hit-it-panel";
+import { ErrorDetailHeader } from "@/components/observability/error-detail-header";
+import { ErrorStats } from "@/components/observability/error-stats";
+import { HourlyPanel } from "@/components/observability/hourly-panel";
+import { WhatPersonDidPanel } from "@/components/observability/what-person-did-panel";
+import { StackTracePanel } from "@/components/observability/stack-trace-panel";
+import { ErrorDetailsPanel } from "@/components/observability/error-details-panel";
+import { WhoHitItPanel } from "@/components/observability/list-panels";
 
 export default async function FrontendErrorPage({ params }: { params: Promise<{ errorId: string }> }) {
   const { errorId } = await params;

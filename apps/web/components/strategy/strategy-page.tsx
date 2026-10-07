@@ -4,15 +4,15 @@ import { getBrand, getResearch, getStrategy } from "@/lib/api/server";
 import { workspaceHref, type WorkspaceBasePath } from "@/lib/workspace-path";
 import { PageHeader, EmptyState } from "@repo/ui/components/states";
 import { Button } from "@repo/ui/components/button";
-import { deriveRun } from "@/features/run/run-steps";
-import { RunProgressPanel } from "@/features/run/run-progress-panel";
-import { StrategyBanner } from "@/features/strategy/strategy-banner";
-import { WhyThisPlan } from "@/features/strategy/why-this-plan";
-import { VersionChangesPanel } from "@/features/strategy/version-changes-panel";
-import { PillarsPanel } from "@/features/strategy/pillars-panel";
-import { PostingTimesPanel } from "@/features/strategy/posting-times-panel";
-import { AudiencePanel } from "@/features/strategy/audience-panel";
-import { LearningsPanel } from "@/features/strategy/learnings-panel";
+import { deriveRun } from "@/components/run/run-steps";
+import { RunProgressPanel } from "@/components/run/run-progress-panel";
+import { StrategyBanner } from "@/components/strategy/strategy-banner";
+import { WhyThisPlan } from "@/components/strategy/why-this-plan";
+import { VersionChangesPanel } from "@/components/strategy/version-changes-panel";
+import { PillarsPanel } from "@/components/strategy/pillars-panel";
+import { PostingTimesPanel } from "@/components/strategy/posting-times-panel";
+import { AudiencePanel } from "@/components/strategy/audience-panel";
+import { LearningsPanel } from "@/components/strategy/learnings-panel";
 
 export default async function StrategyPage({
   params,

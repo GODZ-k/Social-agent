@@ -6,8 +6,8 @@ import { ApprovalPanel } from "@/components/auth/approval-panel";
 import { AuthFormSkeleton } from "@/components/auth/auth-form-skeleton";
 import { AuthFrame } from "@/components/auth/auth-frame";
 import { SwitchLink } from "@/components/auth/switch-link";
-import { SignUpForm } from "@/features/auth/sign-up-form";
-import { SiteCarry } from "@/features/auth/site-carry";
+import { SignUpForm } from "@/components/auth/sign-up-form";
+import { SiteCarry } from "@/components/auth/site-carry";
 
 export const metadata: Metadata = { title: "Create your account" };
 

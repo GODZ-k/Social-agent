@@ -1,18 +1,15 @@
 import { notFound } from "next/navigation";
 import { getObsOverview, getObsServer } from "@/lib/api/server";
 import { formatNumber } from "@/lib/utils";
-import { ObsPageHeader } from "@/features/observability/obs-page-header";
-import { ObsTabs } from "@/features/observability/obs-tabs";
-import { parseObsSearchParams } from "@/features/observability/search-params";
-import { ServerStats } from "@/features/observability/server-stats";
-import { HourlyPanel } from "@/features/observability/hourly-panel";
-import { RoutesPanel } from "@/features/observability/routes-panel";
-import { JobsPanel } from "@/features/observability/jobs-panel";
-import { ServicesPanel } from "@/features/observability/services-panel";
-import { ServerErrorsPanel } from "@/features/observability/server-errors-panel";
-import { SlowRequestsPanel } from "@/features/observability/slow-requests-panel";
-import { LogsPanel } from "@/features/observability/logs-panel";
-import { formatMs } from "@/features/observability/format";
+import { ObsPageHeader } from "@/components/observability/obs-page-header";
+import { ObsTabs } from "@/components/observability/obs-tabs";
+import { parseObsSearchParams } from "@/components/observability/search-params";
+import { ServerStats } from "@/components/observability/server-stats";
+import { HourlyPanel } from "@/components/observability/hourly-panel";
+import { RoutesPanel } from "@/components/observability/routes-panel";
+import { JobsPanel, ServicesPanel, ServerErrorsPanel, SlowRequestsPanel } from "@/components/observability/list-panels";
+import { LogsPanel } from "@/components/observability/logs-panel";
+import { formatMs } from "@/components/observability/format";
 
 export default async function ObservabilityServerPage({ searchParams }: { searchParams: Promise<{ range?: string; brand?: string }> }) {
   const { range, brandId } = parseObsSearchParams(await searchParams);

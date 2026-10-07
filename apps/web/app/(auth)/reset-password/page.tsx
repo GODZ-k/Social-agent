@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { ApprovalPanel } from "@/components/auth/approval-panel";
 import { AuthFormSkeleton } from "@/components/auth/auth-form-skeleton";
 import { AuthFrame } from "@/components/auth/auth-frame";
-import { ResetPasswordForm } from "@/features/auth/reset-password-form";
+import { ResetPasswordForm } from "@/components/auth/reset-password-form";
 
 export const metadata: Metadata = { title: "Choose a new password" };
 

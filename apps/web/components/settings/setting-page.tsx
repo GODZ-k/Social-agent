@@ -2,14 +2,14 @@ import { notFound } from "next/navigation";
 import { getBrand, getPreferences, listSocialAccounts } from "@/lib/api/server";
 import { getViewer } from "@/lib/auth/viewer";
 import { PageHeader } from "@repo/ui/components/states";
-import { resolveTab } from "@/features/settings/tabs";
-import { SettingsTabs } from "@/features/settings/settings-tabs";
-import { TabTransition } from "@/features/settings/tab-transition";
-import { ArchivedBanner } from "@/features/settings/archived-banner";
-import { SettingsBrandKitForm } from "@/features/brand-kit/settings-brand-kit-form";
-import { SocialAccounts } from "@/features/settings/social-accounts";
-import { PreferencesForm } from "@/features/settings/preferences-form";
-import { DangerZone } from "@/features/settings/danger-zone";
+import { resolveTab } from "@/components/settings/tabs";
+import { SettingsTabs } from "@/components/settings/settings-tabs";
+import { TabTransition } from "@/components/settings/tab-transition";
+import { ArchivedBanner } from "@/components/settings/archived-banner";
+import { SettingsBrandKitForm } from "@/components/brand-kit/settings-brand-kit-form";
+import { SocialAccounts } from "@/components/settings/social-accounts";
+import { PreferencesForm } from "@/components/settings/preferences-form";
+import { DangerZone } from "@/components/settings/danger-zone";
 
 export default async function SettingsPage({
   params,

@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { getBrand } from "@/lib/api/server";
-import { AnalyticsBody } from "@/features/analytics/analytics-body";
+import { AnalyticsBody } from "@/components/analytics/analytics-body";
 import type { AnalyticsRange } from "@/lib/types";
 import type { WorkspaceBasePath } from "@/lib/workspace-path";
 import { PageHeader, SkeletonRows } from "@repo/ui/components/states";

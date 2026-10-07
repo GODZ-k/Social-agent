@@ -5,15 +5,6 @@
 /* Tailwind only generates classes it can see. This makes it scan the components in this package. */
 @source "../";
 
-/*
- * Tokens
- * ------
- * The chrome is deliberately quiet: cool paper, ink, hairlines. --brand below is
- * the dashboard's own colour and every primary surface follows it. A client's
- * brand colour is never applied here: it appears only on the marks, avatars and
- * tiles that identify a brand, each setting --brand on its own subtree (owner
- * ruling, 2026-10-02 — the document-wide retint was removed).
- */
 :root {
   --brand: #963c00;
   --brand-foreground: #ffffff;

@@ -2,9 +2,9 @@ import { redirect } from "next/navigation";
 import { listActiveBrands } from "@/lib/api/server";
 import { getViewer } from "@/lib/auth/viewer";
 import { TopBar } from "@/components/shell/top-bar";
-import { BrandTile } from "@/features/brands/brand-tile";
-import { BrandList } from "@/features/brands/brand-list";
-import { BrandSetupTile } from "@/features/brands/brand-setup-tile";
+import { BrandTile } from "@/components/brands/brand-tile";
+import { BrandList } from "@/components/brands/brand-list";
+import { BrandSetupTile } from "@/components/brands/brand-setup-tile";
 
 export default async function BrandsPage() {
   const [viewer, brands] = await Promise.all([getViewer(), listActiveBrands()]);

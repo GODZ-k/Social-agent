@@ -2,13 +2,13 @@ import { notFound } from "next/navigation";
 import { getBrand, getResearch } from "@/lib/api/server";
 import { PageHeader, EmptyState } from "@repo/ui/components/states";
 import { cn } from "@/lib/utils";
-import type { WorkspaceBasePath } from "@/lib/workspace-path";
-import { BackToStrategyLink } from "@/features/strategy/back-to-strategy-link";
-import { ResearchVersionPill } from "@/features/strategy/research-version-pill";
-import { RunResearchButton } from "@/features/strategy/run-research-button";
-import { ResearchRunningBanner } from "@/features/strategy/research-running-banner";
-import { ResearchFailedBanner } from "@/features/strategy/research-failed-banner";
-import { ResearchFindings } from "@/features/research/research-findings";
+import { workspaceHref, type WorkspaceBasePath } from "@/lib/workspace-path";
+import { BackLink } from "@/components/shell/back-link";
+import { ResearchVersionPill } from "@/components/strategy/research-version-pill";
+import { RunResearchButton } from "@/components/strategy/run-research-button";
+import { ResearchRunningBanner } from "@/components/strategy/research-running-banner";
+import { ResearchFailedBanner } from "@/components/strategy/research-failed-banner";
+import { ResearchFindings } from "@/components/research/research-findings";
 
 const DESCRIPTION = "What the agent learned about your market before planning. Your strategy is built on it.";
 
@@ -24,11 +24,12 @@ export default async function StrategyResearchPage({
   if (!brand) notFound();
 
   const isRunning = research?.status === "queued" || research?.status === "running";
+  const strategyHref = workspaceHref(basePath, brandId, "/strategy");
 
   if (!research?.growthBrief) {
     return (
       <>
-        <BackToStrategyLink brandId={brandId} basePath={basePath} />
+        <BackLink href={strategyHref} label="Strategy" className="mb-3" />
         <PageHeader title="Research" description={DESCRIPTION} actions={!isRunning && <RunResearchButton brandId={brandId} />} />
         {isRunning && <ResearchRunningBanner currentStep={research.currentStep} visibleVersion={0} />}
         {research?.status === "failed" && <ResearchFailedBanner error={research.error} />}
@@ -39,7 +40,7 @@ export default async function StrategyResearchPage({
 
   return (
     <>
-      <BackToStrategyLink brandId={brandId} basePath={basePath} />
+      <BackLink href={strategyHref} label="Strategy" className="mb-3" />
       <PageHeader
         title="Research"
         description={DESCRIPTION}

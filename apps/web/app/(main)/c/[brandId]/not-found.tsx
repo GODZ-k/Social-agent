@@ -1,1 +1,1 @@
-export { default } from "@/components/common/workspace-notfound"
+export { default } from "@/components/workspace/workspace-notfound"

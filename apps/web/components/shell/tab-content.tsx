@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { motion } from "motion/react";
 import type { LucideIcon } from "lucide-react";
 import { spring } from "@repo/ui/lib/motion";
@@ -30,4 +31,13 @@ export function TabContent({ label, icon: Icon, active, count = 0 }: { label: st
 
 export function tabClassName(active: boolean) {
   return cn(tabClass, active ? "text-tint-foreground" : "text-muted-foreground hover:text-foreground");
+}
+
+/** One place in the phone and tablet tab bar. */
+export function TabLink({ href, label, icon, active, count }: { href: string; label: string; icon: LucideIcon; active: boolean; count?: number }) {
+  return (
+    <Link href={href} aria-current={active ? "page" : undefined} className={tabClassName(active)}>
+      <TabContent label={label} icon={icon} active={active} count={count} />
+    </Link>
+  );
 }

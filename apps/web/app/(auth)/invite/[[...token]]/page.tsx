@@ -6,7 +6,7 @@ import { ApprovalPanel } from "@/components/auth/approval-panel";
 import { AuthFrame } from "@/components/auth/auth-frame";
 import { AuthFormSkeleton } from "@/components/auth/auth-form-skeleton";
 import { SwitchLink } from "@/components/auth/switch-link";
-import { InviteAccept } from "@/features/auth/invite-accept";
+import { InviteAccept } from "@/components/auth/invite-accept";
 
 export const metadata: Metadata = { title: "Accept your invite" };
 

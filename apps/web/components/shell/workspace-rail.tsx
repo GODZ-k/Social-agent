@@ -2,7 +2,7 @@
 
 import type { WorkspaceBasePath } from "@/lib/workspace-path";
 import { LOOP_ITEMS, SETTINGS_ITEM, navItemHref } from "./workspace-nav-items";
-import { RailFrame } from "./rail-frame";
+import { RailFrame } from "./frames";
 import { RailLink } from "./rail-link";
 import { useActiveSegment } from "./use-active-segment";
 

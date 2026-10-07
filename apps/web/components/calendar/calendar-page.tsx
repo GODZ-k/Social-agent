@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { getBrand, getStrategy, listPosts } from "@/lib/api/server";
 import type { WorkspaceBasePath } from "@/lib/workspace-path";
-import { CalendarView } from "@/features/calendar/calendar-view";
+import { CalendarView } from "@/components/calendar/calendar-view";
 
 export default async function CalendarPage({
   params,

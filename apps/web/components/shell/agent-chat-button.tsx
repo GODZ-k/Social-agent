@@ -8,7 +8,7 @@ import type { WorkspaceBasePath } from "@/lib/workspace-path";
 import { Button } from "@repo/ui/components/button";
 
 // The chat panel pulls in the AI client; load it only when someone opens it.
-const AgentChat = dynamic(() => import("@/features/agent/agent-chat").then((m) => m.AgentChat), {
+const AgentChat = dynamic(() => import("@/components/agent/agent-chat").then((m) => m.AgentChat), {
   ssr: false,
 });
 

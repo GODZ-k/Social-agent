@@ -1,16 +1,28 @@
 import type { Brand, Viewer } from "@/lib/types";
+import { getViewer } from "@/lib/auth/viewer";
 import type { WorkspaceBasePath } from "@/lib/workspace-path";
 
 import { Badge } from "@repo/ui/components/badge";
-import { TopBarFrame } from "./top-bar-frame";
-import { BarDivider } from "./bar-divider";
+import { TopBarFrame } from "./frames";
+import { BarDivider } from "./frames";
 import { BrandSwitcher } from "./brand-switcher";
 import { AgentChatButton } from "./agent-chat-button";
 import { AccountMenu } from "./account-menu";
-import { ClientsBackLink } from "./clients-back-link";
-import { CrumbSlash } from "./crumb-slash";
-import { BrandBackLink } from "./brand-back-link";
+import { ClientsBackLink } from "./bar-links";
+import { CrumbSlash } from "./frames";
+import { BrandBackLink } from "./bar-links";
 import { toSwitcherBrand } from "./switcher-brand";
+
+export type TopBarProps = {
+  viewer: Viewer;
+  brand?: Brand;
+  brands?: Brand[];
+  basePath?: WorkspaceBasePath;
+  backTo?: { id: string; name: string };
+  /** An onboarding route: the bar shows who the brand is being built for instead of a brand. */
+  onboarding?: boolean;
+  personName?: string;
+};
 
 export function TopBar({
   viewer,
@@ -18,23 +30,21 @@ export function TopBar({
   brands = [],
   basePath = "/c",
   backTo,
-}: {
-  viewer: Viewer;
-  brand?: Brand;
-  brands?: Brand[];
-  basePath?: WorkspaceBasePath;
-  backTo?: { id: string; name: string };
-}) {
+  onboarding = false,
+  personName,
+}: TopBarProps) {
   const isAdmin = viewer.role === "admin";
 
-  const current = brand ? toSwitcherBrand(brand) : undefined;
+  /** Only an onboarding route names the person, and only when we know who they are. */
+  const buildingForName = onboarding ? personName : undefined;
   const switchable = brands.map((item) => toSwitcherBrand(item));
 
   return (
     <TopBarFrame wordmark={!brand}>
-      {/* Admin inside a brand */}
-      {isAdmin && brand && (
+      {/* Admin inside a brand, or an admin building one: both get the way back to Clients */}
+      {isAdmin && (brand || buildingForName) && (
         <>
+          <BarDivider />
           <ClientsBackLink />
           <CrumbSlash />
         </>
@@ -45,11 +55,7 @@ export function TopBar({
         <>
           {!isAdmin && <BarDivider />}
 
-          <BrandSwitcher
-            current={current!}
-            brands={switchable}
-            basePath={basePath}
-          />
+          <BrandSwitcher current={toSwitcherBrand(brand)} brands={switchable} />
         </>
       )}
 
@@ -61,21 +67,19 @@ export function TopBar({
         </>
       )}
 
+      {buildingForName && (
+        <span className="type-label truncate text-foreground max-[560px]:hidden">
+          {buildingForName}&rsquo;s new brand
+        </span>
+      )}
+
       <div className="ml-auto flex shrink-0 items-center gap-2">
         {/* Agent only exists when we're inside a brand */}
-        {brand && (
-          <AgentChatButton
-            brand={brand}
-            basePath={basePath}
-          />
-        )}
+        {brand && <AgentChatButton brand={brand} basePath={basePath} />}
 
         {/* Admin badge */}
         {isAdmin && (
-          <Badge
-            variant="outline"
-            className="border-input text-foreground max-md:hidden"
-          >
+          <Badge variant="outline" className="border-input text-foreground max-md:hidden">
             Admin
           </Badge>
         )}
@@ -84,4 +88,15 @@ export function TopBar({
       </div>
     </TopBarFrame>
   );
+}
+
+/**
+ * The bar for a route that needs nothing but the signed-in person. The one request-time read lives
+ * here rather than in each caller, so a caller can wrap it in its own `Suspense` and keep the rest
+ * of its shell prerendered. A route that already has the viewer for another reason (a role redirect,
+ * say) passes it to `TopBar` directly instead of reading it twice.
+ */
+export async function SignedInTopBar(props: Omit<TopBarProps, "viewer">) {
+  const viewer = await getViewer();
+  return <TopBar {...props} viewer={viewer} />;
 }

@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Missing loading states — review sheet</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400..700&display=swap" rel="stylesheet">
+<style>
+  :root { --ink: #1a1d26; --soft: #5f6879; --line: #e1e4ea; --bg: #eef0f4; --card: #fff; }
+  * { box-sizing: border-box; margin: 0; }
+  body { background: var(--bg); color: var(--ink); font-family: "Instrument Sans", system-ui, sans-serif; padding: 32px 24px 64px; }
+  h1 { font-size: 1.5rem; letter-spacing: -0.02em; }
+  .lede { color: var(--soft); margin-top: 6px; max-width: 72ch; }
+  .lede + .lede { margin-top: 10px; }
+  h2 { font-size: 1.0625rem; margin: 40px 0 4px; letter-spacing: -0.01em; }
+  h2 small { font-weight: 400; color: var(--soft); font-size: 0.8125rem; margin-left: 8px; }
+  .note { color: var(--soft); font-size: 13px; margin-top: 6px; max-width: 80ch; }
+  .row { display: flex; gap: 20px; align-items: flex-start; overflow-x: auto; padding: 14px 2px 4px; }
+  .cell { background: var(--card); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; flex: none; }
+  .cap { font-size: 11px; color: var(--soft); padding: 7px 10px; border-bottom: 1px solid var(--line); letter-spacing: 0.04em; text-transform: uppercase; }
+  .frame { position: relative; overflow: hidden; }
+  iframe { border: 0; display: block; transform-origin: 0 0; }
+  /* 1440 at 0.42, 768 at 0.56, 390 at 0.78 — every cell the same height on screen. */
+  .w1440 .frame { width: 605px; height: 420px; } .w1440 iframe { width: 1440px; height: 1000px; transform: scale(0.42); }
+  .w768  .frame { width: 430px; height: 420px; } .w768  iframe { width: 768px;  height: 750px;  transform: scale(0.56); }
+  .w390  .frame { width: 304px; height: 420px; } .w390  iframe { width: 390px;  height: 538px;  transform: scale(0.78); }
+  .tall.w1440 .frame { height: 714px; } .tall.w1440 iframe { height: 1700px; }
+  .tall.w768  .frame { height: 700px; } .tall.w768  iframe { height: 1250px; }
+  .tall.w390  .frame { height: 702px; } .tall.w390  iframe { height: 900px; }
+  table { border-collapse: collapse; margin-top: 14px; font-size: 13px; background: var(--card); border-radius: 10px; overflow: hidden; }
+  th, td { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-weight: 600; background: #f6f7fa; }
+  tr:last-child td { border-bottom: 0; }
+  footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--line); color: var(--soft); font-size: 13px; max-width: 84ch; }
+  footer p + p { margin-top: 10px; }
+  code { font-family: ui-monospace, Consolas, monospace; font-size: 0.9em; }
+  b { color: var(--ink); }
+</style>
+</head>
+<body>
+  <h1>Missing loading states — review sheet</h1>
+  <p class="lede">
+    Thirteen routes have a <code>page.tsx</code> and no <code>loading.tsx</code>. They all fall back to
+    <code>app/loading.tsx</code>: three grey cards in a centred <code>max-w-5xl</code> main. On an auth
+    page or the brands grid that is the wrong shape, so the page jumps when it resolves.
+  </p>
+  <p class="lede">
+    Ten of the thirteen need nothing new. <b>Three screens cover all thirteen</b>, and two of the three
+    reuse a skeleton that already exists in the repo. The table below says which route gets which.
+  </p>
+
+  <table>
+    <tr><th>Route</th><th>Gets</th><th>Why</th></tr>
+    <tr><td><code>(auth)</code> &mdash; sign-in, sign-up, forgot-password, reset-password, verify, two-factor, two-factor/lost-access, invite</td><td><b>LD-1</b>, one <code>app/(auth)/loading.tsx</code> for the group</td><td>All eight share the <code>AuthFrame</code> shell. Their own shells prerender, so this boundary is a correct-shape guard, not the usual sight. It draws the existing <code>AuthFormSkeleton</code>.</td></tr>
+    <tr><td><code>(auth)/two-factor/setup</code></td><td><b>LD-2</b>, its own <code>loading.tsx</code></td><td>The only auth route that truly blocks: the page <code>await</code>s <code>getViewerRole()</code> at its top level, so it has no prerenderable shell. Its first step is always the method choice, not a two-field form.</td></tr>
+    <tr><td><code>(auth)/sso-callback</code></td><td>nothing</td><td>The page <i>is</i> a spinner. A second one behind it adds nothing.</td></tr>
+    <tr><td><code>(main)</code> &mdash; the all-brands grid at <code>/</code></td><td><b>LD-3</b>, <code>app/(main)/loading.tsx</code></td><td><code>page.tsx</code> awaits <code>getViewer()</code> and <code>listActiveBrands()</code> at its top level, so the whole route waits on them. Today three generic cards stand in for the brand grid.</td></tr>
+    <tr><td><code>(main)/admin</code></td><td>nothing</td><td>A redirect stub: <code>redirect("/admin/clients")</code> and nothing else. It never renders, so it never loads.</td></tr>
+    <tr><td><code>(main)/onboarding/manual</code></td><td>nothing</td><td>Its one request-time read is the top bar, already inside its own <code>&lt;Suspense&gt;</code> with <code>OnboardingHeaderSkeleton</code>. The form beside it is static and prerenders.</td></tr>
+  </table>
+
+  <h2>LD-1 &mdash; the auth frame <small>app/(auth)/loading.tsx, one file for eight routes</small></h2>
+  <p class="note">
+    Logo and footer are real: they carry no request data, and that is the house pattern every
+    <code>loading.tsx</code> under <code>app/(main)</code> already follows. The switch link, the form
+    and the brand panel's copy are bones, because each of the eight routes fills them differently.
+    The form is the shape <code>components/auth/auth-form-skeleton.tsx</code> already draws, at the
+    two-field height sign-in, sign-up and invite use.
+  </p>
+  <div class="row">
+    <div class="cell tall w1440"><div class="cap">1440</div><div class="frame"><iframe src="ld1-auth-frame.html" title="Auth frame loading at 1440"></iframe></div></div>
+    <div class="cell tall w768"><div class="cap">768</div><div class="frame"><iframe src="ld1-auth-frame.html" title="Auth frame loading at 768"></iframe></div></div>
+    <div class="cell tall w390"><div class="cap">390</div><div class="frame"><iframe src="ld1-auth-frame.html" title="Auth frame loading at 390"></iframe></div></div>
+  </div>
+
+  <h2>LD-2 &mdash; turning two-factor on <small>app/(auth)/two-factor/setup/loading.tsx</small></h2>
+  <p class="note">
+    The one auth screen a person will really see. &ldquo;Step 1 of 3&rdquo; is real &mdash; setup always
+    starts at the method choice &mdash; and so are the two card shapes. Only the words inside them are
+    bones, because the admin copy and the client copy differ. The client's &ldquo;Not now&rdquo; button
+    is left out: whether it exists depends on the role this page is still fetching.
+  </p>
+  <div class="row">
+    <div class="cell tall w1440"><div class="cap">1440</div><div class="frame"><iframe src="ld2-two-factor-setup.html" title="Two-factor setup loading at 1440"></iframe></div></div>
+    <div class="cell tall w768"><div class="cap">768</div><div class="frame"><iframe src="ld2-two-factor-setup.html" title="Two-factor setup loading at 768"></iframe></div></div>
+    <div class="cell tall w390"><div class="cap">390</div><div class="frame"><iframe src="ld2-two-factor-setup.html" title="Two-factor setup loading at 390"></iframe></div></div>
+  </div>
+
+  <h2>LD-3 &mdash; your brands <small>app/(main)/loading.tsx, the client's grid at /</small></h2>
+  <p class="note">
+    The bar frame, the wordmark, the title &ldquo;Your brands&rdquo; and the &ldquo;Add a brand&rdquo;
+    button are all known before the request resolves, so they are real and they do not move. The count
+    line under the title, the avatar and the tiles are bones. Three tiles, because that is the common
+    case; the dashed &ldquo;Add a brand&rdquo; tile is left out of the grid, since its place in the grid
+    depends on the brand count and putting it at a guessed position is the one thing that would shift.
+  </p>
+  <div class="row">
+    <div class="cell tall w1440"><div class="cap">1440</div><div class="frame"><iframe src="ld3-your-brands.html" title="Your brands loading at 1440"></iframe></div></div>
+    <div class="cell tall w768"><div class="cap">768</div><div class="frame"><iframe src="ld3-your-brands.html" title="Your brands loading at 768"></iframe></div></div>
+    <div class="cell tall w390"><div class="cap">390</div><div class="frame"><iframe src="ld3-your-brands.html" title="Your brands loading at 390"></iframe></div></div>
+  </div>
+
+  <footer>
+    <p><b>Three screens, not thirteen.</b> The brief listed thirteen routes. Ten of them either share one
+    shell (the auth group), never render (the <code>/admin</code> redirect), or already hold their own
+    space (<code>/onboarding/manual</code>, <code>/sso-callback</code>). Writing thirteen near-identical
+    files would be thirteen things to keep in step with the pages they stand in for.</p>
+    <p><b>Nothing new was invented.</b> The skeleton primitives are the ones S00a and S00b were approved
+    with: one grey (<code>#e8ecf2</code>), one paler grey for secondary copy, a 1.8s pulse, animation off
+    under <code>prefers-reduced-motion</code>. LD-1 draws the shape of the existing
+    <code>AuthFormSkeleton</code>; LD-3's bar is the shape of the existing
+    <code>OnboardingHeaderSkeleton</code>; the frames, the panel ground, the method cards and the brand
+    card box are the approved AUTH-1, AUTH-7 and BA-1 CSS, imported, not restated.</p>
+    <p><b>Static chrome stays, only the request-dependent part is sketched.</b> That is the rule the 27
+    existing <code>loading.tsx</code> files already follow &mdash; <code>app/(main)/admin/(agency)/clients/loading.tsx</code>
+    renders the real <code>PageHeader</code> with its real title and description and sketches only the
+    rows. Both new main-area screens do the same.</p>
+    <p><b>What this does not fix.</b> <code>app/loading.tsx</code> at the root is still a generic
+    three-card placeholder with a leftover <code>ClientsLoading</code> name. Once LD-1 and LD-3 are
+    wired, the only routes left under it are the ones that never show it, so it could be deleted or
+    reduced to a bare frame &mdash; a separate call, and a code change, so it is not drawn here.</p>
+  </footer>
+</body>
+</html>

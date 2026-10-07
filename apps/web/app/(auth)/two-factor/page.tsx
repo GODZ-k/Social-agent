@@ -5,7 +5,7 @@ import { AuthFormSkeleton } from "@/components/auth/auth-form-skeleton";
 import { AuthFrame } from "@/components/auth/auth-frame";
 import { SwitchLink } from "@/components/auth/switch-link";
 import { TwoFactorPanel } from "@/components/auth/two-factor-panel";
-import { TwoFactorSignIn } from "@/features/auth/two-factor-sign-in";
+import { TwoFactorSignIn } from "@/components/auth/two-factor-sign-in";
 
 export const metadata: Metadata = { title: "Two-factor code" };
 

@@ -6,7 +6,7 @@ import { ApprovalPanel } from "@/components/auth/approval-panel";
 import { AuthFormSkeleton } from "@/components/auth/auth-form-skeleton";
 import { AuthFrame } from "@/components/auth/auth-frame";
 import { SwitchLink } from "@/components/auth/switch-link";
-import { SignInForm } from "@/features/auth/sign-in-form";
+import { SignInForm } from "@/components/auth/sign-in-form";
 
 export const metadata: Metadata = { title: "Sign in" };
 

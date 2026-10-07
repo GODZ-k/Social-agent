@@ -1,15 +1,15 @@
 import { notFound } from "next/navigation";
 import { getObsOverview } from "@/lib/api/server";
 import { formatNumber } from "@/lib/utils";
-import { ObsPageHeader } from "@/features/observability/obs-page-header";
-import { ObsTabs } from "@/features/observability/obs-tabs";
-import { parseObsSearchParams } from "@/features/observability/search-params";
-import { HeadlineBanner } from "@/features/observability/headline-banner";
-import { OverviewStats } from "@/features/observability/overview-stats";
-import { HourlyPanel } from "@/features/observability/hourly-panel";
-import { AiCostPanel } from "@/features/observability/ai-cost-panel";
-import { CostByClientPanel } from "@/features/observability/cost-by-client-panel";
-import { AttentionPanel } from "@/features/observability/attention-panel";
+import { ObsPageHeader } from "@/components/observability/obs-page-header";
+import { ObsTabs } from "@/components/observability/obs-tabs";
+import { parseObsSearchParams } from "@/components/observability/search-params";
+import { HeadlineBanner } from "@/components/observability/headline-banner";
+import { OverviewStats } from "@/components/observability/overview-stats";
+import { HourlyPanel } from "@/components/observability/hourly-panel";
+import { AiCostPanel } from "@/components/observability/ai-cost-panel";
+import { CostByClientPanel } from "@/components/observability/cost-by-client-panel";
+import { AttentionPanel } from "@/components/observability/attention-panel";
 
 export default async function ObservabilityOverviewPage({ searchParams }: { searchParams: Promise<{ range?: string; brand?: string }> }) {
   const { range, brandId } = parseObsSearchParams(await searchParams);

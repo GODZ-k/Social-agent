@@ -1,11 +1,11 @@
 import { notFound } from "next/navigation";
 import { getAgentRun } from "@/lib/api/server";
-import { RunHeader } from "@/features/observability/run-header";
-import { ProblemBanner } from "@/features/observability/problem-banner";
-import { RunStats } from "@/features/observability/run-stats";
-import { StepsWaterfall } from "@/features/observability/steps-waterfall";
-import { StepDetailPanel } from "@/features/observability/step-detail-panel";
-import { AboutRunPanel } from "@/features/observability/about-run-panel";
+import { RunHeader } from "@/components/observability/run-header";
+import { ProblemBanner } from "@/components/observability/problem-banner";
+import { RunStats } from "@/components/observability/run-stats";
+import { StepsWaterfall } from "@/components/observability/steps-waterfall";
+import { StepDetailPanel } from "@/components/observability/step-detail-panel";
+import { AboutRunPanel } from "@/components/observability/about-run-panel";
 
 export default async function AgentRunPage({ params }: { params: Promise<{ runId: string }> }) {
   const { runId } = await params;

@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { RadioGroup } from "radix-ui";
 import { motion } from "motion/react";
 import { spring } from "../lib/motion";
 import { cn } from "../lib/utils";
@@ -13,24 +14,29 @@ interface SegmentedProps<T extends string> {
   className?: string;
 }
 
-/** Radio group whose selection pill slides between options instead of blinking. */
+/**
+ * Radio group whose selection pill slides between options instead of blinking.
+ *
+ * Built on Radix `RadioGroup` for the keyboard contract a radio group owes: the group takes one
+ * tab stop, arrow keys move the selection, Home and End jump to the ends. Hand-rolling the roving
+ * tabindex is what this component used to get wrong — every option was its own tab stop and the
+ * arrow keys did nothing.
+ */
 export function Segmented<T extends string>({ value, onValueChange, options, label, className }: SegmentedProps<T>) {
   const id = React.useId();
   return (
-    <div
-      role="radiogroup"
+    <RadioGroup.Root
+      value={value}
+      onValueChange={(next) => onValueChange(next as T)}
       aria-label={label}
       className={cn("inline-flex max-w-full overflow-x-auto rounded-full bg-secondary p-1", className)}
     >
       {options.map((option) => {
         const selected = option.value === value;
         return (
-          <button
+          <RadioGroup.Item
             key={option.value}
-            type="button"
-            role="radio"
-            aria-checked={selected}
-            onClick={() => onValueChange(option.value)}
+            value={option.value}
             className={cn(
               "relative shrink-0 rounded-full px-3.5 py-1.5 text-[0.8125rem] font-medium whitespace-nowrap transition-colors",
               selected ? "text-foreground" : "text-muted-foreground hover:text-foreground",
@@ -45,13 +51,11 @@ export function Segmented<T extends string>({ value, onValueChange, options, lab
             )}
             <span className="relative">
               {option.label}
-              {option.count !== undefined && (
-                <span className="ml-1.5 tabular-nums text-muted-foreground">{option.count}</span>
-              )}
+              {option.count !== undefined && <span className="ml-1.5 tabular-nums text-muted-foreground">{option.count}</span>}
             </span>
-          </button>
+          </RadioGroup.Item>
         );
       })}
-    </div>
+    </RadioGroup.Root>
   );
 }

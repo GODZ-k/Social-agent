@@ -1,15 +1,15 @@
 import { notFound } from "next/navigation";
 import { getObsFrontend, getObsOverview } from "@/lib/api/server";
-import { ObsPageHeader } from "@/features/observability/obs-page-header";
-import { ObsTabs } from "@/features/observability/obs-tabs";
-import { parseObsSearchParams } from "@/features/observability/search-params";
-import { ReleaseCheckPanel } from "@/features/observability/release-check-panel";
-import { FrontendStats } from "@/features/observability/frontend-stats";
-import { HourlyPanel } from "@/features/observability/hourly-panel";
-import { ErrorsByPagePanel } from "@/features/observability/errors-by-page-panel";
-import { FrontendErrorsPanel } from "@/features/observability/frontend-errors-panel";
-import { FailedActionsPanel } from "@/features/observability/failed-actions-panel";
-import { FailedApiCallsPanel } from "@/features/observability/failed-api-calls-panel";
+import { ObsPageHeader } from "@/components/observability/obs-page-header";
+import { ObsTabs } from "@/components/observability/obs-tabs";
+import { parseObsSearchParams } from "@/components/observability/search-params";
+import { ReleaseCheckPanel } from "@/components/observability/release-check-panel";
+import { FrontendStats } from "@/components/observability/frontend-stats";
+import { HourlyPanel } from "@/components/observability/hourly-panel";
+import { ErrorsByPagePanel } from "@/components/observability/errors-by-page-panel";
+import { FrontendErrorsPanel } from "@/components/observability/frontend-errors-panel";
+import { FailedActionsPanel } from "@/components/observability/list-panels";
+import { FailedApiCallsPanel } from "@/components/observability/failed-api-calls-panel";
 
 export default async function ObservabilityFrontendPage({ searchParams }: { searchParams: Promise<{ range?: string; brand?: string; release?: string }> }) {
   const params = await searchParams;

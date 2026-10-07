@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { formatClock, useSecondsLeft } from "./use-seconds-left";
+import { formatClock, useSecondsLeft } from "@/hooks/use-seconds-left";
 
 const timeFormat = new Intl.DateTimeFormat(undefined, { hour: "numeric", minute: "2-digit" });
 

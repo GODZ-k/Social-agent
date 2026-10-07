@@ -1,16 +1,16 @@
 import { notFound } from "next/navigation";
 import { getObsAgents, getObsOverview } from "@/lib/api/server";
-import { ObsPageHeader } from "@/features/observability/obs-page-header";
-import { ObsTabs } from "@/features/observability/obs-tabs";
-import { parseObsSearchParams } from "@/features/observability/search-params";
-import { AgentsStats } from "@/features/observability/agents-stats";
-import { ModelsPanel } from "@/features/observability/models-panel";
-import { UsageByAgentPanel } from "@/features/observability/usage-by-agent-panel";
-import { RunsByKindPanel } from "@/features/observability/runs-by-kind-panel";
-import { LatencyByKindPanel } from "@/features/observability/latency-by-kind-panel";
-import { UsageOverTimePanel } from "@/features/observability/usage-over-time-panel";
-import { CostByClientPanel } from "@/features/observability/cost-by-client-panel";
-import { RecentRunsPanel } from "@/features/observability/recent-runs-panel";
+import { ObsPageHeader } from "@/components/observability/obs-page-header";
+import { ObsTabs } from "@/components/observability/obs-tabs";
+import { parseObsSearchParams } from "@/components/observability/search-params";
+import { AgentsStats } from "@/components/observability/agents-stats";
+import { ModelsPanel } from "@/components/observability/list-panels";
+import { UsageByAgentPanel } from "@/components/observability/usage-by-agent-panel";
+import { RunsByKindPanel } from "@/components/observability/runs-by-kind-panel";
+import { LatencyByKindPanel } from "@/components/observability/latency-by-kind-panel";
+import { UsageOverTimePanel } from "@/components/observability/usage-over-time-panel";
+import { CostByClientPanel } from "@/components/observability/cost-by-client-panel";
+import { RecentRunsPanel } from "@/components/observability/recent-runs-panel";
 
 export default async function ObservabilityAgentsPage({ searchParams }: { searchParams: Promise<{ range?: string; brand?: string }> }) {
   const { range, brandId } = parseObsSearchParams(await searchParams);

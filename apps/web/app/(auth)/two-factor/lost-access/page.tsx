@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { AuthFrame } from "@/components/auth/auth-frame";
 import { TwoFactorPanel } from "@/components/auth/two-factor-panel";
-import { LostAccess } from "@/features/auth/lost-access";
+import { LostAccess } from "@/components/auth/lost-access";
 
 export const metadata: Metadata = { title: "Get back into your account" };
 

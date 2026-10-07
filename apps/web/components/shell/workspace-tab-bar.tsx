@@ -2,8 +2,8 @@
 
 import type { WorkspaceBasePath } from "@/lib/workspace-path";
 import { TAB_ITEMS, navItemHref } from "./workspace-nav-items";
-import { TabBarFrame } from "./tab-bar-frame";
-import { TabLink } from "./tab-link";
+import { TabBarFrame } from "./frames";
+import { TabLink } from "./tab-content";
 import { MoreTab } from "./more-tab";
 import { useActiveSegment } from "./use-active-segment";
 

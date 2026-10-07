@@ -1,9 +1,9 @@
 import { notFound } from "next/navigation";
 import { getAdminClient } from "@/lib/api/server";
-import { InviteBanner } from "@/features/admin/invite-banner";
-import { ClientBrandsWorkspace } from "@/features/admin/client-brands-workspace";
-import { AboutClientPanel } from "@/features/admin/about-client-panel";
-import { AdminBrandCard } from "@/features/admin/admin-brand-card";
+import { InviteBanner } from "@/components/admin/invite-banner";
+import { ClientBrandsWorkspace } from "@/components/admin/client-brands-workspace";
+import { AboutClientPanel } from "@/components/admin/about-client-panel";
+import { AdminBrandCard } from "@/components/admin/admin-brand-card";
 
 export default async function AdminClientPage({ params }: { params: Promise<{ clientId: string }> }) {
   const { clientId } = await params;

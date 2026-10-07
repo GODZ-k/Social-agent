@@ -2,7 +2,7 @@
 
 import { AUTH_POLICY } from "@/lib/auth/rules";
 import { textLinkClass } from "./text-link";
-import { formatClock, useSecondsLeft } from "./use-seconds-left";
+import { formatClock, useSecondsLeft } from "@/hooks/use-seconds-left";
 
 /**
  * "Didn't get it?" with a resend button that waits a minute between sends.

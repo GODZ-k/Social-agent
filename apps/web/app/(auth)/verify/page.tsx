@@ -5,7 +5,7 @@ import { ApprovalPanel } from "@/components/auth/approval-panel";
 import { AuthFormSkeleton } from "@/components/auth/auth-form-skeleton";
 import { AuthFrame } from "@/components/auth/auth-frame";
 import { SwitchLink } from "@/components/auth/switch-link";
-import { VerifyEmailForm } from "@/features/auth/verify-email-form";
+import { VerifyEmailForm } from "@/components/auth/verify-email-form";
 
 export const metadata: Metadata = { title: "Verify your email" };
 

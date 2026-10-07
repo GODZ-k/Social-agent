@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
-import { ApprovalStack } from "@/features/approvals/approval-stack";
-import { ReviewPostSheet } from "@/features/post/review-post-sheet";
+import { ApprovalStack } from "@/components/approvals/approval-stack";
+import { ReviewPostSheet } from "@/components/post/review-post-sheet";
 import { getBrand, getStrategy, listReviewQueue, listSocialAccounts } from "@/lib/api/server";
 import type { WorkspaceBasePath } from "@/lib/workspace-path";
 

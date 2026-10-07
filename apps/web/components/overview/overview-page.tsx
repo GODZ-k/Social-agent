@@ -3,16 +3,16 @@ import { notFound, redirect } from "next/navigation";
 import { getBrand, getResearch, getStrategy, listContent, listReviewQueue } from "@/lib/api/server";
 import { getViewer } from "@/lib/auth/viewer";
 import type { WorkspaceBasePath } from "@/lib/workspace-path";
-import { deriveRun } from "@/features/run/run-steps";
-import { RunHero } from "@/features/run/run-hero";
-import { WorkspaceHeader } from "@/features/overview/workspace-header";
-import { NextStep } from "@/features/overview/next-step";
-import { LoopPanel } from "@/features/overview/loop-panel";
-import { ThisWeekPanel } from "@/features/overview/this-week-panel";
-import { ThisWeekPanelSkeleton } from "@/features/overview/this-week-panel-skeleton";
-import { StatTiles } from "@/features/overview/stat-tiles";
-import { BrandKitSummary } from "@/features/overview/brand-kit-summary";
-import { ReviewPostSheet } from "@/features/post/review-post-sheet";
+import { deriveRun } from "@/components/run/run-steps";
+import { RunHero } from "@/components/run/run-hero";
+import { WorkspaceHeader } from "@/components/overview/workspace-header";
+import { NextStep } from "@/components/overview/next-step";
+import { LoopPanel } from "@/components/overview/loop-panel";
+import { ThisWeekPanel } from "@/components/overview/this-week-panel";
+import { ThisWeekPanelSkeleton } from "@/components/overview/this-week-panel-skeleton";
+import { StatTiles } from "@/components/overview/stat-tiles";
+import { BrandKitSummary } from "@/components/overview/brand-kit-summary";
+import { ReviewPostSheet } from "@/components/post/review-post-sheet";
 
 
 export default async function OverviewPage({
