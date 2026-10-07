@@ -43,3 +43,7 @@ yarn-error.log*
 /graft/
 
 # /design/
+
+# Bytecode from the design builders (design/*/build.py) — regenerable.
+__pycache__/
+*.pyc

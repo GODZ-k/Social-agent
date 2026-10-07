@@ -15,7 +15,8 @@ export function AuthFrame({
 }: {
   top?: React.ReactNode;
   panel: React.ReactNode;
-  promise: string;
+  /** A node, not just text, so a `loading.tsx` can sketch it: the promise differs per route. */
+  promise: React.ReactNode;
   children: React.ReactNode;
 }) {
   return (

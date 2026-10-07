@@ -1,5 +1,19 @@
-/** The desktop-only brand panel beside every signed-out form: a picture on top, one message under it. */
-export function AuthPanel({ label, heading, body, children }: { label: string; heading: string; body: string; children: React.ReactNode }) {
+/**
+ * The desktop-only brand panel beside every signed-out form: a picture on top, one message under it.
+ *
+ * `heading` and `body` take nodes so a `loading.tsx` can sketch them; every real caller passes text.
+ */
+export function AuthPanel({
+  label,
+  heading,
+  body,
+  children,
+}: {
+  label: string;
+  heading: React.ReactNode;
+  body: React.ReactNode;
+  children: React.ReactNode;
+}) {
   return (
     <aside
       aria-label={label}

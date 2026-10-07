@@ -143,7 +143,7 @@ export function PageHeader({
   actions,
 }: {
   title: string;
-  description?: string;
+  description?: React.ReactNode;
   actions?: React.ReactNode;
 }) {
   return (
@@ -169,7 +169,7 @@ export function PageHeaderInline({
   actions,
 }: {
   title: string;
-  description?: string;
+  description?: React.ReactNode;
   actions?: React.ReactNode;
 }) {
   return (

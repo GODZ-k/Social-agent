@@ -9,7 +9,7 @@ const STEPS = [
 ] as const;
 
 /** Sign-in is two steps; the panel shows that the second one is where the person is now. */
-export function TwoFactorPanel({ heading, body }: { heading: string; body: string }) {
+export function TwoFactorPanel({ heading, body }: { heading: React.ReactNode; body: React.ReactNode }) {
   return (
     <AuthPanel label="About two-factor sign-in" heading={heading} body={body}>
       <ol aria-hidden className="grid gap-1 rounded-[1.5rem] bg-card p-3 shadow-floating">

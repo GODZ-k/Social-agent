@@ -1,5 +1,6 @@
 import "server-only";
 import { buildSeed, newBrandExtras, type SeedData } from "./seed";
+import { OWNERS } from "./seed-people";
 import { notStarted } from "./questionnaire";
 import { newResearch } from "./research";
 import type { Brand } from "@/lib/types";
@@ -18,12 +19,39 @@ declare global {
 
 export type { SeedData };
 
+/**
+ * Development only: hands one seeded client's brands to a real Clerk user id.
+ *
+ * `lib/api/server.ts` lets a non-admin reach a brand only when `brand.ownerId === viewer.id`, and
+ * the seed owns everything through fixed ids (`user_priya`, `user_sam`, ...). A throwaway Clerk
+ * account's id matches none of them, so it owns nothing: `/` redirects to onboarding and every
+ * `/c/:brandId` is not-found. That is why the client-side workspace chrome has never been checked
+ * in a browser — only the admin mirror, where the admin role bypasses ownership and paints
+ * different chrome.
+ *
+ * Set `MOCK_BRAND_OWNER_ID` to a Clerk user id to give that account Priya's brands (two active, one
+ * archived). Ignored in production, so it cannot widen access in a real deployment.
+ *
+ * Applied on every `getDb()` rather than once at build time: the database is cached on `globalThis`
+ * to survive hot reloads, so a one-shot version would silently do nothing whenever the variable was
+ * set after the server started — which is the normal case, since editing `.env.local` reloads the
+ * route but keeps the process. Re-running it is idempotent and costs one pass over a dozen brands.
+ */
+function withTestOwner(db: SeedData): SeedData {
+  const ownerId = process.env.MOCK_BRAND_OWNER_ID;
+  if (!ownerId || process.env.NODE_ENV === "production") return db;
+  for (const brand of db.brands) {
+    if (brand.ownerId === OWNERS.priya) brand.ownerId = ownerId;
+  }
+  return db;
+}
+
 export function getDb(): SeedData {
   if (!globalThis.__cadenceMockDb) {
     const seed = buildSeed();
     globalThis.__cadenceMockDb = recounted(seed);
   }
-  return globalThis.__cadenceMockDb;
+  return withTestOwner(globalThis.__cadenceMockDb);
 }
 
 /** Headline counts are derived from the posts so lists and badges always agree. */
