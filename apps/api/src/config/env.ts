@@ -19,6 +19,13 @@ const envSchema = z.object({
     INSTAGRAM_APP_SECRET: z.string().min(1).optional(),
     /** Must match the Meta app. Defaults to this API on localhost. */
     INSTAGRAM_REDIRECT_URI: z.url().optional(),
+    /**
+     * Trigger.dev runs the background work. Optional so the API still boots without them: handing a
+     * job over then fails loudly and the row is marked failed, rather than the server refusing to
+     * start. Both come from the trigger.dev dashboard.
+     */
+    TRIGGER_SECRET_KEY: z.string().min(1).optional(),
+    TRIGGER_PROJECT_REF: z.string().min(1).optional(),
 });
 
 // Stops the server at start-up with a message naming every missing or invalid variable.

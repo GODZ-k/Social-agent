@@ -1,10 +1,11 @@
 import type { AudienceProfile, GrowthBrief, Research } from "@social-agent/shared";
 import { ResearchRepository } from "@/repositories/research.repository";
-import { enqueueResearch } from "@/research-queue";
+import { startResearchJob } from "@/jobs";
 import { BrandsService } from "@/services/brands.service";
 import type { AuthUser } from "@/services/users.service";
 import { AppError } from "@/utils/AppError";
 import { isUniqueViolation, isoOrNull } from "@/utils";
+import { BrandResearchRow, ResearchRunRow } from "@social-agent/db";
 
 export class ResearchService {
     /**
@@ -23,7 +24,7 @@ export class ResearchService {
             const run = await ResearchRepository.findActiveRunFor(brand.id);
             return { research: await toResearch(brand.id, run), created: false };
         }
-        enqueueResearch(row.id);
+        await startResearchJob(row.id);
         return { research: await toResearch(brand.id, row), created: true };
     }
 

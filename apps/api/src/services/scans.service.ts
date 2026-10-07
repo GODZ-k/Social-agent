@@ -2,7 +2,7 @@ import type { BrandScanRow } from "@social-agent/db";
 import type { NewScanInput, Scan } from "@social-agent/shared";
 import { ScansRepository } from "@/repositories/scans.repository";
 import type { ScanScope } from "@/types/scope";
-import { enqueueScan } from "@/scan-queue";
+import { startScanJob } from "@/jobs";
 import type { AuthUser } from "@/services/users.service";
 import { AppError } from "@/utils/AppError";
 import { isoOrNull, isUuid } from "@/utils";
@@ -14,7 +14,7 @@ export class ScansService {
         if (active) return { scan: toScan(active), created: false };
 
         const row = await ScansRepository.create({ url: input.url, requestedBy: user.id });
-        enqueueScan(row.id);
+        await startScanJob(row.id);
         return { scan: toScan(row), created: true };
     }
 

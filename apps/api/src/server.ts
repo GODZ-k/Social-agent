@@ -2,10 +2,6 @@ import app from "./app";
 import { config } from "./config/constants";
 import { pool } from "./config/db";
 import { env } from "./config/env";
-import { ResearchRepository } from "@/repositories/research.repository";
-import { ScansRepository } from "@/repositories/scans.repository";
-import { pendingResearchCount } from "@/research-queue";
-import { pendingScanCount } from "@/scan-queue";
 
 // Neon can drop the first connection after it has been idle, so try twice.
 async function checkDatabase() {
@@ -21,11 +17,11 @@ async function start() {
         await checkDatabase();
         console.log("Database connected successfully");
 
-        const interrupted = await ScansRepository.failInterrupted();
-        if (interrupted > 0) console.log(`Marked ${interrupted} interrupted scan(s) as failed`);
-
-        const interruptedResearch = await ResearchRepository.failInterrupted();
-        if (interruptedResearch > 0) console.log(`Marked ${interruptedResearch} interrupted research run(s) as failed`);
+        // No boot sweep any more. It existed because the in-process queue died with the process, so
+        // every active row on start-up was certainly orphaned. Trigger.dev keeps running across our
+        // restarts, so a row that is `running` here is very likely still being worked on, and
+        // failing it would be wrong. `failInterrupted()` stays on the repositories for a one-off
+        // clean-up of rows stranded by the old queue.
     } catch (err) {
         console.error("Database connection failed", err);
         process.exit(1);
@@ -48,19 +44,12 @@ async function start() {
             process.exit(1);
         }, config.server.SHUTDOWN_TIMEOUT_MS).unref();
 
+        // Background work is no longer interrupted by a restart: Trigger.dev runs it in its own
+        // process, so a scan or a discovery run carries on and writes its own outcome. Marking the
+        // active rows failed here — which the in-process queue had to do — would now be a lie.
         server.close(async () => {
             let code = exitCode;
             try {
-                const pending = pendingScanCount();
-                if (pending > 0) {
-                    console.log(`${pending} scan(s) still running, marking them interrupted`);
-                    await ScansRepository.failInterrupted();
-                }
-                const pendingResearch = pendingResearchCount();
-                if (pendingResearch > 0) {
-                    console.log(`${pendingResearch} research run(s) still running, marking them interrupted`);
-                    await ResearchRepository.failInterrupted();
-                }
                 await pool.end();
                 console.log("Database connection closed");
             } catch (err) {
