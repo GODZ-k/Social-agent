@@ -1,4 +1,4 @@
-import StrategyResearchPage from '@/components/strategy/research/research-page';
+import StrategyResearchPage from '@/modules/strategy/templates/research-page';
 import React from 'react'
 
 function page(props:{

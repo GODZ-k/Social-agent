@@ -1,13 +1,14 @@
-import StrategyResearchPage from '@/components/strategy/research/research-page';
-import { WorkspaceBasePath } from '@/lib/workspace-path';
+import StrategyResearchPage from '@/modules/strategy/templates/research-page';
 import React from 'react'
+import { routes } from "@/config/routes";
+import type { WorkspaceBase } from "@/config/routes";
 
 function page(props:{
   params: Promise<{ brandId: string }>;
-  basePath?: WorkspaceBasePath;
+  basePath?: WorkspaceBase;
 }) {
   return (
-    <StrategyResearchPage {...props} basePath='/admin/c' />
+    <StrategyResearchPage {...props} basePath={routes.admin.brand.base} />
   )
 }
 

@@ -1,4 +1,4 @@
-import type { BrandScanStep } from "@/lib/types";
+import type { BrandScanStep } from "./types";
 
 /** The named steps of a brand scan, shown one at a time while it runs. Ids match the API's `ScanStepId`. */
 export const BRAND_SCAN_STEPS: BrandScanStep[] = [

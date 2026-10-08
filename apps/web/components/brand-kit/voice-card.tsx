@@ -2,9 +2,10 @@
 
 import { useWatch, type UseFormReturn } from "react-hook-form";
 import type { Values } from "@/lib/forms/brand-kit";
-import { EditableCard, type CardControls } from "@/components/brand-kit/editable-card";
-import { VoicePicker } from "@/components/brand-kit/voice-picker";
+import { EditableCard } from "./editable-card";
+import { VoicePicker } from "./voice-picker";
 import { FormField, FormItem, FormMessage } from "@repo/ui/components/form";
+import type { CardControls } from "@/components/brand-kit/types";
 
 /** "How you sound": up to a few words that set every caption's tone. */
 export function VoiceCard({ form, ...card }: { form: UseFormReturn<Values> } & CardControls) {

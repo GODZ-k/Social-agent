@@ -12,18 +12,19 @@ import { useScan } from "@/hooks/use-scan";
 import type { Brand, SocialAccountRow } from "@/lib/types";
 import { prettyUrl } from "@/lib/utils";
 import { brandKitSchema, toValues, toPatch, type Values } from "@/lib/forms/brand-kit";
-import { useEditableCard, type CardKey } from "@/hooks/use-editable-card";
-import type { CardControls } from "@/components/brand-kit/editable-card";
-import { BusinessCard } from "@/components/brand-kit/business-card";
-import { ContactDetailsCard } from "@/components/brand-kit/contact-details-card";
-import { AudienceCard } from "@/components/brand-kit/audience-card";
-import { VoiceCard } from "@/components/brand-kit/voice-card";
-import { LooksCard } from "@/components/brand-kit/looks-card";
-import { PlatformsStatusCard } from "@/components/brand-kit/platforms-status-card";
-import { BrandPreview } from "@/components/brand-kit/brand-preview";
+import { useEditableCard } from "@/hooks/use-editable-card";
+import type { CardControls } from "@/components/brand-kit/types";
+import { BusinessCard } from "./business-card";
+import { ContactDetailsCard } from "./contact-details-card";
+import { AudienceCard } from "./audience-card";
+import { VoiceCard } from "./voice-card";
+import { LooksCard } from "./looks-card";
+import { PlatformsStatusCard } from "./platforms-status-card";
+import { BrandPreview } from "./brand-preview";
 import { useLiveBrand } from "@/hooks/use-live-brand";
 import { Button } from "@repo/ui/components/button";
 import { Form } from "@repo/ui/components/form";
+import type { CardKey } from "@/components/brand-kit/types";
 
 /** Settings (S13): each section is its own read-only card until Edit is tapped; Done validates and saves the whole kit. */
 export function SettingsBrandKitForm({ brand, accounts }: { brand: Brand; accounts: SocialAccountRow[] }) {

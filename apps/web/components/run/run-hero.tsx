@@ -2,14 +2,15 @@ import Link from "next/link";
 import { LoaderCircle, Clock, ArrowRight } from "lucide-react";
 import { StepMeter } from "@repo/ui/components/step-meter";
 import { Button } from "@repo/ui/components/button";
-import { workspaceHref, type WorkspaceBasePath } from "@/lib/workspace-path";
 import type { Run } from "./run-steps";
+import { workspaceRoutes } from "@/config/routes";
+import type { WorkspaceBase } from "@/config/routes";
 
 /**
  * The overview hero while business discovery, then the strategy, are being generated (rp1).
  * The heading holds still for the whole run; only the step line and the meter move.
  */
-export function RunHero({ run, brandId, basePath }: { run: Run; brandId: string; basePath: WorkspaceBasePath }) {
+export function RunHero({ run, brandId, basePath }: { run: Run; brandId: string; basePath: WorkspaceBase }) {
   const step = run.steps[run.currentIndex]!;
   const minuteWord = run.minutesLeft === 1 ? "minute" : "minutes";
 
@@ -29,7 +30,7 @@ export function RunHero({ run, brandId, basePath }: { run: Run; brandId: string;
           </p>
         </div>
         <Button asChild size="lg" className="max-[560px]:w-full">
-          <Link href={workspaceHref(basePath, brandId, "/strategy")}>
+          <Link href={workspaceRoutes(basePath).strategy(brandId)}>
             Watch it
             <ArrowRight />
           </Link>

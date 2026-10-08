@@ -1,5 +1,5 @@
 import type { Platform } from "@social-agent/shared";
-import type { Strategy } from "@/lib/types";
+import type { Strategy } from "./types";
 
 /** A strategy writes its best times for people, as written: "Tue 7:30am". */
 export interface TimeSlot {

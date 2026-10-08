@@ -1,4 +1,4 @@
-import OverviewPage from '@/components/overview/overview-page';
+import OverviewPage from '@/modules/overview/templates/overview-page';
 import React from 'react'
 
 export default async function page(props: {

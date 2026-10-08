@@ -6,9 +6,10 @@ import { useClerk, useSignIn, useSignUp } from "@clerk/nextjs";
 import type { SignInFutureResource, SignUpFutureResource } from "@clerk/nextjs/types";
 import { clerkCode, done, fail, failWith, succeed, toAuthError } from "./errors";
 import { forgetPending, readPending, rememberPending, useFinishNavigation, useMounted, type PendingFlow } from "./shared";
-import type { AuthResult, AuthStep, InviteState } from "../types";
+import type { AuthResult, AuthStep, InviteState } from "@/lib/auth/types";
+import { routes } from "@/config/routes";
 
-const SSO_CALLBACK = "/sso-callback";
+const SSO_CALLBACK = routes.auth.ssoCallback;
 
 interface Redirect {
   redirectTo: string;
@@ -256,7 +257,7 @@ export function useInvite({ token, redirectTo }: Redirect & { token: string | nu
 
 export function useSignOut() {
   const clerk = useClerk();
-  return async function signOut(redirectTo = "/sign-in"): Promise<void> {
+  return async function signOut(redirectTo = routes.auth.signIn): Promise<void> {
     forgetPending();
     await clerk.signOut({ redirectUrl: redirectTo });
   };

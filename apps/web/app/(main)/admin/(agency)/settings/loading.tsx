@@ -1,10 +1,5 @@
-import { PageHeaderInline, SkeletonRows } from "@repo/ui/components/states";
+import { AgencySettingsLoading } from "@/modules/admin-settings/templates/agency-settings-loading";
 
-export default function AdminSettingsLoading() {
-  return (
-    <>
-      <PageHeaderInline title="Settings" description="Your agency's team and what Cadence emails you about." />
-      <SkeletonRows rows={4} className="[&>*]:h-24" />
-    </>
-  );
+export default function Loading() {
+  return <AgencySettingsLoading />;
 }

@@ -9,7 +9,10 @@ packages:
 # esbuild is required by tsx / tsup.
 # unrs-resolver is the native module resolver behind ESLint's import plugin; its
 # script only fetches the prebuilt binary for this platform.
+# @depot/cli is the remote container builder `trigger.dev deploy` shells out to; like
+# unrs-resolver, its script only fetches the prebuilt binary for this platform.
 allowBuilds:
+  '@depot/cli': true
   esbuild: true
   unrs-resolver: true
 

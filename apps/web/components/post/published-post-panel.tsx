@@ -7,8 +7,8 @@ import { differenceInCalendarDays, format, parseISO } from "date-fns";
 import { BarChart3, CircleCheck, ExternalLink } from "lucide-react";
 import type { BrandKit, Platform } from "@social-agent/shared";
 import type { PostView } from "@/lib/types";
-import { bestPostReason } from "@/components/analytics/post-reason";
-import { PostStateBadge } from "@/components/content/post-state-badge";
+import { bestPostReason } from "@/lib/post-reason";
+import { PostStateBadge } from "./post-state-badge";
 import { Sheet } from "@repo/ui/components/sheet";
 import { Button } from "@repo/ui/components/button";
 import { Badge } from "@repo/ui/components/badge";
@@ -16,6 +16,7 @@ import { PostArt } from "@repo/ui/components/social/post-art";
 import { PostFacts } from "@repo/ui/components/social/post-facts";
 import { PLATFORM_LABEL } from "@repo/ui/components/social/platform";
 import { PublishedPostMetrics } from "./published-post-metrics";
+import { routes } from "@/config/routes";
 
 const PLATFORM_DOMAIN: Record<Platform, string> = {
   instagram: "instagram.com",
@@ -69,7 +70,7 @@ export function PublishedPostPanel({ post, brand, handle, bestRank, avgReach }: 
       footer={
         <>
           <Button asChild variant="outline" className="mr-auto">
-            <Link href={`/c/${post.brandId}/analytics`}>
+            <Link href={routes.brand.analytics(post.brandId)}>
               <BarChart3 /> See it in Analytics
             </Link>
           </Button>

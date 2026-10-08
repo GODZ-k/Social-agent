@@ -1,7 +1,7 @@
 import { Suspense } from "react";
-import { AdminHeaderSkeleton } from "@/components/shell/skeletons";
-import { AdminNav } from "@/components/shell/admin-nav";
-import { SignedInTopBar } from "@/components/shell/top-bar";
+import { AdminHeaderSkeleton } from "@/modules/shell/components/skeletons";
+import { AdminNav } from "@/modules/shell/components/admin-nav";
+import { SignedInTopBar } from "@/modules/shell/components/top-bar";
 
 /** The agency's own area: Clients and Observability. Role gate lives in the admin layout above this group. */
 export default function AgencyLayout({ children }: { children: React.ReactNode }) {

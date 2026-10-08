@@ -47,3 +47,6 @@ yarn-error.log*
 # Bytecode from the design builders (design/*/build.py) — regenerable.
 __pycache__/
 *.pyc
+
+# The Trigger.dev CLI's own build output and local run state, regenerated on every `trigger dev`.
+apps/api/.trigger/

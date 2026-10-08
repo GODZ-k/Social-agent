@@ -1,4 +1,4 @@
-import SettingsLoading from '@/components/settings/setting-loading'
+import SettingsLoading from '@/modules/settings/templates/setting-loading'
 import React from 'react'
 
 function loading() {

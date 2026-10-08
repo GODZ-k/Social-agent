@@ -10,15 +10,16 @@ import { useServerAction } from "@/lib/api/use-server-action";
 import type { NewBrandDraft, ScanResult } from "@/lib/types";
 import { brandKitSchema, toInput, toValues, type Values } from "@/lib/forms/brand-kit";
 import { useEditableCard } from "@/hooks/use-editable-card";
-import { BusinessCard } from "@/components/brand-kit/business-card";
-import { AudienceCard } from "@/components/brand-kit/audience-card";
-import { VoiceCard } from "@/components/brand-kit/voice-card";
-import { LooksCard } from "@/components/brand-kit/looks-card";
-import { PlatformsCard, signalNote } from "@/components/brand-kit/platforms-card";
-import { BrandPreview } from "@/components/brand-kit/brand-preview";
+import { BusinessCard } from "./business-card";
+import { AudienceCard } from "./audience-card";
+import { VoiceCard } from "./voice-card";
+import { LooksCard } from "./looks-card";
+import { PlatformsCard, signalNote } from "./platforms-card";
+import { BrandPreview } from "./brand-preview";
 import { useLiveBrand } from "@/hooks/use-live-brand";
 import { Button } from "@repo/ui/components/button";
 import { Form } from "@repo/ui/components/form";
+import { routes } from "@/config/routes";
 
 /**
  * Onboarding's review step (S17a): each card is read-only until Edit is tapped, then Cancel/Done
@@ -55,7 +56,7 @@ export function OnboardingBrandKitForm({
     success: (brand) => `${brand.name} added`,
     failure: "Couldn't save the brand.",
     onSuccess: (brand) =>
-      router.push(personId ? `/admin/clients/${personId}/brand/new?brandId=${brand.id}` : `/onboarding?brandId=${brand.id}`),
+      router.push(personId ? routes.admin.clients.resumeBrand(personId, brand.id) : routes.onboarding.resume(brand.id)),
   });
 
   return (

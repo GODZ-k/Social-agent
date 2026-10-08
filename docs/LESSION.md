@@ -1,15 +1,15 @@
 # Lessons learned
 
 ![living document](https://img.shields.io/badge/living_document-blue)
-![lessons](https://img.shields.io/badge/lessons-35-blue)
+![lessons](https://img.shields.io/badge/lessons-39-blue)
 ![source](https://img.shields.io/badge/source-real_runs-lightgrey)
-![updated](https://img.shields.io/badge/updated-2026--09--22-lightgrey)
+![updated](https://img.shields.io/badge/updated-2026--10--08-lightgrey)
 
 *What already cost us time, and the rule that came out of it. Read before repeating a
 class of work.*
 
-Every entry is a pair: in bold, what happened; underneath it, what we do now. All 35 came
-out of real runs between 2026-09-20 and 2026-09-22.
+Every entry is a pair: in bold, what happened; underneath it, what we do now. All 39 came
+out of real runs between 2026-09-20 and 2026-10-08.
 
 > [!TIP]
 > Add to it when something costs us time twice.
@@ -34,8 +34,8 @@ out of real runs between 2026-09-20 and 2026-09-22.
 | Area                                                  | Lessons  | Mostly about                                                           |
 | ----------------------------------------------------- | -------- | ---------------------------------------------------------------------- |
 | [**Firecrawl**](#firecrawl)                           | ![7][c7] | Limits, lying status codes, and fields that look useful but are not    |
-| [**Mastra 1.66**](#mastra-166)                        | ![6][c6] | Method names, structured output, and routes that carry no auth         |
-| [**Windows and tooling**](#windows-and-tooling)       | ![4][c4] | Links, deletes and binaries that behave differently here               |
+| [**Mastra 1.66**](#mastra-166)                        | ![8][c8] | Method names, structured output, stores, bundling and auth-free routes |
+| [**Windows and tooling**](#windows-and-tooling)       | ![6][c6] | Links, deletes, escapes and binaries that behave differently here      |
 | [**Repo, pnpm, Neon**](#repo-pnpm-neon)               | ![7][c7] | Installs, stale `dist` folders, versioning and the git index           |
 | [**Process with AI agents**](#process-with-ai-agents) | ![7][c7] | Stalls, re-reviews, file ownership and where rulings are written       |
 | [**Code**](#code)                                     | ![12][c12] | Facts the model must not own, and refactors that must prove themselves |
@@ -161,6 +161,23 @@ out of real runs between 2026-09-20 and 2026-09-22.
   agents may use `skills:` with absolute paths. Skills live in `packages/agents/skills`, and the
   API build copies them to `dist/skills` because tsup does not bundle files read at run time.
 
+- **An embedded store cannot hold anything a job runner has to keep.**
+
+  Observability spans went to a DuckDB file through a composite store. Trigger.dev gives each run
+  its own container, so the file and every span in it would be thrown away when the run ended — and
+  esbuild could not bundle the task at all, because `@duckdb/node-bindings` `require`s a `.node`
+  binary for all seven platforms and only the host one is installed. Nothing had ever read those
+  spans. Postgres takes the `observability` domain with no migration (it creates `mastra_traces` on
+  `init()`); the real destination is SigNoz, which the admin UI already links to.
+
+- **Every bundler that builds the API has to copy `packages/agents/skills` itself.**
+
+  `loadSkill` reads a skill off disk next to its own built file, so tsup needed a copy step and
+  Trigger.dev needed its own: its chunks sit at the root of the build output, where neither
+  `../skills` nor `./skills` exists. `additionalFiles` cannot do it — it keeps each match path
+  relative to the working directory, landing them under `packages/agents/skills/`. A nine-line
+  `onBuildComplete` extension sharing `scripts/copy-skills.mjs` with tsup is the fix.
+
 - **Mastra's own HTTP routes, the ones Studio talks to, have no authentication.**
 
   `src/app.ts` mounts them only when `NODE_ENV` is not `production`, and the host must
@@ -169,6 +186,21 @@ out of real runs between 2026-09-20 and 2026-09-22.
 <a id="windows-and-tooling"></a>
 
 ## Windows and tooling
+
+- **An agent's heredoc collapses `\\` to `\`, so never write a regex or an escaped string through
+  one.**
+
+  Cost time twice on 2026-10-08: a `.split('\\')` in a scratch script became `.split('\')` and
+  failed to parse, and the rewritten `proxy.ts` matcher came out as `[^?]*\.` instead of
+  `[^?]*\\.` — valid JavaScript, a silently wrong regex, caught only because ESLint flags the
+  useless escape. Write files with a real file-write tool when the content has a backslash in it,
+  and read back any line you escaped.
+
+- **A codemod over this repo must match both quote styles.**
+
+  Rewriting every import after a 348-file move missed 27 files on the first pass because the
+  regex only matched `from "…"`; a handful of route files use `from '…'`. `tsc` found them, but
+  only because they were imports. Match `["']` in anything that sweeps the tree.
 
 - **A throwaway script that imports API code needs `tsx`, a `.mts` name and `file:///` imports.**
 

@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import type { Role } from "@social-agent/shared";
 import type { Viewer } from "@/lib/types";
 import { getSessionUser } from "./server";
+import { routes } from "@/config/routes";
 
 const ADMIN_EMAILS = (process.env.NEXT_PUBLIC_ADMIN_EMAILS ?? "")
   .split(",")
@@ -31,9 +32,9 @@ function resolveRole(role: string | null, email: string): Role {
  */
 export const getViewer = cache(async (): Promise<Viewer> => {
   const user = await getSessionUser();
-  if (!user) redirect("/sign-in");
+  if (!user) redirect(routes.auth.signIn);
   const role = resolveRole(user.role, user.email);
-  if (role === "admin" && !user.twoFactorEnabled && !SKIP_ADMIN_TWO_FACTOR) redirect("/two-factor/setup");
+  if (role === "admin" && !user.twoFactorEnabled && !SKIP_ADMIN_TWO_FACTOR) redirect(routes.auth.twoFactorSetup);
   return { id: user.id, email: user.email, name: user.name, role };
 });
 

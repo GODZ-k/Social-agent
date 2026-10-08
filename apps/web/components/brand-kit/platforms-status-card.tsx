@@ -10,6 +10,7 @@ import type { SocialAccountRow } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { Panel } from "@repo/ui/components/states";
 import { PLATFORM_LABEL, PlatformIcon } from "@repo/ui/components/social/platform";
+import { routes } from "@/config/routes";
 
 type Tone = "muted" | "success" | "warning";
 
@@ -23,7 +24,7 @@ function statusFor(brandId: string, inPlan: boolean, account?: SocialAccountRow)
     text: (
       <>
         {expired ? "Access expired." : "Not connected yet."}{" "}
-        <Link href={`/c/${brandId}/settings?tab=accounts`} className="underline underline-offset-2">
+        <Link href={routes.brand.settingsTab(brandId, "accounts")} className="underline underline-offset-2">
           {expired ? "Reconnect" : "Connect it"}
         </Link>
       </>

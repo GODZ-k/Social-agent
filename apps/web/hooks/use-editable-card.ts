@@ -3,9 +3,7 @@
 import { useRef, useState } from "react";
 import type { UseFormReturn } from "react-hook-form";
 import type { Values } from "@/lib/forms/brand-kit";
-import type { CardControls } from "@/components/brand-kit/editable-card";
-
-export type CardKey = "business" | "contact" | "audience" | "voice" | "looks";
+import type { CardControls, CardKey } from "@/components/brand-kit/types";
 
 const CARD_FIELDS: Record<CardKey, (keyof Values)[]> = {
   business: ["name", "industry", "summary", "tagline"],

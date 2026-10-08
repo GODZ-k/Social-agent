@@ -3,11 +3,12 @@
 import { redirect } from "next/navigation";
 import { endSession } from "./server";
 import type { AuthResult } from "./types";
+import { routes } from "@/config/routes";
 
 /** Signs out on the server and goes to sign in. Usable as `<form action={signOut}>`. */
 export async function signOut(): Promise<void> {
   await endSession();
-  redirect("/sign-in");
+  redirect(routes.auth.signIn);
 }
 
 /**

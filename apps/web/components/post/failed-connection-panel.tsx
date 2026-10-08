@@ -12,7 +12,7 @@ import { Sheet } from "@repo/ui/components/sheet";
 import { Button } from "@repo/ui/components/button";
 import { PostFacts } from "@repo/ui/components/social/post-facts";
 import { PlatformIcon, PLATFORM_LABEL } from "@repo/ui/components/social/platform";
-import { PostStateBadge } from "@/components/content/post-state-badge";
+import { PostStateBadge } from "./post-state-badge";
 import { PostArt } from "@repo/ui/components/social/post-art";
 import { FailAlert } from "./fail-alert";
 import { WhenItGoesOutChoice } from "./when-it-goes-out-choice";

@@ -12,7 +12,7 @@ import { Sheet } from "@repo/ui/components/sheet";
 import { Button } from "@repo/ui/components/button";
 import { PostFacts } from "@repo/ui/components/social/post-facts";
 import { PLATFORM_LABEL } from "@repo/ui/components/social/platform";
-import { PostStateBadge } from "@/components/content/post-state-badge";
+import { PostStateBadge } from "./post-state-badge";
 import { FailAlert } from "./fail-alert";
 import { ReviewPostCaptionHashtags } from "./review-post-caption-hashtags";
 import { ReviewPostPreview } from "./review-post-preview";

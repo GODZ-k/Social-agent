@@ -1,4 +1,4 @@
-import { OnboardingLoadingSkeleton } from "@/components/onboarding/onboarding-loading-skeleton";
+import { OnboardingLoadingSkeleton } from "@/modules/onboarding/templates/onboarding-loading-skeleton";
 
 /* The top bar needs the viewer, so only the main column is sketched while the page loads. */
 export default function OnboardingLoading() {

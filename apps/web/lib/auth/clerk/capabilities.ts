@@ -1,4 +1,4 @@
-import type { AuthCapabilities } from "../types";
+import type { AuthCapabilities } from "@/lib/auth/types";
 
 /**
  * Clerk sends reset codes, not links. Its passkeys are a first sign-in step, not

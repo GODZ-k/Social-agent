@@ -4,17 +4,17 @@ import { parseISO } from "date-fns";
 import type { Platform } from "@social-agent/shared";
 import { getViewer } from "@/lib/auth/viewer";
 import { clone } from "./clone";
-import { getDb } from "./mock/db";
-import * as account from "./mock/account";
-import * as admin from "./mock/admin";
-import * as agencySettings from "./mock/agency-settings";
-import { report } from "./mock/analytics";
-import { settleResearch } from "./mock/brand-flow";
-import * as obs from "./mock/observability";
-import * as posts from "./mock/posts";
-import * as questionnaire from "./mock/questionnaire";
-import * as settings from "./mock/settings";
-import * as strategies from "./mock/strategy";
+import { getDb } from "@/lib/api/mock/db";
+import * as account from "@/lib/api/mock/account";
+import * as admin from "@/lib/api/mock/admin";
+import * as agencySettings from "@/lib/api/mock/agency-settings";
+import { report } from "@/lib/api/mock/analytics";
+import { settleResearch } from "@/lib/api/mock/brand-flow";
+import * as obs from "@/lib/api/mock/observability";
+import * as posts from "@/lib/api/mock/posts";
+import * as questionnaire from "@/lib/api/mock/questionnaire";
+import * as settings from "@/lib/api/mock/settings";
+import * as strategies from "@/lib/api/mock/strategy";
 import type {
   AccountView,
   AdminClientRow,

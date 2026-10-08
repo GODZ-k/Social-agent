@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Button } from "@repo/ui/components/button";
 import { ErrorState } from "@repo/ui/components/states";
+import { routes } from "@/config/routes";
 
 export default function FrontendErrorNotFound() {
   return (
@@ -8,7 +9,7 @@ export default function FrontendErrorNotFound() {
       <ErrorState error={new Error("This error doesn't exist, or it aged out.")} />
       <div className="flex justify-center">
         <Button asChild variant="ghost">
-          <Link href="/admin/observability/frontend">Back to Frontend</Link>
+          <Link href={routes.admin.observability.frontend}>Back to Frontend</Link>
         </Button>
       </div>
     </main>

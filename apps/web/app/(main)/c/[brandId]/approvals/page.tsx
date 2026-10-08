@@ -1,4 +1,4 @@
-import ApprovalsPage from '@/components/approvals/approval-page';
+import ApprovalsPage from '@/modules/approvals/templates/approval-page';
 import React from 'react'
 
 function page(props: {

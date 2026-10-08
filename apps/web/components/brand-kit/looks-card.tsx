@@ -3,10 +3,11 @@
 import { useWatch, type UseFormReturn } from "react-hook-form";
 import type { Values } from "@/lib/forms/brand-kit";
 import type { ScanSources } from "@/lib/types";
-import { EditableCard, type CardControls } from "@/components/brand-kit/editable-card";
-import { ColorList } from "@/components/brand-kit/color-list";
-import { KitField } from "@/components/brand-kit/kit-field";
-import { KvRow } from "@/components/brand-kit/kv-row";
+import { EditableCard } from "./editable-card";
+import { ColorList } from "./color-list";
+import { KitField } from "./kit-field";
+import { KvRow } from "./kv-row";
+import type { CardControls } from "@/components/brand-kit/types";
 
 export function LooksCard({
   form,

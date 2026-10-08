@@ -1,4 +1,4 @@
-import AnalyticsPage from '@/components/analytics/analytics-page'
+import AnalyticsPage from '@/modules/analytics/templates/analytics-page'
 import React from 'react'
 
 function page(props:{

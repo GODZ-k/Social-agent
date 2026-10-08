@@ -2,7 +2,8 @@ import Link from "next/link";
 import { House } from "lucide-react";
 import { Button } from "@repo/ui/components/button";
 import { GoBackButton, StateMark } from "@repo/ui/components/states";
-import { Logo } from "@/components/shell/logo";
+import { Logo } from "@/components/common/logo";
+import { routes } from "@/config/routes";
 
 /** An address that matches nothing (ST-2 "page"). */
 export default function NotFound() {
@@ -16,7 +17,7 @@ export default function NotFound() {
         <div className="mt-7 flex flex-wrap justify-center gap-2.5 max-[560px]:flex-col-reverse">
           <GoBackButton />
           <Button asChild>
-            <Link href="/">
+            <Link href={routes.home}>
               <House /> Go to your brands
             </Link>
           </Button>

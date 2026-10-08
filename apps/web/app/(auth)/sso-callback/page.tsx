@@ -1,5 +1,5 @@
-import { SsoCallback } from "@/lib/auth/client";
+import { SsoCallbackPage } from "@/modules/auth/templates/sso-callback-page";
 
-export default function SsoCallbackPage() {
-  return <SsoCallback />;
+export default function Page() {
+  return <SsoCallbackPage />;
 }

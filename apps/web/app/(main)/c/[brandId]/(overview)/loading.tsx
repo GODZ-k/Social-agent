@@ -1,4 +1,4 @@
-import OverviewLoading from '@/components/overview/overview-loading'
+import OverviewLoading from '@/modules/overview/templates/overview-loading'
 import React from 'react'
 
 export default function loading() {

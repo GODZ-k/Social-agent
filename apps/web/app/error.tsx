@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, RefreshCw } from "lucide-react";
 import { Button } from "@repo/ui/components/button";
 import { ErrorReference, StateMark } from "@repo/ui/components/states";
-import { Logo } from "@/components/shell/logo";
+import { Logo } from "@/components/common/logo";
 
 /** Catches a fault outside a brand (home, onboarding); the workspace has its own boundary (ST-1 "app"). */
 export default function RootError({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {

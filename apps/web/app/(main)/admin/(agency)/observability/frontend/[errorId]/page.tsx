@@ -1,43 +1,5 @@
-import { notFound } from "next/navigation";
-import { getFrontendError } from "@/lib/api/server";
-import { ErrorDetailHeader } from "@/components/observability/error-detail-header";
-import { ErrorStats } from "@/components/observability/error-stats";
-import { HourlyPanel } from "@/components/observability/hourly-panel";
-import { WhatPersonDidPanel } from "@/components/observability/what-person-did-panel";
-import { StackTracePanel } from "@/components/observability/stack-trace-panel";
-import { ErrorDetailsPanel } from "@/components/observability/error-details-panel";
-import { WhoHitItPanel } from "@/components/observability/list-panels";
+import { FrontendErrorPage } from "@/modules/observability/templates/frontend-error-page";
 
-export default async function FrontendErrorPage({ params }: { params: Promise<{ errorId: string }> }) {
-  const { errorId } = await params;
-  const error = await getFrontendError(errorId);
-  if (!error) notFound();
-
-  const totalHits = error.hourly.reduce((sum, h) => sum + h.count, 0);
-
-  return (
-    <>
-      <ErrorDetailHeader error={error} />
-      <ErrorStats error={error} />
-      <div className="mt-5">
-        <HourlyPanel
-          title="When it happened"
-          description="Times per hour."
-          total={totalHits}
-          rows={error.hourly.map((h) => ({ at: h.at, primary: h.count }))}
-          primaryLabel="Times"
-        />
-      </div>
-      <div className="mt-5 grid gap-5 lg:grid-cols-2">
-        <div className="grid gap-5 content-start">
-          <WhatPersonDidPanel steps={error.steps} />
-          <StackTracePanel message={error.message} stack={error.stack} foldedLibraryLines={error.foldedLibraryLines} />
-        </div>
-        <div className="grid gap-5 content-start">
-          <ErrorDetailsPanel error={error} />
-          <WhoHitItPanel brands={error.brands} />
-        </div>
-      </div>
-    </>
-  );
+export default function Page(props: PageProps<"/admin/observability/frontend/[errorId]">) {
+  return <FrontendErrorPage params={props.params} />;
 }

@@ -2,8 +2,8 @@ import Link from "next/link";
 import { Users } from "lucide-react";
 import { Button } from "@repo/ui/components/button";
 import { GoBackButton, StateMark } from "@repo/ui/components/states";
-import { ADMIN_CLIENTS_PATH } from "@/components/shell/admin-nav-items";
-import { Logo } from "@/components/shell/logo";
+import { ADMIN_CLIENTS_PATH } from "@/modules/shell/utils/admin-nav-items";
+import { Logo } from "@/components/common/logo";
 
 /**
  * A brand id under /admin/c that's missing, archived, or unreachable (ST-2 "brand"), told the

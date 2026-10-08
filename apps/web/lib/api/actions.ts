@@ -6,17 +6,17 @@ import { inviteClientSchema } from "@social-agent/shared";
 import type { InviteClientInput, Language, Platform, QuestionnaireSubmitResponse } from "@social-agent/shared";
 import { getViewer } from "@/lib/auth/viewer";
 import { clone } from "./clone";
-import { addBrand, getDb, recounted, removeBrand } from "./mock/db";
-import * as account from "./mock/account";
-import * as admin from "./mock/admin";
-import { newBrand, settleResearch } from "./mock/brand-flow";
-import * as posts from "./mock/posts";
-import * as questionnaire from "./mock/questionnaire";
-import * as research from "./mock/research";
-import * as scans from "./mock/scan";
-import { handleFor } from "./mock/seed";
-import * as settings from "./mock/settings";
-import * as strategies from "./mock/strategy";
+import { addBrand, getDb, recounted, removeBrand } from "@/lib/api/mock/db";
+import * as account from "@/lib/api/mock/account";
+import * as admin from "@/lib/api/mock/admin";
+import { newBrand, settleResearch } from "@/lib/api/mock/brand-flow";
+import * as posts from "@/lib/api/mock/posts";
+import * as questionnaire from "@/lib/api/mock/questionnaire";
+import * as research from "@/lib/api/mock/research";
+import * as scans from "@/lib/api/mock/scan";
+import { handleFor } from "@/lib/api/mock/seed";
+import * as settings from "@/lib/api/mock/settings";
+import * as strategies from "@/lib/api/mock/strategy";
 import { fail, ok, type ActionResult } from "./result";
 import type {
   AccountDetails,
@@ -44,6 +44,7 @@ import type {
   Strategy,
   TeamMember,
 } from "@/lib/types";
+import { routes } from "@/config/routes";
 
 /**
  * Writes, called from brand components as Server Actions.
@@ -86,18 +87,18 @@ function requirePerson(clientId: string) {
 }
 
 function revalidateBrand(brandId: string) {
-  revalidatePath("/");
-  revalidatePath(`/c/${brandId}`, "layout");
-  revalidatePath(`/admin/c/${brandId}`, "layout");
-  revalidatePath("/onboarding", "layout");
+  revalidatePath(routes.home);
+  revalidatePath(routes.brand.overview(brandId), "layout");
+  revalidatePath(routes.admin.brand.overview(brandId), "layout");
+  revalidatePath(routes.onboarding.start, "layout");
 }
 
 function revalidateAdmin() {
-  revalidatePath("/admin", "layout");
+  revalidatePath(routes.admin.home, "layout");
 }
 
 function revalidateAgencySettings() {
-  revalidatePath("/admin/settings", "layout");
+  revalidatePath(routes.admin.settings.root, "layout");
 }
 
 /** Runs an action body and turns any thrown error into a result. */
@@ -167,7 +168,7 @@ export async function createBrand(input: NewBrandDraft): Promise<ActionResult<Br
     const db = getDb();
     const brand = newBrand(db, input, viewer.id);
     addBrand(brand);
-    revalidatePath("/");
+    revalidatePath(routes.home);
     return clone(brand);
   });
 }
@@ -765,7 +766,7 @@ export async function rerunAgentRun(runId: string): Promise<ActionResult<null>> 
     await requireAdmin();
     if (!runId) throw new Error("Run not found.");
     await wait(900);
-    revalidatePath("/admin/observability/agents", "layout");
+    revalidatePath(routes.admin.observability.agents, "layout");
     return null;
   });
 }
@@ -775,7 +776,7 @@ export async function markFrontendErrorFixed(errorId: string): Promise<ActionRes
     await requireAdmin();
     const fixed = getDb().fixedErrors;
     if (!fixed.includes(errorId)) fixed.push(errorId);
-    revalidatePath("/admin/observability", "layout");
+    revalidatePath(routes.admin.observability.overview, "layout");
     return null;
   });
 }

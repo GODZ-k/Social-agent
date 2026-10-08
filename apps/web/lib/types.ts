@@ -36,6 +36,13 @@ export type {
 // Types the API shares live in @social-agent/shared. This file holds only what the web adds on top.
 
 /**
+ * What a page or a template reads from the address. Always this shape, never a narrower one: a
+ * query string anyone can edit may repeat a key, which is how `?brandId=a&brandId=b` arrives as an
+ * array and a hand-written `{ brandId?: string }` becomes a lie the compiler believes.
+ */
+export type RouteSearchParams = Promise<Record<string, string | string[] | undefined>>;
+
+/**
  * A brand workspace as the mock serves it: the API's Brand without the fields the UI reads
  * through other calls. `ApiBrand` is that API type; this is the only file that needs both,
  * and when the mock seam comes off the two become one.

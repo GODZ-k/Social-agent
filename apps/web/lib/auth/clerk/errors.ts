@@ -1,6 +1,6 @@
 import { isClerkAPIResponseError, isClerkRuntimeError } from "@clerk/nextjs/errors";
-import { AUTH_POLICY } from "../rules";
-import type { AuthError, AuthErrorCode, AuthResult } from "../types";
+import { AUTH_POLICY } from "@/lib/auth/rules";
+import type { AuthError, AuthErrorCode, AuthResult } from "@/lib/auth/types";
 
 // Clerk's error codes, grouped by the one we show. Anything unlisted becomes "unknown".
 const CODE_MAP: Record<string, AuthErrorCode> = {

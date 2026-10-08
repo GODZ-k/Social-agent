@@ -4,9 +4,10 @@ import { CircleAlert } from "lucide-react";
 import { useWatch, type UseFormReturn } from "react-hook-form";
 import type { Values } from "@/lib/forms/brand-kit";
 import type { ScanSources } from "@/lib/types";
-import { EditableCard, type CardControls } from "@/components/brand-kit/editable-card";
-import { KitField } from "@/components/brand-kit/kit-field";
-import { KvRow } from "@/components/brand-kit/kv-row";
+import { EditableCard } from "./editable-card";
+import { KitField } from "./kit-field";
+import { KvRow } from "./kv-row";
+import type { CardControls } from "@/components/brand-kit/types";
 
 /** "The business": name, type, what they do, and the tagline (flagged when the site had none). */
 export function BusinessCard({

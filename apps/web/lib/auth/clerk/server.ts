@@ -1,7 +1,7 @@
 import "server-only";
 import { cookies } from "next/headers";
 import { auth, clerkClient, currentUser } from "@clerk/nextjs/server";
-import type { SessionUser } from "../types";
+import type { SessionUser } from "@/lib/auth/types";
 
 // Clerk's own cookies; clearing them makes the next request signed out at once
 // instead of waiting for the short-lived session token to expire.

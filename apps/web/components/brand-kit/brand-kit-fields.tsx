@@ -2,11 +2,11 @@
 
 import type { UseFormReturn } from "react-hook-form";
 import type { Values } from "@/lib/forms/brand-kit";
-import { FieldGroup } from "@/components/brand-kit/field-group";
-import { ColorList } from "@/components/brand-kit/color-list";
-import { KitField } from "@/components/brand-kit/kit-field";
-import { VoicePicker } from "@/components/brand-kit/voice-picker";
-import { PlatformPicker } from "@/components/brand-kit/platform-picker";
+import { FieldGroup } from "./field-group";
+import { ColorList } from "./color-list";
+import { KitField } from "./kit-field";
+import { VoicePicker } from "./voice-picker";
+import { PlatformPicker } from "./platform-picker";
 import { FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@repo/ui/components/form";
 
 /** The editable brand kit, shared by onboarding and Settings. The forms around it decide what saving means. */

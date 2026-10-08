@@ -1,4 +1,4 @@
-import WorkspaceLayout from '@/components/workspace/workspace-layout'
+import WorkspaceLayout from '@/modules/shell/components/workspace-layout'
 import React from 'react'
 
 function layout(props:{

@@ -3,6 +3,7 @@
 import { useCallback, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import type { SetActiveNavigate } from "@clerk/nextjs/types";
+import { routes } from "@/config/routes";
 
 const PENDING_KEY = "cadence.auth.pending";
 
@@ -55,7 +56,7 @@ export function useMounted(): boolean {
   );
 }
 
-const SETUP_TWO_FACTOR = "/two-factor/setup";
+const SETUP_TWO_FACTOR = routes.auth.twoFactorSetup;
 
 /** Builds Clerk's `finalize` navigate callback: pending session tasks go to two-factor setup, the rest to `redirectTo`. */
 export function useFinishNavigation(): (redirectTo: string) => SetActiveNavigate {

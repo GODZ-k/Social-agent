@@ -1,4 +1,4 @@
-import ContentPage from "@/components/content/content-page";
+import ContentPage from "@/modules/content/templates/content-page";
 import React from "react";
 
 function page(props: {

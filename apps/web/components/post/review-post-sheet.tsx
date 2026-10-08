@@ -1,6 +1,6 @@
 import dynamic from "next/dynamic";
 import { getAnalyticsReport, getBestTimes, getBrand, getPost, listReviewQueue, listSocialAccounts } from "@/lib/api/server";
-import { reachTotal } from "@/components/analytics/report-format";
+import { reachTotal } from "@/lib/report-format";
 
 // The picker components are heavy (a clock face library, a calendar); nobody
 // needs them until a post is actually opened for review.

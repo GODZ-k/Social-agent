@@ -2,7 +2,7 @@
 
 import { useReverification, useUser } from "@clerk/nextjs";
 import { done, fail, failWith } from "./errors";
-import type { AuthResult } from "../types";
+import type { AuthResult } from "@/lib/auth/types";
 
 export interface ChangePasswordInput {
   currentPassword: string;

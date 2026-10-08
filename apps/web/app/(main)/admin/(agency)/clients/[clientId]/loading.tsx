@@ -1,5 +1,5 @@
-import { SkeletonRows } from "@repo/ui/components/states";
+import { AdminClientLoading } from "@/modules/admin/templates/client-loading";
 
-export default function AdminClientLoading() {
-  return <SkeletonRows rows={4} className="[&>*]:h-24" />;
+export default function Loading() {
+  return <AdminClientLoading />;
 }

@@ -4,7 +4,7 @@ import { useReverification, useSignIn, useUser } from "@clerk/nextjs";
 import type { UserResource } from "@clerk/nextjs/types";
 import { done, fail, failWith, succeed } from "./errors";
 import { useFinishNavigation, useMounted } from "./shared";
-import type { AuthenticatorSetup, AuthResult, AuthStep, BackupCodesStatus, TwoFactorMethod } from "../types";
+import type { AuthenticatorSetup, AuthResult, AuthStep, BackupCodesStatus, TwoFactorMethod } from "@/lib/auth/types";
 
 const AUTHENTICATOR_ID = "authenticator_app";
 

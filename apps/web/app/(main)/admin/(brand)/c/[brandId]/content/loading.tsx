@@ -1,4 +1,4 @@
-import ContentLoading from '@/components/content/content-loading'
+import ContentLoading from '@/modules/content/templates/content-loading'
 import React from 'react'
 
 function loading() {

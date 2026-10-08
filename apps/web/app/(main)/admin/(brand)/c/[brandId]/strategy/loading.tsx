@@ -1,4 +1,4 @@
-import StrategyLoading from '@/components/strategy/strategy-loading'
+import StrategyLoading from '@/modules/strategy/templates/strategy-loading'
 import React from 'react'
 
 function loading() {

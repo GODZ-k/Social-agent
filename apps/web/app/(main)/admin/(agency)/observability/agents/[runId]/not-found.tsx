@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Button } from "@repo/ui/components/button";
 import { ErrorState } from "@repo/ui/components/states";
+import { routes } from "@/config/routes";
 
 export default function RunNotFound() {
   return (
@@ -8,7 +9,7 @@ export default function RunNotFound() {
       <ErrorState error={new Error("This run doesn't exist, or has aged out.")} />
       <div className="flex justify-center">
         <Button asChild variant="ghost">
-          <Link href="/admin/observability/agents">Back to Agents</Link>
+          <Link href={routes.admin.observability.agents}>Back to Agents</Link>
         </Button>
       </div>
     </main>

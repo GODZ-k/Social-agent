@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { getViewer } from "@/lib/auth/viewer";
-import { AdminHeaderSkeleton } from "@/components/shell/skeletons";
+import { AdminHeaderSkeleton } from "@/modules/shell/components/skeletons";
 
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {

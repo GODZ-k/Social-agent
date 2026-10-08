@@ -6,6 +6,7 @@ import { APP_NAME } from "@/lib/utils";
 import { THEME_SCRIPT } from "@repo/ui/lib/theme";
 import "@repo/ui/styles.css"
 import "./globals.css";
+import { routes } from "@/config/routes";
 
 // Display face with a real optical-size axis: letterforms tighten as they grow.
 const display = Bricolage_Grotesque({
@@ -60,7 +61,7 @@ const clerkAppearance = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <ClerkProvider appearance={clerkAppearance} signInUrl="/sign-in" signUpUrl="/sign-up">
+    <ClerkProvider appearance={clerkAppearance} signInUrl={routes.auth.signIn} signUpUrl={routes.auth.signUp}>
       {/* data-theme is set by the script below before hydration, so the attribute differs from the server's on purpose. */}
       <html lang="en" className={`${display.variable} ${body.variable}`} suppressHydrationWarning>
         <head>

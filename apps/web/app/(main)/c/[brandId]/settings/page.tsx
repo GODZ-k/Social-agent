@@ -1,4 +1,4 @@
-import SettingsPage from "@/components/settings/setting-page";
+import SettingsPage from "@/modules/settings/templates/setting-page";
 import React from "react";
 
 function page(props: {

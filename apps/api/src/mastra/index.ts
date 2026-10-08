@@ -1,10 +1,8 @@
 
 import { Mastra } from '@mastra/core/mastra';
 import { PinoLogger } from '@mastra/loggers';
-import { DuckDBStore } from "@mastra/duckdb";
 import { Memory } from "@mastra/memory";
 import { PostgresStore } from "@mastra/pg";
-import { MastraCompositeStore } from '@mastra/core/storage';
 import { Observability, MastraStorageExporter, MastraPlatformExporter, SensitiveDataFilter } from '@mastra/observability';
 import { accountManager, audienceResearcher, brandAnalyst, growthConsultant } from './agents/team';
 import { brandScanWorkflow } from './workflows/brand-scan/workflow';
@@ -21,20 +19,11 @@ export const memory = new Memory({
   storage: postgresStore,
 });
 
-const observabilityStore = await new DuckDBStore().getStore('observability');
-
 export const mastra = new Mastra({
   // Register each agent and workflow here as it is built (build order: see ./README.md).
   workflows: { brandScanWorkflow, businessDiscoveryWorkflow },
   agents: { brandAnalyst, growthConsultant, audienceResearcher, accountManager },
-
-  storage: new MastraCompositeStore({
-    id: 'composite-storage',
-    default: postgresStore,
-    domains: {
-      observability: observabilityStore,
-    }
-  }),
+  storage: postgresStore,
   logger: new PinoLogger({
     name: 'Mastra',
     level: 'info',

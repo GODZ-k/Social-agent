@@ -67,8 +67,12 @@ pnpm 11 workspaces and Turborepo 2, TypeScript 7, Node 24 or newer (`package.jso
 `apps/web` renders on the server since 2026-09-22: pages are async server components that read
 through `lib/api/server.ts`, client islands write through the Server Actions in
 `lib/api/actions.ts`, and the mock behind both (`lib/api/mock/`) runs in the Next.js process.
-Route files live in `app/`, each screen's pieces in `features/<area>/`. The seam to the real
-API is those two files; it is crossed for onboarding in phase 2B and for the rest in phase 3.
+Route files live in `app/` and hold nothing but their props: since 2026-10-08 each page renders a
+template from `modules/<module>/templates/`, and every product area is a module that owns its own
+`components/`, `hooks/`, `schemas/`, `types/`, `utils/` and `helpers/`. What two or more modules
+share sits at the root (`components/`, `hooks/`, `lib/`), and every URL in the app comes from
+`config/routes.ts`. The seam to the real API is still those two `lib/api` files; it is crossed for
+onboarding in phase 2B and for the rest in phase 3.
 
 ```mermaid
 flowchart TD

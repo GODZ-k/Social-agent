@@ -1,4 +1,4 @@
-import ApprovalsLoading from '@/components/approvals/approval-loading'
+import ApprovalsLoading from '@/modules/approvals/templates/approval-loading'
 import React from 'react'
 
 function loading() {

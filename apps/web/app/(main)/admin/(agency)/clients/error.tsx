@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Activity, RefreshCw } from "lucide-react";
 import { Button } from "@repo/ui/components/button";
 import { PageHeader } from "@repo/ui/components/states";
+import { routes } from "@/config/routes";
 
 /** ADM-2: the clients list failed to load. Nothing was changed. */
 export default function AdminClientsError({ reset }: { error: Error & { digest?: string }; reset: () => void }) {
@@ -20,7 +21,7 @@ export default function AdminClientsError({ reset }: { error: Error & { digest?:
         </p>
         <div className="mt-2 flex gap-2">
           <Button asChild variant="outline">
-            <Link href="/admin/observability/server">
+            <Link href={routes.admin.observability.server}>
               <Activity /> Open Observability
             </Link>
           </Button>

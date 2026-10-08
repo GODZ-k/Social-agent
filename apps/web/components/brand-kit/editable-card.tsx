@@ -5,14 +5,7 @@ import { Panel } from "@repo/ui/components/states";
 import { Badge } from "@repo/ui/components/badge";
 import { Button } from "@repo/ui/components/button";
 import { cn } from "@/lib/utils";
-
-/** One card's edit state, shared so only one brand-kit card is ever open at a time. */
-export interface CardControls {
-  editing: boolean;
-  onEdit: () => void;
-  onCancel: () => void;
-  onDone: () => void;
-}
+import type { CardControls } from "./types";
 
 /** The chrome around a brand-kit card: read-only until Edit is tapped, then Cancel/Done swap it back. */
 export function EditableCard({

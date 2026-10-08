@@ -1,4 +1,4 @@
-import CalendarLoading from '@/components/calendar/calendar-loading'
+import CalendarLoading from '@/modules/calendar/templates/calendar-loading'
 import React from 'react'
 
 function loading() {

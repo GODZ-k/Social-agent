@@ -1,4 +1,4 @@
-import AnalyticsLoading from '@/components/analytics/analytics-loading'
+import AnalyticsLoading from '@/modules/analytics/templates/analytics-loading'
 import React from 'react'
 
 function loading() {
